@@ -102,32 +102,38 @@ public class NFARegexParser {
         return null;
     }
 
+    private static final int CLEAR = 0;
+
+    private static final int FIND_ATOM = 1;
+
+    private static final int FIND_MINUS = 2;
+
     private ICharPredicate parseClazz() {
         ICharPredicate result = null;
-        int state = 0;
+        int state = CLEAR;
         byte b1 = 0;
         LOOP:
         while (input.available()) {
             byte b = input.next();
             switch (state) {
-                case 0 -> {
+                case CLEAR -> {
                     if (b == ']') {
                         break LOOP;
                     }
                     b1 = b;
-                    state = 1;
+                    state = FIND_ATOM;
                 }
-                case 1 -> {
+                case FIND_ATOM -> {
                     if (b == '-') {
-                        state = 2;
+                        state = FIND_MINUS;
                     } else if (b == ']') {
                         break LOOP;
                     } else {
                         result = ICharPredicate.or(result, ICharPredicate.single(b1));
-                        state = 0;
+                        state = CLEAR;
                     }
                 }
-                case 2 -> {
+                case FIND_MINUS -> {
                     if (b == ']') {
                         result = ICharPredicate.or(result, ICharPredicate.single('-'));
                         break LOOP;
@@ -136,7 +142,7 @@ public class NFARegexParser {
                                 result,
                                 ICharPredicate.ranged(b1, b));
                     }
-                    state = 0;
+                    state = CLEAR;
                 }
                 default -> throw new IllegalStateException("???");
             }
