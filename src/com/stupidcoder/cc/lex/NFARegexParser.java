@@ -10,36 +10,27 @@ public class NFARegexParser {
     }
 
     public static NFA parse(ILexerInput input) {
-        return new NFARegexParser(input).parseExpr();
+        return new NFARegexParser(input).expr();
     }
 
-    private NFA parseExpr() {
-        NFA expr = new NFA();
+    private NFA expr() {
+        NFA result = new NFA();
         while (input.available()) {
             byte b = input.next();
             switch (b) {
-                case '(' -> expr.and(parseExpr());
+                case '(' -> result.and(expr());
                 case ')' -> {
-                    //规定：右括号在递归返回后处理
-                    if (input.available()) {
-                        switch (input.next()) {
-                            case '*' -> expr.star();
-                            case '+' -> expr.plus();
-                            case '?' -> expr.quest();
-                            default -> input.retract();
-                        }
-                    }
-                    return expr;
+                    return checkClosure(result);
                 }
-                case '|' -> expr.or(parseExpr());
-                default -> expr.and(parseSeq());
+                case '|' -> result.or(expr());
+                default -> result.and(seq());
             }
         }
-        return expr;
+        return result;
     }
 
-    public NFA parseSeq() {
-        NFA seq = new NFA();
+    private NFA seq() {
+        NFA result = new NFA();
         input.retract();
         LOOP:
         while (input.available()) {
@@ -50,33 +41,38 @@ public class NFARegexParser {
                 case '|':
                     input.retract();
                     break LOOP;
-                case '\\':
-                    input.next();
-                    //把下一个字符当成atom处理
                 default:
-                    NFA atom = parseAtom();
-                    if (input.available()) {
-                        switch (input.next()) {
-                            case '*' -> atom.star();
-                            case '+' -> atom.plus();
-                            case '?' -> atom.quest();
-                            default -> input.retract();
-                        }
-                    }
-                    seq.and(atom);
+                    result.and(atom());
                     break;
             }
         }
-        return seq;
+        return result;
     }
 
-    private NFA parseAtom() {
+    private NFA atom() {
         input.retract();
         byte b = input.next();
-        ICharPredicate predicate = b == '[' ?
-                parseClazz() :
-                ICharPredicate.single(b);
-        return new NFA().andAtom(predicate);
+        ICharPredicate predicate;
+        if (b == '[') {
+            predicate = clazz();
+        } else if (b == '\\' && input.available()) {
+            predicate = ICharPredicate.single(input.next());
+        } else {
+            predicate = ICharPredicate.single(b);
+        }
+        return checkClosure(new NFA().andAtom(predicate));
+    }
+
+    private NFA checkClosure(NFA target) {
+        if (input.available()) {
+            switch (input.next()) {
+                case '*' -> target.star();
+                case '+' -> target.plus();
+                case '?' -> target.quest();
+                default -> input.retract();
+            }
+        }
+        return target;
     }
 
     private static final int CLEAR = 0;
@@ -85,7 +81,7 @@ public class NFARegexParser {
 
     private static final int FIND_MINUS = 2;
 
-    private ICharPredicate parseClazz() {
+    private ICharPredicate clazz() {
         ICharPredicate result = null;
         int state = CLEAR;
         byte b1 = 0;

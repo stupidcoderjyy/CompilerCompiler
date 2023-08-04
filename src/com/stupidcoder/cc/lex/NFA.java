@@ -1,9 +1,13 @@
 package com.stupidcoder.cc.lex;
 
-public class NFABuilder {
-    private NFANode start, end;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Stack;
 
-    public NFABuilder and(NFABuilder other) {
+public class NFA {
+    protected NFANode start, end;
+
+    public NFA and(NFA other) {
         if (isEmpty()) {
             start = other.start;
             end = other.end;
@@ -14,7 +18,7 @@ public class NFABuilder {
         return this;
     }
 
-    public NFABuilder andAtom(ICharPredicate predicate) {
+    public NFA andAtom(ICharPredicate predicate) {
         NFANode newStart = new NFANode();
         NFANode newEnd = new NFANode();
         newStart.addCharEdge(predicate, newEnd);
@@ -28,7 +32,7 @@ public class NFABuilder {
         return this;
     }
 
-    public NFABuilder star() {
+    public NFA star() {
         NFANode newStart = new NFANode();
         NFANode newEnd = new NFANode();
         newStart.addEpsilonEdge(start);
@@ -41,7 +45,7 @@ public class NFABuilder {
         return this;
     }
 
-    public NFABuilder quest() {
+    public NFA quest() {
         NFANode newStart = new NFANode();
         NFANode newEnd = new NFANode();
         newStart.addEpsilonEdge(start);
@@ -54,7 +58,7 @@ public class NFABuilder {
     }
 
 
-    public NFABuilder plus() {
+    public NFA plus() {
         NFANode newStart = new NFANode();
         NFANode newEnd = new NFANode();
         newStart.addEpsilonEdge(start);
@@ -66,7 +70,7 @@ public class NFABuilder {
         return this;
     }
 
-    public NFABuilder or(NFABuilder other) {
+    public NFA or(NFA other) {
         if (isEmpty()) {
             start = other.start;
             end = other.end;
@@ -82,15 +86,45 @@ public class NFABuilder {
         return this;
     }
 
-    public NFANode getStart() {
-        return start;
-    }
-
-    public NFANode getEnd() {
-        return end;
-    }
-
     public boolean isEmpty() {
         return start == null || end == null;
+    }
+
+    @Override
+    public String toString() {
+        if (isEmpty()) {
+            return "null";
+        } else {
+            return start.toString() + ", " + end.toString();
+        }
+    }
+
+    public void print() {
+        if (isEmpty()) {
+            return;
+        }
+        Stack<NFANode> unchecked = new Stack<>();
+        Set<NFANode> printed = new HashSet<>();
+        unchecked.push(start);
+        while (!unchecked.empty()) {
+            NFANode node = unchecked.pop();
+            System.out.println(node);
+            switch (node.edgeType) {
+                case NFANode.NO_EDGE:
+                    break;
+                case NFANode.DOUBLE_EPSILON:
+                    if (!printed.contains(node.next2)) {
+                        unchecked.push(node.next2);
+                        printed.add(node.next2);
+                    }
+                case NFANode.SINGLE_EPSILON:
+                case NFANode.CHAR:
+                    if (!printed.contains(node.next1)) {
+                        unchecked.push(node.next1);
+                        printed.add(node.next1);
+                    }
+                    break;
+            }
+        }
     }
 }

@@ -3,15 +3,15 @@ package com.stupidcoder.cc.lex;
 public class NFANode {
     private static int nodeCount = 0;
 
-    private static final byte NO_EDGE = 0;
-    private static final byte SINGLE_EPSILON = 1;
-    private static final byte DOUBLE_EPSILON = 2;
-    private static final byte CHAR = 3;
+    protected static final byte NO_EDGE = 0;
+    protected static final byte SINGLE_EPSILON = 1;
+    protected static final byte DOUBLE_EPSILON = 2;
+    protected static final byte CHAR = 3;
 
-    private byte edgeType = NO_EDGE;
-    private int id;
-    private NFANode next1;
-    private NFANode next2;
+    protected byte edgeType = NO_EDGE;
+    private final int id;
+    protected NFANode next1;
+    protected NFANode next2;
     private ICharPredicate predicate;
 
     protected NFANode() {
@@ -38,5 +38,28 @@ public class NFANode {
         this.predicate = predicate;
         next1 = next;
         edgeType = CHAR;
+    }
+
+    @Override
+    public String toString() {
+        String str = id + "(";
+        switch (edgeType) {
+            case NO_EDGE -> str += "null";
+            case SINGLE_EPSILON -> str += "ε" + next1.id;
+            case DOUBLE_EPSILON -> str += "ε" + next1.id + ",ε" + next2.id;
+            case CHAR -> str += "c" + next1.id;
+        }
+        str += ')';
+        return str;
+    }
+
+    @Override
+    public int hashCode() {
+        return id;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof NFANode && obj.hashCode() == id;
     }
 }
