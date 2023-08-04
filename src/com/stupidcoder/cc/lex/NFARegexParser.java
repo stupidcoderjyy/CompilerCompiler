@@ -23,27 +23,7 @@ public class NFARegexParser {
                     return checkClosure(result);
                 }
                 case '|' -> result.or(expr());
-                default -> result.and(seq());
-            }
-        }
-        return result;
-    }
-
-    private NFA seq() {
-        NFA result = new NFA();
-        input.retract();
-        LOOP:
-        while (input.available()) {
-            byte b = input.next();
-            switch (b) {
-                case '(':
-                case ')':
-                case '|':
-                    input.retract();
-                    break LOOP;
-                default:
-                    result.and(atom());
-                    break;
+                default -> result.and(atom());
             }
         }
         return result;
