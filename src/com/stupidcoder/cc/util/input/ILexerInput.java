@@ -20,19 +20,13 @@ public interface ILexerInput extends Closeable {
     boolean isOpen();
 
     /**
-     * 将输入系统设置为初始状态，只能在输入系统已经启动的情况下调用
-     */
-    void clear();
-
-
-    /**
-     * 是否可以在缓冲区中继续向后取字符，即是否可以调用 {@link ILexerInput#next()}
+     * 是否可以继续向后取字符，即是否可以调用 {@link ILexerInput#next()}
      * @return 可以则返回true
      */
     boolean available();
 
     /**
-     * 获得下一个字节。该方法在预读模式下也可用
+     * 获得下一个字节
      * @return 下一个字节
      */
     byte next();
@@ -44,10 +38,15 @@ public interface ILexerInput extends Closeable {
     boolean hasNext();
 
     /**
-     * 获得完整的词素。在预读模式下，该方法返回先前的词素（换句话说，这个方法的返回值和是否处于预读模式无关）
+     * 获得完整的词素，同时更新词素起点
      * @return 词素
      */
     String lexeme();
+
+    /**
+     * 手动更新词素起点
+     */
+    void markLexemeStart();
 
     /**
      * 回退若干字符

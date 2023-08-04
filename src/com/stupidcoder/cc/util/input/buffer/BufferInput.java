@@ -80,16 +80,6 @@ public class BufferInput implements ILexerInput {
     }
 
     @Override
-    public void clear() {
-        checkOpen();
-        lexemeStart = 0;
-        lexemeEnd = 0;
-        forward = 0;
-        BUFFER_A.load();
-    }
-
-
-    @Override
     public byte next() {
         checkAvailable();
         byte result = forward < BUFFER_A.size() ?
@@ -168,6 +158,11 @@ public class BufferInput implements ILexerInput {
     @Override
     public String lexeme() {
         return lexeme(true);
+    }
+
+    @Override
+    public void markLexemeStart() {
+        lexemeStart = forward;
     }
 
     /**

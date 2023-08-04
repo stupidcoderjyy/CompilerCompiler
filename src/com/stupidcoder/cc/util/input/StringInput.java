@@ -34,9 +34,8 @@ public class StringInput implements ILexerInput{
     }
 
     @Override
-    public void clear() {
-        forward = 0;
-        lexemeStart = 0;
+    public void markLexemeStart() {
+        lexemeStart = forward;
     }
 
     @Override
