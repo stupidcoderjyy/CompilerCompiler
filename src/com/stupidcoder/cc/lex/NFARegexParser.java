@@ -4,51 +4,43 @@ import com.stupidcoder.cc.util.input.ILexerInput;
 
 public class NFARegexParser {
     private final ILexerInput input;
-    private NFABuilder group;
 
     private NFARegexParser(ILexerInput input) {
         this.input = input;
     }
 
-    public static NFABuilder parse(ILexerInput input) {
+    public static NFA parse(ILexerInput input) {
         return new NFARegexParser(input).parseExpr();
     }
 
-    private NFABuilder parseExpr() {
-        NFABuilder expr = new NFABuilder();
+    private NFA parseExpr() {
+        NFA expr = new NFA();
         while (input.available()) {
             byte b = input.next();
             switch (b) {
-                case '(' -> group = parseExpr();
+                case '(' -> expr.and(parseExpr());
                 case ')' -> {
+                    //规定：右括号在递归返回后处理
                     if (input.available()) {
-                        byte next = input.next();
-                        //如果接下来是闭包符号，则交给循环处理。如果不是，则进行连接
-                        if (next == '*' || next == '+' || next == '?') {
-                            input.retract();
-                        } else {
-                            if (expr.isEmpty()) {
-                                expr = group;
-                            } else {
-                                expr.and(group);
-                            }
+                        switch (input.next()) {
+                            case '*' -> expr.star();
+                            case '+' -> expr.plus();
+                            case '?' -> expr.quest();
+                            default -> input.retract();
                         }
                     }
                     return expr;
                 }
                 case '|' -> expr.or(parseExpr());
-                case '*' -> expr.and(group.star());
-                case '+' -> expr.and(group.plus());
-                case '?' -> expr.and(group.quest());
-                default -> expr = parseSeq();
+                default -> expr.and(parseSeq());
             }
         }
         return expr;
     }
 
-    public NFABuilder parseSeq() {
-        NFABuilder seq = new NFABuilder();
-        NFABuilder lastAtom = null;
+    public NFA parseSeq() {
+        NFA seq = new NFA();
+        input.retract();
         LOOP:
         while (input.available()) {
             byte b = input.next();
@@ -58,48 +50,33 @@ public class NFARegexParser {
                 case '|':
                     input.retract();
                     break LOOP;
-                case '*':
-                    if (lastAtom != null) {
-                        lastAtom.star();
-                        seq.and(lastAtom);
-                        lastAtom = null;
-                    }
-                    break;
-                case '+':
-                    if (lastAtom != null) {
-                        lastAtom.plus();
-                        seq.and(lastAtom);
-                        lastAtom = null;
-                    }
-                    break;
-                case '?':
-                    if (lastAtom != null) {
-                        lastAtom.quest();
-                        seq.and(lastAtom);
-                        lastAtom = null;
-                    }
-                    break;
+                case '\\':
+                    input.next();
+                    //把下一个字符当成atom处理
                 default:
-                    input.retract();
-                    if (lastAtom != null) {
-                        seq.and(lastAtom);
+                    NFA atom = parseAtom();
+                    if (input.available()) {
+                        switch (input.next()) {
+                            case '*' -> atom.star();
+                            case '+' -> atom.plus();
+                            case '?' -> atom.quest();
+                            default -> input.retract();
+                        }
                     }
-                    lastAtom = parseAtom();
+                    seq.and(atom);
                     break;
             }
         }
         return seq;
     }
 
-    private NFABuilder parseAtom() {
-        if (input.available()) {
-            byte b = input.next();
-            ICharPredicate predicate = b == '[' ?
-                    parseClazz() :
-                    ICharPredicate.single(b);
-            return new NFABuilder().andAtom(predicate);
-        }
-        return null;
+    private NFA parseAtom() {
+        input.retract();
+        byte b = input.next();
+        ICharPredicate predicate = b == '[' ?
+                parseClazz() :
+                ICharPredicate.single(b);
+        return new NFA().andAtom(predicate);
     }
 
     private static final int CLEAR = 0;
@@ -138,13 +115,10 @@ public class NFARegexParser {
                         result = ICharPredicate.or(result, ICharPredicate.single('-'));
                         break LOOP;
                     } else {
-                        result = ICharPredicate.or(
-                                result,
-                                ICharPredicate.ranged(b1, b));
+                        result = ICharPredicate.or(result, ICharPredicate.ranged(b1, b));
                     }
                     state = CLEAR;
                 }
-                default -> throw new IllegalStateException("???");
             }
         }
         return result;
