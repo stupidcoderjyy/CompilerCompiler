@@ -4,6 +4,7 @@ import com.stupidcoder.cc.util.input.ILexerInput;
 
 public class NFARegexParser {
     private final ILexerInput input;
+    private NFA tempGroup;
 
     private NFARegexParser(ILexerInput input) {
         this.input = input;
@@ -18,11 +19,31 @@ public class NFARegexParser {
         while (input.available()) {
             byte b = input.next();
             switch (b) {
-                case '(' -> result.and(expr());
                 case ')' -> {
                     return checkClosure(result);
                 }
-                case '|' -> result.or(expr());
+                case '|' -> {
+                    input.checkAvailable();
+                    input.next();
+                    result.or(seq());
+                }
+                default -> result.and(seq());
+            }
+        }
+        return result;
+    }
+
+    private NFA seq() {
+        input.retract();
+        NFA result = new NFA();
+        while (input.available()) {
+            byte b = input.next();
+            switch (b) {
+                case '(' -> result.and(expr());
+                case '|', ')' -> {
+                    input.retract();
+                    return result;
+                }
                 default -> result.and(atom());
             }
         }

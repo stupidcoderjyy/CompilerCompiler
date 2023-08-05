@@ -9,10 +9,10 @@ public class NFANode {
     protected static final byte CHAR = 3;
 
     protected byte edgeType = NO_EDGE;
-    private final int id;
+    protected final int id;
     protected NFANode next1;
     protected NFANode next2;
-    private ICharPredicate predicate;
+    protected ICharPredicate predicate;
 
     protected NFANode() {
         id = nodeCount++;

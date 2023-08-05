@@ -110,8 +110,6 @@ public class NFA {
             NFANode node = unchecked.pop();
             System.out.println(node);
             switch (node.edgeType) {
-                case NFANode.NO_EDGE:
-                    break;
                 case NFANode.DOUBLE_EPSILON:
                     if (!printed.contains(node.next2)) {
                         unchecked.push(node.next2);

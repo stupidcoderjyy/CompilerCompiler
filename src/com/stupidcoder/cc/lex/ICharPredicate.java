@@ -13,6 +13,12 @@ public interface ICharPredicate {
     }
 
     static ICharPredicate or(ICharPredicate c1, ICharPredicate c2) {
+        if (c1 == null) {
+            return c2;
+        }
+        if (c2 == null) {
+            return c1;
+        }
         return c -> c1.accept(c) || c2.accept(c);
     }
 
