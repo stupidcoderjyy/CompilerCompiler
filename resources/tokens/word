@@ -6,6 +6,7 @@ static {
 }
 
 private int type;
+private String lexeme;
 
 @Override
 public int type() {
@@ -14,6 +15,16 @@ public int type() {
 
 @Override
 public IToken fromLexeme(String lexeme) {
-    type = keyWords.getOrDefault(lexeme, TokenTypes.ID);
+    this.lexeme = lexeme;
+    type = keyWords.getOrDefault(lexeme, TokenTypes.WORD);
     return this;
+}
+
+@Override
+public String toString() {
+    return type + ":" + lexeme;
+}
+
+public String lexeme() {
+    return lexeme;
 }

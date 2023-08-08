@@ -3,7 +3,7 @@ public class TokenDouble implements IToken {
 
     @Override
     public int type() {
-        return 0;
+        return TokenTypes.DOUBLE;
     }
 
     @Override
@@ -14,5 +14,10 @@ public class TokenDouble implements IToken {
 
     public double getValue() {
         return value;
+    }
+
+    @Override
+    public String toString() {
+        return "double:" + value;
     }
 }

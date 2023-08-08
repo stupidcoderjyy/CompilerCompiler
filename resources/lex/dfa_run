@@ -8,6 +8,7 @@ public IToken nextToken() {
         byte b = input.next();
         state = goTo[state][b];
         if (state == 0) {
+            input.retract();
             break;
         }
         if (accepted[state]) {
@@ -17,9 +18,10 @@ public IToken nextToken() {
             extraLoaded++;
         }
     }
+    String lexeme = input.lexeme();
     input.retract(extraLoaded);
     if (lastAccepted == 0) {
         return null;
     }
-    return tokens[lastAccepted].fromLexeme(input.lexeme());
+    return tokens[lastAccepted].fromLexeme(lexeme);
 }

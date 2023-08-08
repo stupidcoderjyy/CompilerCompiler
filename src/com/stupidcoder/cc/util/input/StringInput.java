@@ -57,8 +57,9 @@ public class StringInput implements ILexerInput{
 
     @Override
     public String lexeme() {
+        String str = this.str.substring(lexemeStart, forward);
         lexemeStart = forward;
-        return str.substring(lexemeStart, forward);
+        return str;
     }
 
     @Override

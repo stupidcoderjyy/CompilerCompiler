@@ -37,7 +37,9 @@ public class DfaGenerator extends AbstractWritableBuilder implements IDfaSetter 
                 .addContent(listInitAccepted)
                 .addContent(tokensSetter);
 
-        clazzDfa.field(XFile.of("lex/dfa_fields"))
+        clazzDfa.addInternalImport("tokens.*")
+                .addInternalImport("util.input.ILexerInput")
+                .field(XFile.of("lex/dfa_fields"))
                 .function(funcConstructor)
                 .function(funcInit)
                 .function(XFile.of("lex/dfa_run"));
@@ -70,7 +72,7 @@ public class DfaGenerator extends AbstractWritableBuilder implements IDfaSetter 
 
     @Override
     public void setStartState(int i) {
-        clazzDfa.field("private final int startState = " + i + ";");
+        clazzDfa.field("private static final int startState = " + i + ";");
     }
 
     @Override

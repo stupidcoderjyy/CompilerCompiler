@@ -1,13 +1,14 @@
 package com.stupidcoder.cc.template.tokens;
 
 import com.stupidcoder.cc.template.IToken;
+import com.stupidcoder.cc.template.TokenTypes;
 
 public class TokenDouble implements IToken {
     private double value;
 
     @Override
     public int type() {
-        return 0;
+        return TokenTypes.DOUBLE;
     }
 
     @Override
@@ -18,5 +19,10 @@ public class TokenDouble implements IToken {
 
     public double getValue() {
         return value;
+    }
+
+    @Override
+    public String toString() {
+        return "double:" + value;
     }
 }

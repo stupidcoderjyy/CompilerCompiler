@@ -1,5 +1,7 @@
 package com.stupidcoder.generated.tokens;
 
+import com.stupidcoder.generated.IToken;
+
 public class TokenDouble implements IToken {
     private double value;
 

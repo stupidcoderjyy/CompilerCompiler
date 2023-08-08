@@ -11,7 +11,7 @@ public class XClass extends XCommentable {
 
     private final XWritable prefix;
     private String fullPackage;
-    private final XBlock block;
+    private final XWritable block;
 
     private final XWritableList listImport = new XWritableList().setFinalLineBreak(2);
 
@@ -34,6 +34,13 @@ public class XClass extends XCommentable {
         block = XBlock.of(list);
     }
 
+    private XClass(String clazzName, String childPackage, String filePath) {
+        this.name = clazzName;
+        this.childPackage = childPackage;
+        this.prefix = XWritable.EMPTY;
+        this.block = XFile.of(filePath);
+    }
+
     public static XClass of(String name, String childPackage, String type, String suffix) {
         return new XClass(childPackage, type, name, suffix);
     }
@@ -48,6 +55,10 @@ public class XClass extends XCommentable {
 
     public static XClass of(String name) {
         return new XClass("", "class", name, "");
+    }
+
+    public static XClass fromFile(String clazzName, String childPackage, String filePath) {
+        return new XClass(clazzName, childPackage, filePath);
     }
 
     public XClass add3rdPartyImport(String pkg) {

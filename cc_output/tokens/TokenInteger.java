@@ -1,5 +1,7 @@
 package com.stupidcoder.generated.tokens;
 
+import com.stupidcoder.generated.IToken;
+
 public class TokenInteger implements IToken {
     private long value;
     private boolean isLong;

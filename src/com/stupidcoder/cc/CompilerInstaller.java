@@ -2,6 +2,8 @@ package com.stupidcoder.cc;
 
 import com.stupidcoder.cc.lex.DfaGenerator;
 import com.stupidcoder.cc.token.TokenGenerator;
+import com.stupidcoder.cc.util.generator.CodeWriter;
+import com.stupidcoder.cc.util.generator.XClass;
 
 public class CompilerInstaller {
     private final TokenGenerator tokenGenerator;
@@ -26,5 +28,11 @@ public class CompilerInstaller {
     public void build() {
         tokenGenerator.genDefault();
         dfaGenerator.genDefault();
+        CodeWriter writer = CodeWriter.getGlobalInstance();
+        XClass clazzIInput = XClass.fromFile("ILexerInput", "util.input", "util/ILexerInput");
+        XClass clazzStringInput = XClass.fromFile("StringInput", "util.input", "util/StringInput");
+        writer.registerClazz(clazzIInput);
+        writer.registerClazz(clazzStringInput);
+        writer.output();
     }
 }

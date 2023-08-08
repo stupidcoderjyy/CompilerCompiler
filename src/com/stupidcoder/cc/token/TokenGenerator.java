@@ -9,7 +9,6 @@ import java.util.List;
 public class TokenGenerator extends AbstractWritableBuilder {
     private XClass clazzTokenWord = XClass.of(
             "TokenWord", "tokens", "class", "implements IToken");
-    private XClass clazzIToken = XClass.of("IToken", "", "interface");
     private XWritableList listInitKeyWord = new XWritableList().disableFinalLineBreak();
     private XClass clazzTokenTypes = XClass.of("TokenTypes");
     private XWritableList listInitTokenTypes = new XWritableList().disableFinalLineBreak();
@@ -29,18 +28,22 @@ public class TokenGenerator extends AbstractWritableBuilder {
     @Override
     protected void init() {
         clazzTokenWord.field(XFile.of("tokens/word"))
-                .function(XFunction.of("private static void init()").addContent(listInitKeyWord));
+                .function(XFunction.of("private static void init").addContent(listInitKeyWord))
+                .addInternalImport("IToken")
+                .addInternalImport("TokenTypes")
+                .add3rdPartyImport("java.util.Map")
+                .add3rdPartyImport("java.util.HashMap");
         clazzTokenTypes.field(listInitTokenTypes);
-
-        clazzIToken.function(XFunctionDef.of("int type"))
-                .function(XFunctionDef.of("IToken fromLexeme").appendParameter("String", "lexeme"));
     }
 
     @Override
     protected void buildTarget(CodeWriter generator) {
+        XClass clazzIToken = XClass.fromFile("IToken", "", "lex/IToken");
         generator.registerClazz(clazzIToken);
         for (String token : tokens) {
-            generator.registerClazzCopy("tokens", clazzName(token), srcPath(token));
+            XClass clazz = XClass.fromFile(clazzName(token), "tokens", srcPath(token));
+            clazz.addInternalImport("IToken").addInternalImport("TokenTypes");
+            generator.registerClazz(clazz);
         }
         generator.registerClazz(clazzTokenWord);
         generator.registerClazz(clazzTokenTypes);
@@ -54,7 +57,6 @@ public class TokenGenerator extends AbstractWritableBuilder {
         listInitTokenTypes = null;
         listInitKeyWord = null;
         tokens = null;
-        clazzIToken = null;
     }
 
     private void registerTokenType(String tokenName) {

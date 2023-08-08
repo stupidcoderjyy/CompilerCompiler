@@ -30,4 +30,9 @@ public class TokenInteger implements IToken {
     public boolean isLong() {
         return isLong;
     }
+
+    @Override
+    public String toString() {
+        return (isLong ? "long" : "int") + ":" + value;
+    }
 }
