@@ -1,14 +1,13 @@
 package com.stupidcoder.cc.util.generator;
 
-import com.stupidcoder.cc.common.Config;
+import com.stupidcoder.cc.Config;
 
 import java.io.*;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
 public class XFile extends XWritable{
-    private File path = null;
+    private File path;
 
     private XFile(String fileName) {
         this.path = new File(Config.RESOURCES_ROOT + "/" + fileName);

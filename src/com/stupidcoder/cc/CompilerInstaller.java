@@ -12,6 +12,7 @@ public class CompilerInstaller {
     public CompilerInstaller() {
         tokenGenerator = new TokenGenerator();
         dfaGenerator = new DfaGenerator();
+        registerToken("@a@w*", "word"); //默认安装
     }
 
     public CompilerInstaller registerToken(String regex, String tokenName) {

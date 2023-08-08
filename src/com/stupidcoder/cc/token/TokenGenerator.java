@@ -1,19 +1,24 @@
 package com.stupidcoder.cc.token;
 
-import com.stupidcoder.cc.common.Config;
 import com.stupidcoder.cc.util.generator.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class TokenGenerator extends AbstractWritableBuilder {
-    private XClass clazzTokenWord = XClass.of(
-            "TokenWord", "tokens", "class", "implements IToken");
-    private XWritableList listInitKeyWord = new XWritableList().disableFinalLineBreak();
-    private XClass clazzTokenTypes = XClass.of("TokenTypes");
-    private XWritableList listInitTokenTypes = new XWritableList().disableFinalLineBreak();
+    private XClass clazzTokenWord;
+    private XClass clazzTokenTypes;
+    private XWritableList listInitKeyWord;
+    private XWritableList listInitTokenTypes;
     private List<String> tokens = new ArrayList<>();
     private int maxTokenType = 127;
+
+    public TokenGenerator() {
+        clazzTokenWord = XClass.of("TokenWord", "tokens", "class", "implements IToken");
+        clazzTokenTypes = XClass.of("TokenTypes");
+        listInitKeyWord = new XWritableList().disableFinalLineBreak();
+        listInitTokenTypes = new XWritableList().disableFinalLineBreak();
+    }
 
     public void registerKeyWord(String keyWord) {
         listInitKeyWord.append("keyWords.put(\"%s\", TokenTypes.KEYWORD_%s);", keyWord, keyWord.toUpperCase());
@@ -60,16 +65,15 @@ public class TokenGenerator extends AbstractWritableBuilder {
     }
 
     private void registerTokenType(String tokenName) {
-        listInitTokenTypes.append("public static final int %s = %d;", tokenName.toUpperCase(), ++maxTokenType);
+        listInitTokenTypes.append("public static final int %s = %d;",
+                tokenName.toUpperCase(),
+                ++maxTokenType);
     }
 
     public static String clazzName(String tokenName) {
-        return "Token" + tokenName.substring(0, 1).toUpperCase() +
+        return "Token" +
+                tokenName.substring(0, 1).toUpperCase() +
                 tokenName.substring(1);
-    }
-
-    private static String clazzFileName(String tokenName) {
-        return clazzName(tokenName) + ".java";
     }
 
     private static String srcPath(String tokenName) {

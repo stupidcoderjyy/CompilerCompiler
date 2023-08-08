@@ -1,8 +1,7 @@
 package com.stupidcoder.cc.util.generator;
 
-import com.stupidcoder.cc.common.Config;
+import com.stupidcoder.cc.Config;
 
-import java.io.Closeable;
 import java.io.File;
 import java.io.FileWriter;
 import java.util.HashMap;

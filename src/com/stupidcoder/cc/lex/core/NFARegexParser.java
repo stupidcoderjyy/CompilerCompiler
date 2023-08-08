@@ -39,12 +39,9 @@ public class NFARegexParser {
     }
 
     private void setAcceptedNode(NFA target, String token) {
-        NFANode acceptedNode = new NFANode();
-        acceptedNode.accepted = true;
-        target.end.addEpsilonEdge(acceptedNode);
-        target.end = acceptedNode;
-        ArrayUtil.resize(nodeIdToToken, acceptedNode.id + 1);
-        nodeIdToToken.set(acceptedNode.id, token);
+        target.end.accepted = true;
+        ArrayUtil.resize(nodeIdToToken, target.end.id + 1);
+        nodeIdToToken.set(target.end.id, token);
     }
 
     private NFA expr() {

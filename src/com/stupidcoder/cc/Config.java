@@ -1,4 +1,4 @@
-package com.stupidcoder.cc.common;
+package com.stupidcoder.cc;
 
 public class Config {
     public static final String OUTPUT_ROOT = "C:\\Users\\stupid_coder_jyy\\Desktop\\cs\\IdeaProjects\\TestLexer\\src\\com\\stupidcoder\\generated";
