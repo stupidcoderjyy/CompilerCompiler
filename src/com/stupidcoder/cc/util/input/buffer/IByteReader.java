@@ -1,20 +1,17 @@
 package com.stupidcoder.cc.util.input.buffer;
 
+import java.io.Closeable;
+
 /**
  * 字节的读取器
  * @author stupid_coder_jyy
  */
-public interface IByteReader {
+public interface IByteReader extends Closeable {
 
     /**
      * 开启读取器
      */
     boolean open();
-
-    /**
-     * 关闭读取器
-     */
-    void close();
 
     /**
      * 从流中读取若干个字节，并装入一个字节数组中

@@ -1,6 +1,8 @@
 package com.stupidcoder.cc.util.input.buffer;
 
 
+import java.io.IOException;
+
 public class Buffer {
     public static final int DEFAULT_BUFFER_SIZE = 4096;
 
@@ -20,7 +22,6 @@ public class Buffer {
      * 缓冲区是否启动
      */
     private boolean isOpened;
-
 
     private final IByteReader reader;
 
@@ -45,7 +46,8 @@ public class Buffer {
         bufferEnd = 0;
     }
 
-    public void close() {
+    public void close() throws IOException {
+        reader.close();
         isOpened = false;
         buffer = null;
         bufferEnd = 0;

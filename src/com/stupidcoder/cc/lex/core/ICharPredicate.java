@@ -1,4 +1,4 @@
-package com.stupidcoder.cc.lex;
+package com.stupidcoder.cc.lex.core;
 
 @FunctionalInterface
 public interface ICharPredicate {
@@ -20,6 +20,20 @@ public interface ICharPredicate {
             return c1;
         }
         return c -> c1.accept(c) || c2.accept(c);
+    }
+
+    static ICharPredicate or(byte b1, byte b2) {
+        return c -> c == b1 || c == b2;
+    }
+
+    static ICharPredicate and(ICharPredicate p1, ICharPredicate p2) {
+        if (p1 == null) {
+            return p2;
+        }
+        if (p2 == null) {
+            return p1;
+        }
+        return c -> p1.accept(c) && p2.accept(c);
     }
 
     static ICharPredicate ranged(byte start, byte end) {

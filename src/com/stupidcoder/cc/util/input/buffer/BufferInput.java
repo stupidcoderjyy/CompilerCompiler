@@ -3,6 +3,7 @@ package com.stupidcoder.cc.util.input.buffer;
 import com.stupidcoder.cc.util.input.ILexerInput;
 import com.stupidcoder.cc.util.input.buffer.readers.StringByteReader;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 /**
@@ -73,7 +74,7 @@ public class BufferInput implements ILexerInput {
     }
 
     @Override
-    public void close() {
+    public void close() throws IOException {
         BUFFER_A.close();
         BUFFER_B.close();
         isOpen = false;

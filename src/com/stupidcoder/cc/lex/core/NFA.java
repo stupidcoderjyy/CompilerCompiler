@@ -1,8 +1,6 @@
-package com.stupidcoder.cc.lex;
+package com.stupidcoder.cc.lex.core;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Stack;
+import java.util.*;
 
 public class NFA {
     protected NFANode start, end;

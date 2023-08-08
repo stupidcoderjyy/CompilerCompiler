@@ -1,0 +1,25 @@
+public IToken nextToken() {
+    input.skipSpaceTabLineBreak();
+    input.markLexemeStart();
+    int state = startState;
+    int lastAccepted = 0;
+    int extraLoaded = 0;
+    while (input.available()) {
+        byte b = input.next();
+        state = goTo[state][b];
+        if (state == 0) {
+            break;
+        }
+        if (accepted[state]) {
+            lastAccepted = state;
+            extraLoaded = 0;
+        } else {
+            extraLoaded++;
+        }
+    }
+    input.retract(extraLoaded);
+    if (lastAccepted == 0) {
+        return null;
+    }
+    return tokens[lastAccepted].fromLexeme(input.lexeme());
+}

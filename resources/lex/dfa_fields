@@ -1,0 +1,4 @@
+private final ILexerInput input;
+private final int[][] goTo;
+private final boolean[] accepted;
+private final IToken[] tokens;

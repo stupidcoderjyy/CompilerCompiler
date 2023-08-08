@@ -8,7 +8,6 @@ import com.stupidcoder.cc.util.input.buffer.IByteReader;
  */
 public class ConsoleByteReader implements IByteReader {
 
-
     @Override
     public boolean open() {
         return true;
@@ -16,6 +15,7 @@ public class ConsoleByteReader implements IByteReader {
 
     @Override
     public void close() {
+        //常量流
     }
 
     @Override

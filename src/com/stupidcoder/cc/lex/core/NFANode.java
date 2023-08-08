@@ -1,4 +1,4 @@
-package com.stupidcoder.cc.lex;
+package com.stupidcoder.cc.lex.core;
 
 public class NFANode {
     private static int nodeCount = 0;
@@ -9,6 +9,7 @@ public class NFANode {
     protected static final byte CHAR = 3;
 
     protected byte edgeType = NO_EDGE;
+    protected boolean accepted = false;
     protected final int id;
     protected NFANode next1;
     protected NFANode next2;

@@ -1,16 +1,21 @@
 package com.stupidcoder.cc;
 
-import com.stupidcoder.cc.lex.DFABuilder;
-import com.stupidcoder.cc.lex.NFA;
-import com.stupidcoder.cc.lex.NFANode;
-import com.stupidcoder.cc.lex.NFARegexParser;
-import com.stupidcoder.cc.util.input.StringInput;
+import com.stupidcoder.cc.lex.core.DFABuilder;
+import com.stupidcoder.cc.lex.core.IDfaSetter;
+import com.stupidcoder.cc.lex.core.NFARegexParser;
 
-import java.util.Stack;
+import java.io.File;
 
 public class Main {
     public static void main(String[] args) {
-        NFA nfa = NFARegexParser.parse(new StringInput("[0-9]+(L|l)?|0(x|X)[0-9A-Fa-f]+"));
-        nfa.print();
+        long l1 = System.currentTimeMillis();
+        new CompilerInstaller()
+                .registerToken("@d+|0[Xx]@h+", "integer")
+                .registerToken("@a@w*", "word")
+                .registerToken("@d+(.@d+|E[+-]?@d+)F?", "double")
+                .registerKeyWord("for")
+                .registerKeyWord("while")
+                .build();
+        System.out.println(System.currentTimeMillis() - l1);
     }
 }
