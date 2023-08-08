@@ -4,10 +4,8 @@ import com.stupidcoder.cc.Config;
 
 import java.io.File;
 import java.io.FileWriter;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class CodeWriter {
     private final String outputRoot;
@@ -17,7 +15,7 @@ public class CodeWriter {
     private final Set<String> dirs = new HashSet<>();
 
     public CodeWriter(String outputRoot, String rootPackage) {
-        this.outputRoot = outputRoot;
+        this.outputRoot = outputRoot + "/" + rootPackage.replace('.', '/');
         this.rootPackage = rootPackage;
         dirs.add("");
     }
@@ -85,6 +83,7 @@ public class CodeWriter {
                 f.createNewFile();
 
                 try (FileWriter writer = new FileWriter(f)) {
+                    writer.write("//AutoGen " + new SimpleDateFormat("yyyy-MM-dd").format(new Date()) + "\r\n");
                     writable.output(writer);
                 }
             } catch (Exception e) {
