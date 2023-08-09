@@ -22,7 +22,8 @@ public IToken fromLexeme(String lexeme) {
 
 @Override
 public String toString() {
-    return type + ":" + lexeme;
+    String res = keyWords.containsKey(lexeme) ? "keyWord" : "id";
+    return res + ":" + lexeme;
 }
 
 public String lexeme() {

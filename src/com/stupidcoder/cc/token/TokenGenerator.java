@@ -1,6 +1,7 @@
 package com.stupidcoder.cc.token;
 
 import com.stupidcoder.cc.util.generator.*;
+import com.stupidcoder.cc.util.input.StringInput;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +17,7 @@ public class TokenGenerator extends AbstractWritableBuilder {
     public TokenGenerator() {
         clazzTokenWord = XClass.of("TokenWord", "tokens", "class", "implements IToken");
         clazzTokenTypes = XClass.of("TokenTypes");
+
         listInitKeyWord = new XWritableList().disableFinalLineBreak();
         listInitTokenTypes = new XWritableList().disableFinalLineBreak();
     }
@@ -44,7 +46,9 @@ public class TokenGenerator extends AbstractWritableBuilder {
     @Override
     protected void buildTarget(CodeWriter generator) {
         XClass clazzIToken = XClass.fromFile("IToken", "", "lex/IToken");
+        XClass clazzTokenSingle = XClass.fromFile("TokenSingle", "tokens", "tokens/single");
         generator.registerClazz(clazzIToken);
+        generator.registerClazz(clazzTokenSingle);
         for (String token : tokens) {
             XClass clazz = XClass.fromFile(clazzName(token), "tokens", srcPath(token));
             clazz.addInternalImport("IToken").addInternalImport("TokenTypes");
@@ -71,9 +75,25 @@ public class TokenGenerator extends AbstractWritableBuilder {
     }
 
     public static String clazzName(String tokenName) {
-        return "Token" +
-                tokenName.substring(0, 1).toUpperCase() +
-                tokenName.substring(1);
+        StringBuilder sb = new StringBuilder();
+        try (StringInput input = new StringInput(tokenName)) {
+            while (input.available()) {
+                sb.append(Character.toUpperCase((char)input.next()));
+                input.markLexemeStart();
+                while (input.available()) {
+                    byte b = input.next();
+                    if (b == '_') {
+                        input.retract();
+                        sb.append(input.lexeme());
+                        input.next();
+                        input.markLexemeStart();
+                        break;
+                    }
+                }
+                sb.append(input.lexeme());
+            }
+        }
+        return "Token" + sb;
     }
 
     private static String srcPath(String tokenName) {

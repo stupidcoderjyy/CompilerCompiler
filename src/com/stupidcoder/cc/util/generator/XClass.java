@@ -115,14 +115,15 @@ public class XClass extends XCommentable {
      * @param root 根路径（如：com.stupidcoder.compiler）
      */
     protected void setClazzPackage(String root) {
-        if (childPackage.isEmpty()) {
-            fullPackage = "package " + root + ";\r\n\r\n";
+        String importPrefix = "import ";
+        if (root.isEmpty()) {
+            fullPackage = "";
         } else {
-            fullPackage = "package " + root + "." + childPackage + ";\r\n\r\n";
+            importPrefix += root + ".";
+            fullPackage = "package " + root + (childPackage.isEmpty() ? "" : "." + childPackage) + ";\r\n\r\n";
         }
-
         for (String s : internalImportList) {
-            listImport.append("import " + root + '.' + s + ";");
+            listImport.append(importPrefix + s + ";");
         }
     }
 }

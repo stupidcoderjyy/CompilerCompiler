@@ -6,6 +6,9 @@ public class Main {
         new CompilerInstaller()
                 .registerToken("@d+|0[Xx]@h+", "integer")
                 .registerToken("@d+(.@d+|E[+-]?@d+)F?", "double")
+                .registerToken("<<", "left_shift")
+                .registerSingleToken("<")
+                .registerSingleToken(">")
                 .registerKeyWord("for")
                 .registerKeyWord("while")
                 .build();
