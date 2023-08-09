@@ -26,16 +26,6 @@ public interface ICharPredicate {
         return c -> c == b1 || c == b2;
     }
 
-    static ICharPredicate and(ICharPredicate p1, ICharPredicate p2) {
-        if (p1 == null) {
-            return p2;
-        }
-        if (p2 == null) {
-            return p1;
-        }
-        return c -> p1.accept(c) && p2.accept(c);
-    }
-
     static ICharPredicate ranged(byte start, byte end) {
         return c -> c >= start && c <= end;
     }

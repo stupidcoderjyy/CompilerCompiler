@@ -5,11 +5,10 @@ import com.stupidcoder.cc.util.ArrayUtil;
 import java.util.*;
 
 public class DFABuilder {
-    private NFA nfa;
-    private final Map<NFANodeSet, Integer> groupToId = new HashMap<>();
-    private final List<NFANodeSet> groupList = new ArrayList<>();
-    private List<String> nfaNodeToToken;
-    private int dfaStatesCount = 1;
+    private final Map<NFANodeSet, Integer> nodeSetToState = new HashMap<>();
+    private final List<NFANodeSet> stateToNodeSet = new ArrayList<>();
+    private List<String> nodeToToken;
+    private int statesCount = 1;
 
     private final List<Boolean> accepted = new ArrayList<>();
     private final List<int[]> goTo = new ArrayList<>();
@@ -22,61 +21,57 @@ public class DFABuilder {
     }
 
     public static void build(IDfaSetter setter, NFARegexParser parser) {
-        new DFABuilder(setter).build(parser.getNfa(), parser.getTokens());
+        new DFABuilder(setter).build(parser.getNfa().start, parser.getTokens());
     }
 
-    private void build(NFA nfa, List<String> nfaNodeToToken) {
-        this.nfa = nfa;
-        this.nfaNodeToToken = nfaNodeToToken;
-        groupList.add(null);
-        transfer();
+    private void build(NFANode startNode, List<String> nfaNodeToToken) {
+        this.nodeToToken = nfaNodeToToken;
+        stateToNodeSet.add(null);
+        transfer(startNode);
         minimize();
         accepted.clear();
         goTo.clear();
         tokens.clear();
     }
 
-    private void transfer() {
+    private void transfer(NFANode startNode) {
         Stack<Integer> unchecked = new Stack<>();
-        createGroup(new NFANodeSet(epsilonClosure(Set.of(nfa.start))), unchecked);
+        createGroup(new NFANodeSet(epsilonClosure(Set.of(startNode))), unchecked);
         while (!unchecked.empty()) {
-            int curGroupId = unchecked.pop();
-            NFANodeSet curGroup = groupList.get(curGroupId);
+            int curState = unchecked.pop();
+            NFANodeSet curGroup = stateToNodeSet.get(curState);
             for (byte b = 0 ; b >= 0 ; b ++) {
                 Set<NFANode> nextNodes = next(curGroup.nfaNodes, b);
                 if (nextNodes.isEmpty()) {
                     continue;
                 }
-                int targetGroupId = getOrCreateGroup(nextNodes, unchecked);
-                goTo.get(curGroupId)[b] = targetGroupId;
+                NFANodeSet candidate = new NFANodeSet(nextNodes);
+                //设置 state -> state
+                goTo.get(curState)[b] = nodeSetToState.containsKey(candidate) ?
+                        nodeSetToState.get(candidate) :
+                        createGroup(candidate, unchecked);
             }
         }
-        groupList.clear();
-        groupToId.clear();
+        stateToNodeSet.clear();
+        nodeSetToState.clear();
     }
 
-    private void createGroup(NFANodeSet g, Stack<Integer> unchecked) {
-        groupList.add(g);
-        int newId = dfaStatesCount++;
-        groupToId.put(g, newId);
+    private int createGroup(NFANodeSet g, Stack<Integer> unchecked) {
+        int newId = statesCount++;
+        //基本循环
+        nodeSetToState.put(g, newId);
+        stateToNodeSet.add(g);
         unchecked.push(newId);
-        ensureSize(dfaStatesCount);
+        //设置 state -> IToken 和 state -> accepted
+        ensureSize(statesCount);
         for (NFANode node : g.nfaNodes) {
             if (node.accepted) {
                 accepted.set(newId, true);
-                tokens.set(newId, nfaNodeToToken.get(node.id));
-                return;
+                tokens.set(newId, nodeToToken.get(node.id));
+                return newId;
             }
         }
-    }
-
-    private int getOrCreateGroup(Set<NFANode> nodes, Stack<Integer> unchecked) {
-        NFANodeSet candidate = new NFANodeSet(nodes);
-        if (groupToId.containsKey(candidate)) {
-            return groupToId.get(candidate);
-        }
-        createGroup(candidate, unchecked);
-        return dfaStatesCount - 1;
+        return newId;
     }
 
     private static Set<NFANode> epsilonClosure(Set<NFANode> nodes) {
@@ -128,7 +123,7 @@ public class DFABuilder {
     private int[] stateToGroup;
 
     private void minimize() {
-        stateToGroup = new int[dfaStatesCount];
+        stateToGroup = new int[statesCount];
         groupCount = 1;
         initGroup(); //初始组
         splitGroups(); //对组进行划分
@@ -142,7 +137,7 @@ public class DFABuilder {
         Map<String, Set<Integer>> acceptedGroups = new HashMap<>();
         Set<Integer> nonAcceptedGroup = new HashSet<>();
         //初始划分规则：1）接受状态与非接受状态不等价；2）返回不同词法单元类型的接受状态不等价
-        for (int i = 1; i < dfaStatesCount; i++) {
+        for (int i = 1; i < statesCount; i++) {
             if (accepted.get(i)) {
                 String token = tokens.get(i);
                 Set<Integer> group = acceptedGroups.getOrDefault(token, new HashSet<>());
@@ -152,8 +147,8 @@ public class DFABuilder {
                 nonAcceptedGroup.add(i);
             }
         }
-        acceptedGroups.forEach((token, group) -> registerNewGroup(group));
-        registerNewGroup(nonAcceptedGroup);
+        acceptedGroups.forEach((token, group) -> createGroup(group));
+        createGroup(nonAcceptedGroup);
     }
 
     private void splitGroups() {
@@ -166,7 +161,7 @@ public class DFABuilder {
             Set<Integer> newGroup = checkAndSplit(curCroup); //对组中的状态进行检查
             if (newGroup != null) {
                 unchecked.add(curGroupId);
-                registerNewGroup(newGroup);
+                createGroup(newGroup);
             }
         }
         setter.setDfaStatesCount(groupCount);
@@ -198,7 +193,7 @@ public class DFABuilder {
         return newGroup;
     }
 
-    private void registerNewGroup(Set<Integer> states) {
+    private void createGroup(Set<Integer> states) {
         int groupId = groupCount++;
         groups.add(states);
         for (Integer state : states) {

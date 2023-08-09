@@ -18,6 +18,10 @@ public class DfaGenerator extends AbstractWritableBuilder implements IDfaSetter 
         parser.register(regex, tokenName);
     }
 
+    public void registerSingle(String regex) {
+        parser.register(regex, "single");
+    }
+
     @Override
     protected void init() {
         DFABuilder.build(this, parser);

@@ -1,0 +1,19 @@
+public class TokenSingle implements IToken {
+    private byte type;
+
+    @Override
+    public int type() {
+        return type;
+    }
+
+    @Override
+    public IToken fromLexeme(String lexeme) {
+        type = (byte) lexeme.charAt(0);
+        return this;
+    }
+
+    @Override
+    public String toString() {
+        return "single:" + Character.toString(type);
+    }
+}

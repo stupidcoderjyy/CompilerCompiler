@@ -1,0 +1,9 @@
+public class Main {
+    public static void main(String[] args) {
+        StringInput input = new StringInput("12345 0xFF 12E6 1.5 << < > for while aaad121");
+        DFA dfa = new DFA(input);
+        while (input.available()) {
+            System.out.println(dfa.nextToken());
+        }
+    }
+}
