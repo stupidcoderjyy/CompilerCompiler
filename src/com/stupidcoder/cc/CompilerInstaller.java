@@ -6,14 +6,11 @@ import com.stupidcoder.cc.util.generator.CodeWriter;
 import com.stupidcoder.cc.util.generator.XClass;
 
 public class CompilerInstaller {
-    private final TokenGenerator tokenGenerator;
-    private final DfaGenerator dfaGenerator;
+    private final TokenGenerator tokenGenerator = new TokenGenerator();
+    private final DfaGenerator dfaGenerator = new DfaGenerator();
 
     public CompilerInstaller() {
-        tokenGenerator = new TokenGenerator();
-        dfaGenerator = new DfaGenerator();
         registerToken("@a@w*", "word"); //默认安装
-        tokenGenerator.registerToken("single");
     }
 
     public CompilerInstaller registerToken(String regex, String tokenName) {
@@ -33,11 +30,13 @@ public class CompilerInstaller {
     }
 
     public void build() {
-        tokenGenerator.genDefault();
-        dfaGenerator.genDefault();
-        CodeWriter writer = CodeWriter.getGlobalInstance();
+        CodeWriter writer = new CodeWriter(Config.OUTPUT_ROOT, Config.OUTPUT_ROOT_PACKAGE);
+        tokenGenerator.gen(writer);
+        dfaGenerator.gen(writer);
         XClass clazzIInput = XClass.fromFile("ILexerInput", "util.input", "util/ILexerInput");
         XClass clazzStringInput = XClass.fromFile("StringInput", "util.input", "util/StringInput");
+        XClass clazzIToken = XClass.fromFile("IToken", "", "lex/IToken");
+        writer.registerClazz(clazzIToken);
         writer.registerClazz(clazzIInput);
         writer.registerClazz(clazzStringInput);
         writer.output();

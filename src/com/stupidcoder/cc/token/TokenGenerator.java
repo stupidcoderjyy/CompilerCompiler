@@ -6,10 +6,10 @@ import com.stupidcoder.cc.util.input.StringInput;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TokenGenerator extends AbstractWritableBuilder {
+public class TokenGenerator implements IWritableBuilder {
     private XClass clazzTokenWord;
-    private XClass clazzTokenTypes;
     private XWritableList listInitKeyWord;
+    private XClass clazzTokenTypes;
     private XWritableList listInitTokenTypes;
     private List<String> tokens = new ArrayList<>();
     private int maxTokenType = 127;
@@ -17,9 +17,10 @@ public class TokenGenerator extends AbstractWritableBuilder {
     public TokenGenerator() {
         clazzTokenWord = XClass.of("TokenWord", "tokens", "class", "implements IToken");
         clazzTokenTypes = XClass.of("TokenTypes");
-
         listInitKeyWord = new XWritableList().disableFinalLineBreak();
         listInitTokenTypes = new XWritableList().disableFinalLineBreak();
+
+        tokens.add("single");
     }
 
     public void registerKeyWord(String keyWord) {
@@ -33,7 +34,7 @@ public class TokenGenerator extends AbstractWritableBuilder {
     }
 
     @Override
-    protected void init() {
+    public void init() {
         clazzTokenWord.field(XFile.of("tokens/word"))
                 .function(XFunction.of("private static void init").addContent(listInitKeyWord))
                 .addInternalImport("IToken")
@@ -44,10 +45,8 @@ public class TokenGenerator extends AbstractWritableBuilder {
     }
 
     @Override
-    protected void buildTarget(CodeWriter generator) {
-        XClass clazzIToken = XClass.fromFile("IToken", "", "lex/IToken");
+    public void build(CodeWriter generator) {
         XClass clazzTokenSingle = XClass.fromFile("TokenSingle", "tokens", "tokens/single");
-        generator.registerClazz(clazzIToken);
         generator.registerClazz(clazzTokenSingle);
         for (String token : tokens) {
             XClass clazz = XClass.fromFile(clazzName(token), "tokens", srcPath(token));
@@ -60,7 +59,7 @@ public class TokenGenerator extends AbstractWritableBuilder {
     }
 
     @Override
-    protected void clear() {
+    public void clear() {
         clazzTokenTypes = null;
         clazzTokenWord = null;
         listInitTokenTypes = null;

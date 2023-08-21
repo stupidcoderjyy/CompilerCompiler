@@ -1,6 +1,7 @@
 package com.stupidcoder.cc.util.input;
 
 import java.io.Closeable;
+import java.io.IOException;
 
 /**
  * 用于词法分析的输入系统，这样操作能够灵活地改变输入方式和输入系统的实现方式
@@ -55,6 +56,12 @@ public interface ILexerInput extends Closeable {
     void retract(int count);
 
     /**
+     * 关闭输入系统
+     */
+    @Override
+    void close();
+
+    /**
      * 回退一个字符
      */
     default void retract() {
@@ -81,6 +88,7 @@ public interface ILexerInput extends Closeable {
             }
         }
     }
+
 
     default void skipSpaceTabLineBreak(){
         byte nb;

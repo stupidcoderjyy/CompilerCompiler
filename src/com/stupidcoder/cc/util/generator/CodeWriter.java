@@ -9,7 +9,6 @@ import java.util.*;
 
 public class CodeWriter {
     private final String outputRoot;
-    private static CodeWriter globalInstance;
     private final String rootPackage;
     private final Map<String, XWritable> writableMap = new HashMap<>();
     private final Set<String> dirs = new HashSet<>();
@@ -18,13 +17,6 @@ public class CodeWriter {
         this.outputRoot = outputRoot + "/" + rootPackage.replace('.', '/');
         this.rootPackage = rootPackage;
         dirs.add("");
-    }
-
-    public static CodeWriter getGlobalInstance() {
-        if (globalInstance == null) {
-            globalInstance = new CodeWriter(Config.OUTPUT_ROOT, Config.OUTPUT_ROOT_PACKAGE);
-        }
-        return globalInstance;
     }
 
     public void registerWritable(String outPath, XWritable writable) {

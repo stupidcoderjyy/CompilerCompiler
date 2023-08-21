@@ -7,10 +7,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.Scanner;
 
 public class XFile extends XWritable{
-    private File path;
+    private final File path;
 
-    private XFile(String fileName) {
-        this.path = new File(Config.RESOURCES_ROOT + "/" + fileName);
+    private XFile(String srcRoot, String fileName) {
+        this.path = new File(srcRoot + "/" + fileName);
         try {
             if (!path.exists()) {
                 throw new FileNotFoundException(path.getPath());
@@ -21,7 +21,11 @@ public class XFile extends XWritable{
     }
 
     public static XFile of(String fileName) {
-        return new XFile(fileName);
+        return new XFile("resources", fileName);
+    }
+
+    public static XFile of(String srcRoot, String fileName) {
+        return new XFile(srcRoot, fileName);
     }
 
     @Override

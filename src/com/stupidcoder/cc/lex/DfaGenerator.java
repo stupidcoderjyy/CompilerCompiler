@@ -6,7 +6,7 @@ import com.stupidcoder.cc.lex.core.NFARegexParser;
 import com.stupidcoder.cc.token.TokenGenerator;
 import com.stupidcoder.cc.util.generator.*;
 
-public class DfaGenerator extends AbstractWritableBuilder implements IDfaSetter {
+public class DfaGenerator implements IWritableBuilder, IDfaSetter {
     private XClass clazzDfa = XClass.of("DFA", "");
     private X2DArraySetter goToSetter = new X2DArraySetter("goTo");
     private XWritableList listInitAccepted = new XWritableList();
@@ -23,7 +23,7 @@ public class DfaGenerator extends AbstractWritableBuilder implements IDfaSetter 
     }
 
     @Override
-    protected void init() {
+    public void init() {
         DFABuilder.build(this, parser);
         goToSetter.finish();
         tokensSetter.finish();
@@ -50,13 +50,13 @@ public class DfaGenerator extends AbstractWritableBuilder implements IDfaSetter 
     }
 
     @Override
-    protected void buildTarget(CodeWriter generator) {
+    public void build(CodeWriter generator) {
         generator.registerClazz(clazzDfa);
         generator.output();
     }
 
     @Override
-    protected void clear() {
+    public void clear() {
         clazzDfa = null;
         goToSetter = null;
         listInitAccepted = null;

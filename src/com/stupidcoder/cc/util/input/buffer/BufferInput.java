@@ -74,7 +74,7 @@ public class BufferInput implements ILexerInput {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         BUFFER_A.close();
         BUFFER_B.close();
         isOpen = false;

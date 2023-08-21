@@ -1,6 +1,7 @@
 package com.stupidcoder.cc.util.input.buffer;
 
 import java.io.Closeable;
+import java.io.IOException;
 
 /**
  * 字节的读取器
@@ -21,4 +22,7 @@ public interface IByteReader extends Closeable {
      * @return 实际读取的字节个数
      */
     int read(byte[] arr, int offset, int len);
+
+    @Override
+    void close();
 }

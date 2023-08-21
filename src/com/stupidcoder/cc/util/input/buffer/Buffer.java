@@ -46,7 +46,7 @@ public class Buffer {
         bufferEnd = 0;
     }
 
-    public void close() throws IOException {
+    public void close() {
         reader.close();
         isOpened = false;
         buffer = null;

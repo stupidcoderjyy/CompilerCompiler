@@ -34,7 +34,7 @@ public class NFARegexParser {
         return nfa;
     }
 
-    public List<String> getTokens() {
+    public List<String> getNodeIdToToken() {
         return nodeIdToToken;
     }
 
