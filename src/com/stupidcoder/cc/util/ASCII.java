@@ -149,28 +149,28 @@ public class ASCII {
             CNTRL,                  /* 7F (DEL) */
     };
 
-    public static boolean isType(byte ch, int type) {
-        return (ctype[ch] & type) != 0;
+    public static boolean isType(int ch, int type) {
+        return (ch & 0xFFFFFF80) == 0 && (ctype[ch] & type) != 0;
     }
 
 
-    public static boolean isAlnum(byte b) {
+    public static boolean isAlnum(int b) {
         return isType(b, ALNUM);
     }
 
-    public static boolean isAlpha(byte b) {
+    public static boolean isAlpha(int b) {
         return isType(b, ALPHA);
     }
 
-    public static boolean isDigit(byte b) {
+    public static boolean isDigit(int b) {
         return isType(b, DIGIT);
     }
 
-    public static boolean isHex(byte b) {
+    public static boolean isHex(int b) {
         return isType(b, HEX);
     }
 
-    public static boolean isWord(byte b) {
+    public static boolean isWord(int b) {
         return isType(b, WORD);
     }
 }

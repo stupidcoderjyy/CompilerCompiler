@@ -15,9 +15,6 @@ public class NFARegexParser {
     private NFA nfa;
     private final List<String> nodeIdToToken = new ArrayList<>();
 
-    public NFARegexParser() {
-    }
-
     public void register(String regex, String token) {
         input = new StringInput(regex);
         NFA regexNfa = expr();
@@ -26,10 +23,15 @@ public class NFARegexParser {
             nfa = regexNfa;
         } else {
             NFANode newStart = new NFANode();
-            newStart.addEpsilonEdge(regexNfa.start);
-            newStart.addEpsilonEdge(nfa.start);
+            newStart.addEpsilonEdge(regexNfa.start, nfa.start);
             nfa.start = newStart;
         }
+    }
+
+    private void setAcceptedNode(NFA target, String token) {
+        target.end.accepted = true;
+        ArrayUtil.resize(nodeIdToToken, target.end.id + 1);
+        nodeIdToToken.set(target.end.id, token);
     }
 
     public NFA getNfa() {
@@ -38,12 +40,6 @@ public class NFARegexParser {
 
     public List<String> getNodeIdToToken() {
         return nodeIdToToken;
-    }
-
-    private void setAcceptedNode(NFA target, String token) {
-        target.end.accepted = true;
-        ArrayUtil.resize(nodeIdToToken, target.end.id + 1);
-        nodeIdToToken.set(target.end.id, token);
     }
 
     private NFA expr() {
@@ -56,9 +52,9 @@ public class NFARegexParser {
                 }
                 case '|' -> {
                     input.read();
-                    result.or(seq()); //expr → seq ('|' seq)* 的后半部分
+                    result.or(seq());
                 }
-                default -> result.and(seq());  //expr → seq ('|' seq)* 的第一个seq
+                default -> result.and(seq());
             }
         }
         return result;
@@ -70,12 +66,12 @@ public class NFARegexParser {
         while (input.available()) {
             int b = input.read();
             switch (b) {
-                case '(' -> result.and(checkClosure(expr())); // seq → '(' expr ')' closure?
+                case '(' -> result.and(checkClosure(expr()));
                 case '|', ')' -> {
                     input.retract();
-                    return result; //回退一步，交给expr处理
+                    return result;
                 }
-                default -> result.and(atom()); //seq → atom
+                default -> result.and(atom());
             }
         }
         return result;
@@ -115,34 +111,31 @@ public class NFARegexParser {
                 case ']' -> {
                     return result;
                 }
-                default -> result = ICharPredicate.or(result, minPredicate());
+                default -> result = ICharPredicate.or(result, minClazzPredicate());
             }
         }
         return result;
     }
 
-    private ICharPredicate minPredicate() {
+    private ICharPredicate minClazzPredicate() {
         input.retract();
         int b = input.read();
         if (b == '^') {
             Set<Integer> excluded = new HashSet<>();
-            LOOP:
             while (input.available()) {
                 int b1 = input.read();
-                switch (b1) {
-                    case '[', ']':
-                        input.retract();
-                        break LOOP;
-                    default:
-                        excluded.add(b1);
+                if (b1 == '[' || b1 == ']') {
+                    input.retract();
+                    break;
                 }
+                excluded.add(b1);
             }
             return c -> !excluded.contains(c);
         }
         int b1 = input.read();
         if (b1 == '-') {
             int b2 = input.read();
-            if (b2 == ']' || b2 == '[') {
+            if (b2 == '[' || b2 == ']') {
                 input.retract();
                 return c -> c == b || c == '-';
             }

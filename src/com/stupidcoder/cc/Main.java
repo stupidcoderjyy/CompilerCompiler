@@ -8,7 +8,8 @@ import com.stupidcoder.cc.lex.core.NFARegexParser;
 public class Main {
     public static void main(String[] args) {
         NFARegexParser parser = new NFARegexParser();
-        parser.register("@d+(L|l)?|0(x|X)@h+", "Dwa");
+        parser.register("@d+(L|l)?|0(x|X)@h+", "integer");
+        parser.getNfa().print();
         DFABuilder.build(new TestSetter(), parser);
     }
 

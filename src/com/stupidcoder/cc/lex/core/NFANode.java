@@ -1,19 +1,17 @@
 package com.stupidcoder.cc.lex.core;
 
 public class NFANode {
-    protected static int nodeCount = 0;
-
     protected static final byte NO_EDGE = 0;
     protected static final byte SINGLE_EPSILON = 1;
     protected static final byte DOUBLE_EPSILON = 2;
     protected static final byte CHAR = 3;
+    protected static int nodeCount = 0;
 
     protected byte edgeType = NO_EDGE;
+    protected NFANode next1, next2;
+    protected ICharPredicate predicate;
     protected boolean accepted = false;
     protected final int id;
-    protected NFANode next1;
-    protected NFANode next2;
-    protected ICharPredicate predicate;
 
     protected NFANode() {
         id = nodeCount++;

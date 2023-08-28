@@ -5,15 +5,18 @@ import java.util.*;
 public class NFA {
     protected NFANode start, end;
 
-    public NFA and(NFA other) {
+    private boolean isEmpty() {
+        return start == null || end == null;
+    }
+
+    public void and(NFA other) {
         if (isEmpty()) {
             start = other.start;
             end = other.end;
-            return this;
+            return;
         }
         end.addEpsilonEdge(other.start);
         end = other.end;
-        return this;
     }
 
     public NFA andAtom(ICharPredicate predicate) {
@@ -30,49 +33,38 @@ public class NFA {
         return this;
     }
 
-    public NFA star() {
+    public void star() {
+        NFANode newStart = new NFANode();
+        NFANode newEnd = new NFANode();
+        newStart.addEpsilonEdge(start, newEnd);
+        end.addEpsilonEdge(start, newEnd);
+        start = newStart;
+        end = newEnd;
+    }
+
+    public void quest() {
+        NFANode newStart = new NFANode();
+        NFANode newEnd = new NFANode();
+        newStart.addEpsilonEdge(start, newEnd);
+        end.addEpsilonEdge(newEnd);
+        start = newStart;
+        end = newEnd;
+    }
+
+    public void plus() {
         NFANode newStart = new NFANode();
         NFANode newEnd = new NFANode();
         newStart.addEpsilonEdge(start);
-        end.addEpsilonEdge(start);
-        end.addEpsilonEdge(newEnd);
-        newStart.addEpsilonEdge(newEnd);
-
+        end.addEpsilonEdge(start, newEnd);
         start = newStart;
         end = newEnd;
-        return this;
     }
 
-    public NFA quest() {
-        NFANode newStart = new NFANode();
-        NFANode newEnd = new NFANode();
-        newStart.addEpsilonEdge(start);
-        end.addEpsilonEdge(newEnd);
-        newStart.addEpsilonEdge(newEnd);
-
-        start = newStart;
-        end = newEnd;
-        return this;
-    }
-
-
-    public NFA plus() {
-        NFANode newStart = new NFANode();
-        NFANode newEnd = new NFANode();
-        newStart.addEpsilonEdge(start);
-        end.addEpsilonEdge(start);
-        end.addEpsilonEdge(newEnd);
-
-        start = newStart;
-        end = newEnd;
-        return this;
-    }
-
-    public NFA or(NFA other) {
+    public void or(NFA other) {
         if (isEmpty()) {
             start = other.start;
             end = other.end;
-            return this;
+            return;
         }
         NFANode newStart = new NFANode();
         NFANode newEnd = new NFANode();
@@ -81,11 +73,6 @@ public class NFA {
         other.end.addEpsilonEdge(newEnd);
         start = newStart;
         end = newEnd;
-        return this;
-    }
-
-    public boolean isEmpty() {
-        return start == null || end == null;
     }
 
     @Override
@@ -93,7 +80,7 @@ public class NFA {
         if (isEmpty()) {
             return "null";
         } else {
-            return start.toString() + ", " + end.toString();
+            return start + ", " + end;
         }
     }
 

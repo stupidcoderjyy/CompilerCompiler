@@ -2,7 +2,7 @@ package com.stupidcoder.cc.lex.core;
 
 @FunctionalInterface
 public interface ICharPredicate {
-    boolean accept(byte input);
+    boolean accept(int input);
 
     static ICharPredicate single(int ch) {
         return c -> c == ch;
