@@ -1,7 +1,6 @@
 package com.stupidcoder.cc.util.input;
 
 import java.io.Closeable;
-import java.io.IOException;
 
 /**
  * 用于词法分析的输入系统，这样操作能够灵活地改变输入方式和输入系统的实现方式
@@ -10,27 +9,28 @@ import java.io.IOException;
 public interface ILexerInput extends Closeable {
 
     /**
-     * 开启输入器
-     */
-    void open();
-
-    /**
      * 判断输入系统是否启动
      * @return 启动返回true
      */
     boolean isOpen();
 
     /**
-     * 是否可以继续向后取字符，即是否可以调用 {@link ILexerInput#next()}
+     * 是否可以继续向后取字符，即是否可以调用 {@link ILexerInput#read()}
      * @return 可以则返回true
      */
     boolean available();
 
     /**
-     * 获得下一个字节
-     * @return 下一个字节
+     * 读取下一个字节
+     * @return 字节
      */
-    byte next();
+    int read();
+
+    /**
+     * 读取一个无符号字节
+     * @return 无符号字节
+     */
+    int readUnsigned();
 
     /**
      * 是否还可能读入字符（是否到达输入流结尾）
@@ -72,15 +72,9 @@ public interface ILexerInput extends Closeable {
      * 跳过空格和制表符
      */
     default void skipSpaceAndTab() {
-        byte nb;
-        while (true) {
-            if (!available()) {
-                if (!hasNext()) {
-                    return;
-                }
-                lexeme();
-            }
-            nb = next();
+        int nb;
+        while (available()) {
+            nb = read();
             if (nb != ' ' && nb != '\t') {
                 retract();
                 lexeme();
@@ -91,17 +85,11 @@ public interface ILexerInput extends Closeable {
 
 
     default void skipSpaceTabLineBreak(){
-        byte nb;
-        while (true) {
-            if (!available()) {
-                if (!hasNext()) {
-                    return;
-                }
-                lexeme();
-            }
-            nb = next();
+        int nb;
+        while (available()) {
+            nb = read();
             if (nb == '\r') {
-                next();
+                read();
                 continue;
             }
 

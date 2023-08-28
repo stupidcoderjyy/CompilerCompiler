@@ -7,29 +7,20 @@ public class StringInput implements ILexerInput{
     private byte[] data;
     private int forward;
     private int lexemeStart;
-    private boolean isOpen;
 
     public StringInput(String str) {
-        this.str = str;
-        open();
-    }
-
-    @Override
-    public void open() {
-        data = str.getBytes(StandardCharsets.UTF_8);
+        this.str = str;data = str.getBytes(StandardCharsets.UTF_8);
         forward = 0;
         lexemeStart = 0;
-        isOpen = true;
     }
 
     @Override
     public boolean isOpen() {
-        return isOpen;
+        return data != null;
     }
 
     @Override
     public void close() {
-        isOpen = false;
         data = null;
     }
 
@@ -45,9 +36,14 @@ public class StringInput implements ILexerInput{
     }
 
     @Override
-    public byte next() {
+    public int read() {
         checkAvailable();
         return data[forward++];
+    }
+
+    @Override
+    public int readUnsigned() {
+        return read() & 0xFF;
     }
 
     @Override

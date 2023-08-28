@@ -234,8 +234,7 @@ public class DFABuilder {
                 }
             }
             if (accepted.get(delegates[group])) {
-                setter.setAccepted(group);
-                setter.setToken(group, tokens.get(delegates[group]));
+                setter.setAccepted(group, tokens.get(delegates[group]));
             }
         }
         setter.setStartState(stateToGroup[1]);

@@ -8,12 +8,6 @@ import java.io.IOException;
  * @author stupid_coder_jyy
  */
 public interface IByteReader extends Closeable {
-
-    /**
-     * 开启读取器
-     */
-    boolean open();
-
     /**
      * 从流中读取若干个字节，并装入一个字节数组中
      * @param arr 待填充的字节数组

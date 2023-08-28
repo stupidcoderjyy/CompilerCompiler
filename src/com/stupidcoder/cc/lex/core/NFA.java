@@ -101,23 +101,23 @@ public class NFA {
         if (isEmpty()) {
             return;
         }
+        boolean[] printed = new boolean[NFANode.nodeCount];
         Stack<NFANode> unchecked = new Stack<>();
-        Set<NFANode> printed = new HashSet<>();
         unchecked.push(start);
         while (!unchecked.empty()) {
             NFANode node = unchecked.pop();
             System.out.println(node);
             switch (node.edgeType) {
                 case NFANode.DOUBLE_EPSILON:
-                    if (!printed.contains(node.next2)) {
+                    if (!printed[node.next2.id]) {
                         unchecked.push(node.next2);
-                        printed.add(node.next2);
+                        printed[node.next2.id] = true;
                     }
                 case NFANode.SINGLE_EPSILON:
                 case NFANode.CHAR:
-                    if (!printed.contains(node.next1)) {
+                    if (!printed[node.next1.id]) {
                         unchecked.push(node.next1);
-                        printed.add(node.next1);
+                        printed[node.next1.id] = true;
                     }
                     break;
             }

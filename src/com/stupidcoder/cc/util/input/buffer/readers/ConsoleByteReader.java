@@ -9,11 +9,6 @@ import com.stupidcoder.cc.util.input.buffer.IByteReader;
 public class ConsoleByteReader implements IByteReader {
 
     @Override
-    public boolean open() {
-        return true;
-    }
-
-    @Override
     public void close() {
         //常量流
     }
@@ -21,10 +16,10 @@ public class ConsoleByteReader implements IByteReader {
     @Override
     public int read(byte[] arr, int offset, int len) {
         try {
-            return System.in.read(arr, offset, len);
+            return Math.max(0, System.in.read(arr, offset, len));
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return -1;
+        return 0;
     }
 }

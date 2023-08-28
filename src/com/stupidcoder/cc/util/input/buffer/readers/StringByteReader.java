@@ -15,22 +15,11 @@ public class StringByteReader implements IByteReader {
     private int next;
 
     public StringByteReader(String str) {
-        this.str = str;
-    }
-
-    public void setString(String str) {
-        this.str = str;
-        open();
-    }
-
-    @Override
-    public boolean open() {
         if (str == null) {
-            str = "";
+            throw new NullPointerException("null string");
         }
+        this.str = str;
         bytes = str.getBytes(StandardCharsets.UTF_8);
-        next = 0;
-        return true;
     }
 
     @Override

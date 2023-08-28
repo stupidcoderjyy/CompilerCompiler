@@ -1,7 +1,7 @@
 package com.stupidcoder.cc.lex.core;
 
 public class NFANode {
-    private static int nodeCount = 0;
+    protected static int nodeCount = 0;
 
     protected static final byte NO_EDGE = 0;
     protected static final byte SINGLE_EPSILON = 1;

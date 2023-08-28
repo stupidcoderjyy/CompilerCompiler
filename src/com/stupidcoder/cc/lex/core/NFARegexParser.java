@@ -6,7 +6,9 @@ import com.stupidcoder.cc.util.input.ILexerInput;
 import com.stupidcoder.cc.util.input.StringInput;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class NFARegexParser {
     private ILexerInput input;
@@ -47,13 +49,13 @@ public class NFARegexParser {
     private NFA expr() {
         NFA result = new NFA();
         while (input.available()) {
-            byte b = input.next();
+            int b = input.read();
             switch (b) {
                 case ')' -> {
                     return result;
                 }
                 case '|' -> {
-                    input.next();
+                    input.read();
                     result.or(seq()); //expr → seq ('|' seq)* 的后半部分
                 }
                 default -> result.and(seq());  //expr → seq ('|' seq)* 的第一个seq
@@ -66,7 +68,7 @@ public class NFARegexParser {
         input.retract();
         NFA result = new NFA();
         while (input.available()) {
-            byte b = input.next();
+            int b = input.read();
             switch (b) {
                 case '(' -> result.and(checkClosure(expr())); // seq → '(' expr ')' closure?
                 case '|', ')' -> {
@@ -81,12 +83,12 @@ public class NFARegexParser {
 
     private NFA atom() {
         input.retract();
-        byte b = input.next();
+        int b = input.read();
         ICharPredicate predicate;
         switch (b) {
             case '[' -> predicate = clazz();
-            case '\\' -> predicate = ICharPredicate.single(input.next());
-            case '@' -> predicate = escape(input.next());
+            case '\\' -> predicate = ICharPredicate.single(input.read());
+            case '@' -> predicate = escape(input.read());
             default -> predicate = ICharPredicate.single(b);
         }
         return checkClosure(new NFA().andAtom(predicate));
@@ -94,7 +96,7 @@ public class NFARegexParser {
 
     private NFA checkClosure(NFA target) {
         if (input.available()) {
-            switch (input.next()) {
+            switch (input.read()) {
                 case '*' -> target.star();
                 case '+' -> target.plus();
                 case '?' -> target.quest();
@@ -104,50 +106,53 @@ public class NFARegexParser {
         return target;
     }
 
-    private static final int CLEAR = 0;
-    private static final int FIND_ATOM = 1;
-    private static final int FIND_MINUS = 2;
-
     private ICharPredicate clazz() {
         ICharPredicate result = null;
-        int state = CLEAR;
-        byte b1 = 0;
-        LOOP:
         while (input.available()) {
-            byte b = input.next();
-            switch (state) {
-                case CLEAR -> {
-                    if (b == ']') {
-                        break LOOP;
-                    }
-                    b1 = b;
-                    state = FIND_ATOM;
+            int b = input.read();
+            switch (b) {
+                case '[' -> result = ICharPredicate.or(result, clazz());
+                case ']' -> {
+                    return result;
                 }
-                case FIND_ATOM -> {
-                    if (b == '-') {
-                        state = FIND_MINUS;
-                    } else if (b == ']') {
-                        break LOOP;
-                    } else {
-                        result = ICharPredicate.or(result, ICharPredicate.or(b, b1));
-                        state = CLEAR;
-                    }
-                }
-                case FIND_MINUS -> {
-                    if (b == ']') {
-                        result = ICharPredicate.or(result, ICharPredicate.single('-'));
-                        break LOOP;
-                    } else {
-                        result = ICharPredicate.or(result, ICharPredicate.ranged(b1, b));
-                    }
-                    state = CLEAR;
-                }
+                default -> result = ICharPredicate.or(result, minPredicate());
             }
         }
         return result;
     }
 
-    private ICharPredicate escape(byte b) {
+    private ICharPredicate minPredicate() {
+        input.retract();
+        int b = input.read();
+        if (b == '^') {
+            Set<Integer> excluded = new HashSet<>();
+            LOOP:
+            while (input.available()) {
+                int b1 = input.read();
+                switch (b1) {
+                    case '[', ']':
+                        input.retract();
+                        break LOOP;
+                    default:
+                        excluded.add(b1);
+                }
+            }
+            return c -> !excluded.contains(c);
+        }
+        int b1 = input.read();
+        if (b1 == '-') {
+            int b2 = input.read();
+            if (b2 == ']' || b2 == '[') {
+                input.retract();
+                return c -> c == b || c == '-';
+            }
+            return ICharPredicate.ranged(b, b2);
+        }
+        input.retract();
+        return ICharPredicate.single(b);
+    }
+
+    private ICharPredicate escape(int b) {
         return switch (b) {
             case 'D', 'd' -> ASCII::isDigit;
             case 'W', 'w' -> ASCII::isWord;
