@@ -159,11 +159,7 @@ public class DFABuilder {
             if (curGroup.size() == 1) {
                 continue;
             }
-            Set<Integer> newGroup = split(curGroup);
-            if (newGroup != null) {
-                unchecked.add(curGroupId);
-                createGroup(newGroup);
-            }
+            split(curGroup);
         }
     }
 
@@ -185,16 +181,16 @@ public class DFABuilder {
         createGroup(nonAcceptedGroup);
     }
 
-    private Set<Integer> split(Set<Integer> curGroup) {
+    private void split(Set<Integer> curGroup) {
         Set<Integer> newGroup = null;
         int std = curGroup.iterator().next();
         curGroup.remove(std);
+        List<Integer> removed = new ArrayList<>();
         for (byte b = 0 ; b >= 0 ; b ++) {
             if (curGroup.isEmpty()) {
                 break;
             }
             int stdTarget = stateToGroup[goTo.get(std)[b]];
-            List<Integer> removed = new ArrayList<>();
             for (int s : curGroup) {
                 int sTarget = stateToGroup[goTo.get(s)[b]];
                 if (stdTarget != sTarget) {
@@ -206,9 +202,12 @@ public class DFABuilder {
                 }
             }
             removed.forEach(curGroup::remove);
+            removed.clear();
         }
         curGroup.add(std);
-        return newGroup;
+        if (newGroup != null) {
+            createGroup(newGroup);
+        }
     }
 
     private void createGroup(Set<Integer> states) {
@@ -225,7 +224,7 @@ public class DFABuilder {
         for (int i = 1 ; i < groups.size() ; i ++) {
             delegates[i] = groups.get(i).iterator().next();
         }
-        for (int group = 1; group < groupCount; group++) {
+        for (int group = 1 ; group < groupCount ; group++) {
             int delegate = delegates[group];
             for (byte b = 0 ; b >= 0 ; b ++) {
                 int dest = goTo.get(delegate)[b];
