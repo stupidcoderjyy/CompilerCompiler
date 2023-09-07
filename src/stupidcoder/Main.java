@@ -1,9 +1,9 @@
-package com.stupidcoder.cc;
+package stupidcoder;
 
 
-import com.stupidcoder.cc.lex.core.DFABuilder;
-import com.stupidcoder.cc.lex.core.IDfaSetter;
-import com.stupidcoder.cc.lex.core.NFARegexParser;
+import stupidcoder.lex.DFABuilder;
+import stupidcoder.lex.IDfaSetter;
+import stupidcoder.lex.NFARegexParser;
 
 public class Main {
     public static void main(String[] args) {

@@ -1,6 +1,6 @@
-package com.stupidcoder.cc.lex.core;
+package stupidcoder.lex;
 
-import com.stupidcoder.cc.util.ArrayUtil;
+import stupidcoder.util.ArrayUtil;
 
 import java.util.*;
 

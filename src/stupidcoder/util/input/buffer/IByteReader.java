@@ -1,7 +1,6 @@
-package com.stupidcoder.cc.util.input.buffer;
+package stupidcoder.util.input.buffer;
 
 import java.io.Closeable;
-import java.io.IOException;
 
 /**
  * 字节的读取器

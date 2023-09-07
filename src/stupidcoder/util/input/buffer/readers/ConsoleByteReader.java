@@ -1,7 +1,7 @@
-package com.stupidcoder.cc.util.input.buffer.readers;
+package stupidcoder.util.input.buffer.readers;
 
 
-import com.stupidcoder.cc.util.input.buffer.IByteReader;
+import stupidcoder.util.input.buffer.IByteReader;
 
 /**
  * @author stupid_coder_jyy

@@ -1,4 +1,4 @@
-package com.stupidcoder.cc.util;
+package stupidcoder.util;
 
 public class ASCII {
     public static final int UPPER   = 0x00000100;

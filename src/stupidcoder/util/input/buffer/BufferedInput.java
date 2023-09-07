@@ -1,8 +1,8 @@
-package com.stupidcoder.cc.util.input.buffer;
+package stupidcoder.util.input.buffer;
 
-import com.stupidcoder.cc.util.input.ILexerInput;
-import com.stupidcoder.cc.util.input.buffer.readers.ConsoleByteReader;
-import com.stupidcoder.cc.util.input.buffer.readers.FileByteReader;
+import stupidcoder.util.input.ILexerInput;
+import stupidcoder.util.input.buffer.readers.ConsoleByteReader;
+import stupidcoder.util.input.buffer.readers.FileByteReader;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;

@@ -1,4 +1,4 @@
-package com.stupidcoder.cc.lex.core;
+package stupidcoder.lex;
 
 public class NFANode {
     protected static final byte NO_EDGE = 0;

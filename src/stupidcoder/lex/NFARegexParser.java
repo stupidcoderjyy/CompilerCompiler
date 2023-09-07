@@ -1,9 +1,9 @@
-package com.stupidcoder.cc.lex.core;
+package stupidcoder.lex;
 
-import com.stupidcoder.cc.util.ASCII;
-import com.stupidcoder.cc.util.ArrayUtil;
-import com.stupidcoder.cc.util.input.ILexerInput;
-import com.stupidcoder.cc.util.input.StringInput;
+import stupidcoder.util.ASCII;
+import stupidcoder.util.ArrayUtil;
+import stupidcoder.util.input.ILexerInput;
+import stupidcoder.util.input.StringInput;
 
 import java.util.ArrayList;
 import java.util.HashSet;

@@ -1,4 +1,4 @@
-package com.stupidcoder.cc.lex.core;
+package stupidcoder.lex;
 
 public interface IDfaSetter {
     void setAccepted(int i, String token);

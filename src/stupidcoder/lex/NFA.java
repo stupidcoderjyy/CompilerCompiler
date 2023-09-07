@@ -1,4 +1,4 @@
-package com.stupidcoder.cc.lex.core;
+package stupidcoder.lex;
 
 import java.util.*;
 

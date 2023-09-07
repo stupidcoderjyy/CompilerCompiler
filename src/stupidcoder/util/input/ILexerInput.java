@@ -1,4 +1,4 @@
-package com.stupidcoder.cc.util.input;
+package stupidcoder.util.input;
 
 import java.io.Closeable;
 
