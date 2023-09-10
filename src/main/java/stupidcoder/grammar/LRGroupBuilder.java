@@ -48,10 +48,10 @@ public class LRGroupBuilder implements IGroupExpandAction {
     }
 
     @Override
-    public void onGroupExpandFinished(GroupTemp baseTemp, CoreGroup curCore, Map<Symbol, List<LRItem>> goToMap) {
+    public void onCoreExpandFinished(GroupTemp baseTemp, CoreGroup curCore, Map<Symbol, List<LRItem>> goToMap) {
         //对当前核心设置规约操作
         for (LRItem item : curCore.items) {
-            outputActionReduce(item, goToMap);
+            outputReduceOrAccept(item, goToMap);
         }
         //设置接受状态
         goToMap.forEach((input, tempItems) -> {
@@ -63,9 +63,8 @@ public class LRGroupBuilder implements IGroupExpandAction {
             } else {
                 receiver.setGoto(curCore.id, nextCore.id, input.id);
             }
-            for (int i = 0 ; i < tempItems.size() ; i ++) {
-                LRItem coreItem = coreItems.get(i);
-                LRItem tempItem = tempItems.get(i);
+            for (LRItem tempItem : tempItems) {
+                LRItem coreItem = nextCore.getItem(tempItem.production, tempItem.point + 1);
                 LRItem src = baseTemp.getSrc(tempItem);
                 if (src != null) {
                     //设置向前看符号的传播路径
@@ -105,9 +104,13 @@ public class LRGroupBuilder implements IGroupExpandAction {
     }
 
     private void setSpread(LRItem from, LRItem to) {
-        List<LRItem> targets = spreadMapItems.getOrDefault(from, new ArrayList<>());
-        targets.add(to);
-        spreadMapItems.putIfAbsent(from, targets);
+        if (spreadMapItems.containsKey(from)) {
+            spreadMapItems.get(from).add(to);
+        } else {
+            List<LRItem> targets = new ArrayList<>();
+            targets.add(to);
+            spreadMapItems.put(from, targets);
+        }
     }
 
     private void spreadAndEmitActions(LRItem start, Map<Symbol, List<LRItem>> goToMap) {
@@ -130,14 +133,18 @@ public class LRGroupBuilder implements IGroupExpandAction {
                 continue;
             }
             target.forwardSymbols.add(srcForward);
-            outputActionReduce(target, goToMap);
+            outputReduceOrAccept(target, goToMap);
             add = true;
         }
         return add && spreadMapItems.containsKey(target);
     }
 
-    private void outputActionReduce(LRItem item, Map<Symbol, List<LRItem>> goToMap) {
+    private void outputReduceOrAccept(LRItem item, Map<Symbol, List<LRItem>> goToMap) {
         if (!item.reachEnd()) {
+            return;
+        }
+        if (item.production == grammarLoader.root()) {
+            receiver.setActionAccept(item.id);
             return;
         }
         for (Symbol f : item.forwardSymbols) {

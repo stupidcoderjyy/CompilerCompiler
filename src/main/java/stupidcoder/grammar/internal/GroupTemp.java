@@ -70,7 +70,7 @@ public class GroupTemp extends LRGroup {
             }
             tempForward.clear();
         }
-        action.onGroupExpandFinished(this, core, moveMap);
+        action.onCoreExpandFinished(this, core, moveMap);
     }
 
     private void setDest(Symbol next, LRItem item) {

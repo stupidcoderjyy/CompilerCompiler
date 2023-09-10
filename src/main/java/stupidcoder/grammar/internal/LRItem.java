@@ -21,7 +21,7 @@ public class LRItem {
     }
 
     public LRItem(Production production, int point) {
-        this(production, point, 0);
+        this(production, point, -1);
     }
 
     public LRItem(LRItem other, int id) {
@@ -30,7 +30,7 @@ public class LRItem {
     }
 
     public LRItem(LRItem other) {
-        this(other, 0);
+        this(other, -1);
     }
 
     public final Symbol nextSymbol() {
@@ -48,7 +48,14 @@ public class LRItem {
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof LRItem && obj.hashCode() == hash;
+        if (obj instanceof LRItem item) {
+            if (item.id < 0 || id < 0) {
+                return item.hash == hash;
+            } else {
+                return item.hash == hash && item.id == id;
+            }
+        }
+        return false;
     }
 
 
