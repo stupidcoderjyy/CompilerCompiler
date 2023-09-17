@@ -7,12 +7,12 @@ import java.util.List;
 public class Production {
     private final int id;
     private final Symbol head;
-    private final List<Symbol> production;
+    private final List<Symbol> body;
 
-    public Production(int id, Symbol head, List<Symbol> production) {
+    public Production(int id, Symbol head, List<Symbol> body) {
         this.id = id;
         this.head = head;
-        this.production = production;
+        this.body = body;
     }
 
     public int id() {
@@ -24,14 +24,14 @@ public class Production {
     }
 
     public Symbol symbolAt(int i) {
-        if (i < 0 || i >= production.size()) {
+        if (i < 0 || i >= body.size()) {
             return null;
         }
-        return production.get(i);
+        return body.get(i);
     }
 
-    public List<Symbol> production() {
-        return production;
+    public List<Symbol> body() {
+        return body;
     }
 
 
@@ -39,7 +39,7 @@ public class Production {
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(head).append(" →");
-        for (Symbol symbol : production) {
+        for (Symbol symbol : body) {
             sb.append(' ').append(symbol);
         }
         return sb.toString();

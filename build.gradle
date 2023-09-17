@@ -6,6 +6,7 @@ group = 'org.example'
 version = '1.0-SNAPSHOT'
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
 
@@ -19,6 +20,8 @@ tasks.compileTestJava {
 dependencies {
     testImplementation platform('org.junit:junit-bom:5.9.1')
     testImplementation 'org.junit.jupiter:junit-jupiter'
+
+    implementation 'stupidcoder:common-util:1.0.2'
 }
 
 test {
