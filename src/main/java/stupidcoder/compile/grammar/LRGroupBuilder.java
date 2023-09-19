@@ -1,35 +1,28 @@
 package stupidcoder.compile.grammar;
 
+import stupidcoder.common.Production;
 import stupidcoder.common.symbol.DefaultSymbols;
 import stupidcoder.common.symbol.Symbol;
-import stupidcoder.compile.grammar.internal.GrammarLoader;
-import stupidcoder.compile.grammar.internal.IGrammarAccess;
-import stupidcoder.compile.grammar.internal.CoreGroup;
-import stupidcoder.compile.grammar.internal.GroupTemp;
-import stupidcoder.compile.grammar.internal.IGroupExpandAction;
-import stupidcoder.compile.grammar.internal.LRItem;
-import stupidcoder.compile.grammar.internal.IPriorityAccess;
-import stupidcoder.compile.grammar.internal.PriorityManager;
 
 import java.util.*;
 
-public class LRGroupBuilder implements IGroupExpandAction {
-    private final IGrammarAccess grammarLoader;
+public class LRGroupBuilder {
+    private final IGrammarAccess loader;
     private final IPriorityAccess priority;
-    private final IGADataAccept receiver;
-    private final List<CoreGroup> idToCore = new ArrayList<>();
-    private final Map<CoreGroup, Integer> groupToId = new HashMap<>();
-    private final Stack<CoreGroup> unchecked = new Stack<>();
-    private final Map<LRItem, List<LRItem>> spreadMapItems = new HashMap<>();
+    private final IDataHandler receiver;
+    private final List<LRGroup> idToCore = new ArrayList<>();
+    private final Map<LRGroup, Integer> coreToId = new HashMap<>();
+    private final Map<LRItem, List<LRItem>> spreadMap = new HashMap<>();
+    private final List<Map<Symbol, LRGroup>> groupToTargets = new ArrayList<>();
 
-    public static void build(IGAPriorityInit priorityReg, IGAGrammarInit grammarReg, IGADataAccept receiver) {
-        new LRGroupBuilder(priorityReg, grammarReg, receiver).buildGroups();
+    public static void build(IInitPriority priorityReg, IInitGrammar grammarReg, IDataHandler receiver) {
+        new LRGroupBuilder(priorityReg, grammarReg, receiver).build();
     }
 
-    private LRGroupBuilder(IGAPriorityInit priorityReg, IGAGrammarInit grammarReg, IGADataAccept receiver) {
+    private LRGroupBuilder(IInitPriority priorityReg, IInitGrammar grammarReg, IDataHandler receiver) {
         GrammarLoader l = new GrammarLoader();
         PriorityManager p = new PriorityManager(l);
-        this.grammarLoader = l;
+        this.loader = l;
         this.receiver = receiver;
         this.priority = p;
         grammarReg.init(l);
@@ -37,141 +30,238 @@ public class LRGroupBuilder implements IGroupExpandAction {
         p.init();
     }
 
-    public void buildGroups() {
-        LRItem root = new LRItem(grammarLoader.root(), 0);
-        root.forwardSymbols.add(DefaultSymbols.FILE_END);
-        registerCore(Set.of(root));
-        while (!unchecked.isEmpty()) {
-            GroupTemp.expand(grammarLoader, this, unchecked.pop());
-        }
-        grammarLoader.getTerminalIdRemap().forEach(receiver::setTerminalSymbolIdRemap);
-        receiver.setStatesCount(idToCore.size());
-        receiver.setNonTerminalCount(grammarLoader.nonTerminalCount());
-        receiver.setNonTerminalCount(grammarLoader.terminalCount());
+    private void build() {
+        LRItem root = new LRItem(loader.root(), 0);
+        registerCore(new LRGroup(List.of(root), 0));
+        expandGroups();
+        spreadSymbols(root);
+        emitActions();
     }
 
-    @Override
-    public void onCoreExpandFinished(GroupTemp baseTemp, CoreGroup curCore, Map<Symbol, List<LRItem>> goToMap) {
-        //对当前核心设置规约操作
-        for (LRItem item : curCore.items) {
-            outputReduceOrAccept(item, goToMap);
+    private final Stack<LRGroup> unchecked = new Stack<>();
+    private Map<Symbol, List<LRItem>> tempGoto;
+    private List<Integer> spreadSrc;
+    private List<LRItem> tempCoreItems;
+    private LRGroup tempGroup;
+
+    private void expandGroups() {
+        while (!unchecked.empty()) {
+            tempGoto = new HashMap<>();
+            spreadSrc = new ArrayList<>();
+            tempCoreItems = new ArrayList<>();
+            tempGroup = new LRGroup();
+            LRGroup core = unchecked.pop();
+            initTempItems(core);
+            expandTempItems();
+            tempGoto.forEach((input, items) -> buildTargetCores(core, input, items));
         }
-        //设置接受状态
-        goToMap.forEach((input, tempItems) -> {
-            if (input == DefaultSymbols.EPSILON) {
-                //ε产生式
-                for (LRItem epsilonItem : tempItems) {
-                    for (Symbol f : epsilonItem.forwardSymbols) {
-                        receiver.setActionReduce(curCore.id, f.id, epsilonItem.production.id());
+    }
+
+    private void initTempItems(LRGroup core) {
+        for (LRItem item : core.items) {
+            int id = tempGroup.items.size();
+            LRItem temp = new LRItem(item.production, item.point, id);
+            tempGroup.insertItem(temp);
+            unexpanded.push(temp);
+            spreadSrc.add(id);
+            tempCoreItems.add(item);
+        }
+    }
+
+    private void expandTempItems() {
+        while (!unexpanded.isEmpty()) {
+            LRItem item = unexpanded.pop();
+            Symbol next = item.nextSymbol();
+            if (next == null || next == DefaultSymbols.EPSILON) {
+                continue;
+            }
+            setDest(next, item);
+            if (next.isTerminal) {
+                continue;
+            }
+            boolean spread = loader.calcForward(tempForward, item.production, item.point);
+            if (spread) {
+                tempForward.addAll(item.forwardSymbols);
+            }
+            for (Production p : loader.productionsWithHead(next)) {
+                LRItem other = tempGroup.getItem(p, 0);
+                if (other == null) {
+                    other = new LRItem(p, 0, tempGroup.items.size());
+                    tempGroup.insertItem(other);
+                    unexpanded.push(other);
+                    spreadSrc.add(-1);
+                }
+                if (spread) {
+                    int preSrc = spreadSrc.get(item.id);
+                    if (preSrc >= 0) {
+                        spreadSrc.set(other.id, preSrc);
                     }
                 }
-                return;
+                other.forwardSymbols.addAll(tempForward);
             }
-            //可能进入的下一个核心状态
-            List<LRItem> coreItems = getCoreItems(tempItems);
-            CoreGroup nextCore = registerCore(coreItems);
-            if (input.isTerminal) {
-                receiver.setActionShift(curCore.id, nextCore.id, input.id);
-            } else {
-                receiver.setGoto(curCore.id, nextCore.id, input.id);
-            }
-            for (LRItem tempItem : tempItems) {
-                LRItem coreItem = nextCore.getItem(tempItem.production, tempItem.point + 1);
-                LRItem src = baseTemp.getSrc(tempItem);
-                if (src != null) {
-                    //设置向前看符号的传播路径
-                    setSpread(curCore.getItem(src.production, src.point), coreItem);
-                }
-                int pre = coreItem.forwardSymbols.size();
-                //传递向前看符号
-                coreItem.forwardSymbols.addAll(tempItem.forwardSymbols);
-                if (coreItem.forwardSymbols.size() > pre && spreadMapItems.containsKey(coreItem)) {
-                    spreadAndEmitActions(coreItem, goToMap);
-                }
-            }
-        });
-    }
-    
-    private List<LRItem> getCoreItems(List<LRItem> items) {
-        List<LRItem> coreItems = new ArrayList<>();
-        for (LRItem t : items) {
-            coreItems.add(new LRItem(t.production, t.point + 1));
+            tempForward.clear();
         }
-        return coreItems;
     }
 
-    private CoreGroup registerCore(Collection<LRItem> items) {
-        CoreGroup candidate = new CoreGroup(idToCore.size(), items);
-        int coreId = groupToId.getOrDefault(candidate, -1);
-        if (coreId < 0) {
-            idToCore.add(candidate);
-            groupToId.put(candidate, candidate.id);
-            unchecked.add(candidate);
-            for (LRItem item : candidate.items) {
-                item.id = candidate.id;
-            }
-            return candidate;
+    private void setDest(Symbol input, LRItem item) {
+        if (tempGoto.containsKey(input)) {
+            tempGoto.get(input).add(item);
+        } else {
+            List<LRItem> items = new ArrayList<>();
+            items.add(item);
+            tempGoto.put(input, items);
         }
-        return idToCore.get(coreId);
+    }
+
+    private void buildTargetCores(LRGroup core, Symbol input, List<LRItem> items) {
+        LRGroup target = getOrCreateCore(items);
+        groupToTargets.get(core.id).put(input, target);
+        for (LRItem temp : items) {
+            LRItem targetItem = target.getItem(temp.production, temp.point + 1);
+            if (spread(temp, targetItem)) {
+                itemsToSpread.push(targetItem);
+            }
+            if (spreadSrc.get(temp.id) < 0) {
+                continue;
+            }
+            LRItem src = tempCoreItems.get(spreadSrc.get(temp.id));
+            setSpread(src, targetItem);
+        }
+    }
+
+    private boolean spread(LRItem src, LRItem dest) {
+        int pre = dest.forwardSymbols.size();
+        dest.forwardSymbols.addAll(src.forwardSymbols);
+        return dest.forwardSymbols.size() > pre;
     }
 
     private void setSpread(LRItem from, LRItem to) {
-        if (spreadMapItems.containsKey(from)) {
-            spreadMapItems.get(from).add(to);
+        if (spreadMap.containsKey(from)) {
+            spreadMap.get(from).add(to);
         } else {
             List<LRItem> targets = new ArrayList<>();
             targets.add(to);
-            spreadMapItems.put(from, targets);
+            spreadMap.put(from, targets);
         }
     }
+    
+    private LRGroup getOrCreateCore(List<LRItem> items) {
+        LRGroup target = new LRGroup(idToCore.size());
+        for (LRItem item : items) {
+            LRItem next = new LRItem(item.production, item.point + 1);
+            target.insertItem(next);
+        }
+        if (coreToId.containsKey(target)) {
+            target = idToCore.get(coreToId.get(target));
+        } else {
+            for (LRItem item : target.items) {
+                item.id = target.id;
+            }
+            registerCore(target);
+        }
+        return target;
+    }
 
-    private void spreadAndEmitActions(LRItem start, Map<Symbol, List<LRItem>> goToMap) {
-        Stack<LRItem> itemsToSpread = new Stack<>();
-        itemsToSpread.add(start);
+    private void registerCore(LRGroup g) {
+        idToCore.add(g);
+        coreToId.put(g, g.id);
+        unchecked.push(g);
+        groupToTargets.add(new HashMap<>());
+    }
+
+    private final Stack<LRItem> itemsToSpread = new Stack<>();
+
+    private void spreadSymbols(LRItem root) {
+        root.forwardSymbols.add(DefaultSymbols.FILE_END);
+        itemsToSpread.push(root);
         while (!itemsToSpread.empty()) {
             LRItem src = itemsToSpread.pop();
-            for (LRItem target : spreadMapItems.get(src)) {
-                if (spreadAndEmitActions(src, target, goToMap)) {
-                    itemsToSpread.push(target);
-                }
-            }
-        }
-    }
-
-    private boolean spreadAndEmitActions(LRItem src, LRItem target, Map<Symbol, List<LRItem>> goToMap) {
-        boolean add = false;
-        for (Symbol srcForward : src.forwardSymbols) {
-            if (target.forwardSymbols.contains(srcForward)) {
+            if (!spreadMap.containsKey(src)) {
                 continue;
             }
-            target.forwardSymbols.add(srcForward);
-            outputReduceOrAccept(target, goToMap);
-            add = true;
+            for (LRItem dest : spreadMap.get(src)) {
+                if (!spread(src, dest) || !spreadMap.containsKey(dest)) {
+                    continue;
+                }
+                itemsToSpread.push(dest);
+            }
         }
-        return add && spreadMapItems.containsKey(target);
     }
 
-    private void outputReduceOrAccept(LRItem item, Map<Symbol, List<LRItem>> goToMap) {
-        if (!item.reachEnd()) {
-            return;
+    private void emitActions() {
+        for (LRGroup group : idToCore) {
+            expand(group);
+            emitActions(group);
+            group.items.clear();
+            group.hashToItem.clear();
         }
-        if (item.production == grammarLoader.root()) {
-            for (Symbol f : item.forwardSymbols) {
-                receiver.setActionAccept(item.id, f.id);
+        loader.getTerminalIdRemap().forEach(receiver::setTerminalSymbolIdRemap);
+        receiver.setStatesCount(idToCore.size());
+        receiver.setNonTerminalCount(loader.nonTerminalCount());
+        receiver.setNonTerminalCount(loader.terminalCount());
+    }
+
+    private final Deque<LRItem> unexpanded = new ArrayDeque<>();
+    private final Set<Symbol> tempForward = new HashSet<>();
+
+    private void expand(LRGroup core) {
+        unexpanded.addAll(core.items);
+        while (!unexpanded.isEmpty()) {
+            LRItem item = unexpanded.pop();
+            Symbol next = item.nextSymbol();
+            if (next == null || next.isTerminal) {
+                continue;
             }
+            if (loader.calcForward(tempForward, item.production, item.point)) {
+                tempForward.addAll(item.forwardSymbols);
+            }
+            for (Production p : loader.productionsWithHead(next)) {
+                LRItem other = core.getItem(p, 0);
+                if (other == null) {
+                    other = core.registerItem(p);
+                    unexpanded.push(other);
+                }
+                other.forwardSymbols.addAll(tempForward);
+            }
+            tempForward.clear();
+        }
+    }
+
+    private void emitActions(LRGroup core) {
+        Map<Symbol, LRGroup> goToMap = groupToTargets.get(core.id);
+        //输出数据
+        for (LRItem item : core.items) {
+            Symbol next = item.nextSymbol();
+            if (next == null || next == DefaultSymbols.EPSILON) {
+                emitReduceAndAccept(item, goToMap, core);
+            } else {
+                //GOTO和移入
+                emitGotoAndShift(next, goToMap, core);
+            }
+        }
+    }
+
+    private void emitGotoAndShift(Symbol next, Map<Symbol, LRGroup> goToMap, LRGroup core) {
+        if (next.isTerminal) {
+            receiver.setActionShift(core.id, goToMap.get(next).id, next.id);
+        } else {
+            receiver.setGoto(core.id, goToMap.get(next).id, next.id);
+        }
+    }
+
+    private void emitReduceAndAccept(LRItem item, Map<Symbol, LRGroup> goToMap, LRGroup core) {
+        //接受
+        if (item.production == loader.root()) {
+            receiver.setActionAccept(core.id, DefaultSymbols.FILE_END.id);
             return;
         }
+        //规约
         for (Symbol f : item.forwardSymbols) {
-            if (shouldReduce(item, f, goToMap)) {
-                receiver.setActionReduce(item.id, f.id, item.production.id());
+            if (goToMap.containsKey(f) && priority.compare(f, item.production) > 0) {
+                //移入规约冲突
+                continue;
             }
+            receiver.setActionReduce(core.id, f.id, item.production.id());
         }
-    }
-
-    private boolean shouldReduce(LRItem item, Symbol forward, Map<Symbol, List<LRItem>> goToMap) {
-        if (goToMap.containsKey(forward)) {
-            return priority.compare(forward, item.production) < 0;
-        }
-        return true;
     }
 }

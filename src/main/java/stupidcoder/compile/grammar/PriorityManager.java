@@ -1,22 +1,21 @@
-package stupidcoder.compile.grammar.internal;
+package stupidcoder.compile.grammar;
 
 import stupidcoder.common.Production;
 import stupidcoder.common.symbol.DefaultSymbols;
 import stupidcoder.common.symbol.Symbol;
-import stupidcoder.compile.grammar.IPriorityRegistry;
 
 import java.util.List;
 
-public class PriorityManager implements IPriorityAccess, IPriorityRegistry {
+class PriorityManager implements IPriorityAccess, IPriorityRegistry {
     private int[] symbolPriorities;
     private int[] prodPriorities;
     private final IGrammarAccess access;
 
-    public PriorityManager(IGrammarAccess access) {
+    PriorityManager(IGrammarAccess access) {
         this.access = access;
     }
 
-    public void init() {
+    void init() {
         symbolPriorities = new int[access.symbolsCount()];
         prodPriorities = new int[access.grammar().size()];
         for (Production production : access.grammar()) {
@@ -45,7 +44,7 @@ public class PriorityManager implements IPriorityAccess, IPriorityRegistry {
     }
 
     @Override
-    public int compare(Symbol s, Production g) {
-        return symbolPriorities[s.id] - prodPriorities[g.id()];
+    public int compare(Symbol s, Production p) {
+        return symbolPriorities[s.id] - prodPriorities[p.id()];
     }
 }

@@ -1,7 +1,7 @@
 package compile;
 
 import org.junit.jupiter.api.Test;
-import stupidcoder.compile.grammar.IGAGrammarInit;
+import stupidcoder.compile.grammar.IInitGrammar;
 import stupidcoder.compile.grammar.LRGroupBuilder;
 
 public class TestGrammarGrammar2 {
@@ -11,7 +11,7 @@ public class TestGrammarGrammar2 {
         LRGroupBuilder.build(p -> {}, GRAMMAR_INIT, DefaultDataInterface.ACCEPT);
     }
 
-    private static final IGAGrammarInit GRAMMAR_INIT = loader -> {
+    private static final IInitGrammar GRAMMAR_INIT = loader -> {
         loader.begin("gs")
                 .addNonTerminal("g").finish();
         loader.begin("gs")

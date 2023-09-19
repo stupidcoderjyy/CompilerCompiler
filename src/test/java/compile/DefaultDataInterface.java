@@ -1,9 +1,9 @@
 package compile;
 
-import stupidcoder.compile.grammar.IGADataAccept;
+import stupidcoder.compile.grammar.IDataHandler;
 
 public class DefaultDataInterface {
-    public static final IGADataAccept ACCEPT = new IGADataAccept() {
+    public static final IDataHandler ACCEPT = new IDataHandler() {
         @Override
         public void setActionShift(int from, int to, int inputTerminal) {
             System.out.printf("actions[%d][%d] = MOVE | %d;\n", from, inputTerminal, to);

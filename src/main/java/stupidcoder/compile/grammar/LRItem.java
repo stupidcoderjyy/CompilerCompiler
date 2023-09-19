@@ -1,4 +1,4 @@
-package stupidcoder.compile.grammar.internal;
+package stupidcoder.compile.grammar;
 
 import stupidcoder.common.Production;
 import stupidcoder.common.symbol.Symbol;
@@ -6,35 +6,26 @@ import stupidcoder.common.symbol.Symbol;
 import java.util.HashSet;
 import java.util.Set;
 
-public class LRItem {
-    public final Production production;
-    public final int point;
-    public final Set<Symbol> forwardSymbols = new HashSet<>();
-    protected final int hash;
-    public int id;
+class LRItem {
+    final Production production;
+    final int point;
+    final Set<Symbol> forwardSymbols = new HashSet<>();
+    final int hash;
+    int id;
 
-    public LRItem(Production production, int point, int id) {
+    LRItem(Production production, int point, int id) {
         this.production = production;
         this.point = point;
         this.hash = calcHash(production, point);
         this.id = id;
     }
 
-    public LRItem(Production production, int point) {
+    LRItem(Production production, int point) {
         this(production, point, -1);
     }
 
-    public LRItem(LRItem other, int id) {
-        this(other.production, other.point, id);
-        forwardSymbols.addAll(other.forwardSymbols);
-    }
-
-    public final Symbol nextSymbol() {
+    final Symbol nextSymbol() {
         return production.symbolAt(point);
-    }
-
-    public final boolean reachEnd() {
-        return point == production.body().size();
     }
 
     @Override
@@ -54,8 +45,7 @@ public class LRItem {
         return false;
     }
 
-
-    public static int calcHash(Production g, int point) {
+    static int calcHash(Production g, int point) {
         return (point << 16) | g.id();
     }
 

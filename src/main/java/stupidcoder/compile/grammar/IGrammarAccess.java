@@ -1,4 +1,4 @@
-package stupidcoder.compile.grammar.internal;
+package stupidcoder.compile.grammar;
 
 import stupidcoder.common.Production;
 import stupidcoder.common.symbol.Symbol;
@@ -15,6 +15,6 @@ public interface IGrammarAccess {
     int symbolsCount();
     int nonTerminalCount();
     int terminalCount();
-    boolean calcForward(Set<Symbol> result, Production g, int startPos);
+    boolean calcForward(Set<Symbol> result, Production g, int point);
     Map<Integer, Integer> getTerminalIdRemap();
 }

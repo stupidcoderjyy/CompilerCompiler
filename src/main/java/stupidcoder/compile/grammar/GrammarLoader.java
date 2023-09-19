@@ -1,16 +1,15 @@
-package stupidcoder.compile.grammar.internal;
+package stupidcoder.compile.grammar;
 
 import stupidcoder.common.Production;
 import stupidcoder.common.symbol.DefaultSymbols;
 import stupidcoder.common.symbol.Symbol;
-import stupidcoder.compile.grammar.IProductionRegistry;
 import stupidcoder.util.ArrayUtil;
 
 import java.util.*;
 
-public class GrammarLoader implements IProductionRegistry, IGrammarAccess {
+class GrammarLoader implements IProductionRegistry, IGrammarAccess {
+    final List<Production> productions = new ArrayList<>();
     private final List<List<Production>> symbolToProductions = new ArrayList<>();
-    protected final List<Production> productions = new ArrayList<>();
     private final Map<String, Symbol> lexemeToSymbol = new HashMap<>();
     private final Map<Integer, Integer> terminalIdRemap = new HashMap<>();
     private Production extendedRoot;
@@ -20,7 +19,7 @@ public class GrammarLoader implements IProductionRegistry, IGrammarAccess {
     private Symbol tempStart;
     private List<Symbol> tempProduction = new ArrayList<>();
 
-    public GrammarLoader() {
+    GrammarLoader() {
         symbolToProductions.add(new ArrayList<>());
     }
 
@@ -134,11 +133,11 @@ public class GrammarLoader implements IProductionRegistry, IGrammarAccess {
     }
 
     @Override
-    public boolean calcForward(Set<Symbol> result, Production g, int startPos) {
+    public boolean calcForward(Set<Symbol> result, Production g, int point) {
         List<Symbol> symbolsBeta = new ArrayList<>(
-                g.body().subList(startPos, g.body().size()));
+                g.body().subList(point + 1, g.body().size()));
         if (symbolsBeta.isEmpty()) {
-            result.add(DefaultSymbols.EPSILON);
+            return true;
         } else {
             first(result, symbolsBeta);
         }

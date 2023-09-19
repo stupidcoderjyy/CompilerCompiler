@@ -1,6 +1,6 @@
 package stupidcoder.compile.grammar;
 
-public interface IGADataAccept {
+public interface IDataHandler {
     /**
      * 注册语法分析器的一条移入指令
      * @param from 当前状态
