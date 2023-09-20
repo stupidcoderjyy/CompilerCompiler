@@ -1,6 +1,6 @@
 package stupidcoder.compile.lex;
 
-import java.util.*;
+import java.util.Stack;
 
 public class NFA {
     protected NFANode start, end;

@@ -2,8 +2,8 @@ package stupidcoder.fieldparser;
 
 import stupidcoder.common.token.IToken;
 import stupidcoder.fieldparser.internal.DFA;
-import stupidcoder.fieldparser.internal.IActions;
 import stupidcoder.fieldparser.internal.Field;
+import stupidcoder.fieldparser.internal.IActions;
 import stupidcoder.util.input.IInput;
 
 import java.util.ArrayList;
