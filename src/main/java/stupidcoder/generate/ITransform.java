@@ -1,5 +1,6 @@
 package stupidcoder.generate;
 
+import stupidcoder.util.input.BufferedInput;
 import stupidcoder.util.input.IInput;
 
 import java.io.FileWriter;
@@ -9,10 +10,10 @@ public interface ITransform {
     String id();
     void init(List<String> args);
     void clear();
-    void writeOnce(FileWriter writer, IInput src) throws Exception;
+    void writeOnce(FileWriter writer, BufferedInput src) throws Exception;
 
     default int readInt(IInput input) {
-        return (input.read() << 24) | (input.read() << 16) | (input.read() << 8) | input.read();
+        return (input.read() << 24) | (input.read() << 16) | (input.read() << 8) | (input.read() & 0xFF);
     }
 
     default String readString(IInput input) {

@@ -1,7 +1,7 @@
 package stupidcoder.generate.transform;
 
 import stupidcoder.generate.ITransform;
-import stupidcoder.util.input.IInput;
+import stupidcoder.util.input.BufferedInput;
 
 import java.io.FileWriter;
 import java.util.List;
@@ -11,7 +11,7 @@ public class PlainTransform implements ITransform {
     }
 
     @Override
-    public void writeOnce(FileWriter writer, IInput src) throws Exception {
+    public void writeOnce(FileWriter writer, BufferedInput src) throws Exception {
         while (true) {
             if (src.available()) {
                 src.read();

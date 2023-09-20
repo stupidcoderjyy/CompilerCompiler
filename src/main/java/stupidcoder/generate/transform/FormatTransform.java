@@ -1,6 +1,7 @@
 package stupidcoder.generate.transform;
 
 import stupidcoder.generate.ITransform;
+import stupidcoder.util.input.BufferedInput;
 import stupidcoder.util.input.IInput;
 import stupidcoder.util.input.InputException;
 import stupidcoder.util.input.StringInput;
@@ -16,6 +17,7 @@ public class FormatTransform implements ITransform {
     private static final int LB = 3;
     private final List<Integer> types = new ArrayList<>();
     private String fmt;
+    private Object[] args;
 
     FormatTransform() {
     }
@@ -38,11 +40,11 @@ public class FormatTransform implements ITransform {
                 default -> throw new InputException("illegal format:" + fmt);
             }
         }
+        args = new Object[types.size()];
     }
 
     @Override
-    public void writeOnce(FileWriter writer, IInput src) throws Exception {
-        Object[] args = new Object[types.size()];
+    public void writeOnce(FileWriter writer, BufferedInput src) throws Exception {
         for (int i = 0 ; i < types.size() ; i ++) {
             switch (types.get(i)) {
                 case INTEGER -> args[i] = readInt(src);

@@ -1,7 +1,7 @@
 package stupidcoder.generate.transform;
 
 import stupidcoder.generate.ITransform;
-import stupidcoder.util.input.IInput;
+import stupidcoder.util.input.BufferedInput;
 
 import java.io.FileWriter;
 import java.util.List;
@@ -12,12 +12,8 @@ public class ConstStringTransform implements ITransform {
     ConstStringTransform() {
     }
 
-    public void setVal(String val) {
-        this.val = val;
-    }
-
     @Override
-    public void writeOnce(FileWriter writer, IInput src) throws Exception {
+    public void writeOnce(FileWriter writer, BufferedInput src) throws Exception {
         writer.write(val);
     }
 
@@ -28,7 +24,10 @@ public class ConstStringTransform implements ITransform {
 
     @Override
     public void init(List<String> args) {
-
+        if (args.isEmpty()) {
+            throw new RuntimeException("missing arg");
+        }
+        this.val = args.get(0);
     }
 
     @Override

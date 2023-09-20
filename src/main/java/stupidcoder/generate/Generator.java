@@ -1,7 +1,7 @@
 package stupidcoder.generate;
 
 import stupidcoder.Config;
-import stupidcoder.generate.transform.*;
+import stupidcoder.generate.transform.DefaultTransformers;
 import stupidcoder.util.ASCII;
 import stupidcoder.util.input.BitClass;
 import stupidcoder.util.input.BufferedInput;
@@ -53,6 +53,7 @@ public class Generator {
              BufferedInput i = BufferedInput.fromResource(scriptPath)) {
             writer = w;
             input = i;
+            input.ignoreLexemeLengthLimit();
             loadScript();
         } catch (Exception e) {
             e.printStackTrace();
@@ -94,7 +95,15 @@ public class Generator {
         if (!sources.containsKey(srcName)) {
             throw rangeException("source not found: " + srcName);
         }
-        return sources.get(srcName);
+        Source src = sources.get(srcName);
+        if (src.used) {
+            try {
+                src.reset();
+            } catch (UnsupportedOperationException e) {
+                throw rangeException("source can not be reset: " + srcName);
+            }
+        }
+        return src;
     }
 
     private Output parseOutput() throws CompileException {
@@ -166,6 +175,7 @@ public class Generator {
 
     private void initTransform(ITransform t) throws CompileException {
         List<String> args = new ArrayList<>();
+        int start = input.posColumn();
         LOOP:
         while (input.available()) {
             input.markColumn();
@@ -181,7 +191,11 @@ public class Generator {
                 }
             }
         }
-        t.init(args);
+        try {
+            t.init(args);
+        } catch (Exception e) {
+            throw rangeException(e.getMessage(), start, input.posColumn());
+        }
     }
 
     private String parseArg() throws CompileException {
@@ -208,6 +222,11 @@ public class Generator {
         int p = Math.max(mp, input.posColumn() - 1);
         input.find('\r');
         return new CompileException(msg, input.posRow(), input.currentLine(), scriptPath).setPos(mp, p);
+    }
+
+    private CompileException rangeException(String msg, int start, int end) {
+        input.find('\r');
+        return new CompileException(msg, input.posRow(), input.currentLine(), scriptPath).setPos(start, end);
     }
 
     private void checkNext(int expected, String msg) throws CompileException {

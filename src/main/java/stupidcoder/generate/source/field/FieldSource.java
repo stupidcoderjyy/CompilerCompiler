@@ -38,7 +38,15 @@ public abstract class FieldSource<T> extends Source {
     }
 
     @Override
+    protected void reset() {
+        pos = 0;
+        used = false;
+        lock();
+    }
+
+    @Override
     public int read(byte[] arr, int offset, int len) {
+        used = true;
         int actualLen = Math.min(len, size - pos);
         if (actualLen == 0) {
             return 0;
@@ -51,7 +59,6 @@ public abstract class FieldSource<T> extends Source {
     @Override
     public void close() {
         data = null;
-        supplier = null;
     }
 
     protected final void writeInt(int v, int start) {
