@@ -1,16 +1,14 @@
-package stupidcoder.generate.source.field;
-
-import stupidcoder.generate.Source;
+package stupidcoder.generate;
 
 import java.util.function.Supplier;
 
-public abstract class FieldSource<T> extends Source {
+public abstract class SourceField<T> extends Source {
     protected int size;
     protected byte[] data;
     private Supplier<T> supplier;
     private int pos;
 
-    public FieldSource(String id, Supplier<T> supplier) {
+    public SourceField(String id, Supplier<T> supplier) {
         super(id);
         this.supplier = supplier;
     }

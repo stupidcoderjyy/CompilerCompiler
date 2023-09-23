@@ -4,19 +4,16 @@ import stupidcoder.util.input.BufferedInput;
 
 import java.io.FileWriter;
 
-class Output {
-    private Source src;
-    private ITransform transform;
-    private int indent = 0;
-    private int repeat = 1;
-    private int lineBreak = 1;
+class WriteUnit {
+    Source src;
+    Transform transform;
+    final Generator g;
+    int indent = -1;
+    int repeat = -1;
+    int lineBreak = -1;
 
-    public void setSrc(Source src) {
-        this.src = src;
-    }
-
-    public void setTransform(ITransform transform) {
-        this.transform = transform;
+    WriteUnit(Generator g) {
+        this.g = g;
     }
 
     void setIndent(int indent) {
@@ -32,6 +29,13 @@ class Output {
     }
 
     void output(FileWriter writer) {
+        indent = Math.max(0, indent);
+        if (repeat < 0) {
+            repeat = 1;
+        }
+        if (lineBreak < 0) {
+            lineBreak = 1;
+        }
         try (BufferedInput input = new BufferedInput(src)) {
             write(writer, input);
         } catch (Exception e) {

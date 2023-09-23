@@ -1,13 +1,12 @@
-package stupidcoder.generate.source;
+package stupidcoder.generate;
 
 import stupidcoder.Config;
-import stupidcoder.generate.Source;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 
-public class CacheSource extends Source {
+public class SourceBuffered extends Source {
     private static final String CACHE_DIR;
     private static final int DATA_SIZE_THRESHOLD = 512;
     private static final Pattern NAME_PATTERN = Pattern.compile("[_a-z]+");
@@ -23,7 +22,7 @@ public class CacheSource extends Source {
         new File(CACHE_DIR).mkdirs();
     }
 
-    public CacheSource(String name) {
+    public SourceBuffered(String name) {
         super(name);
         if (!NAME_PATTERN.matcher(name).matches()) {
             throw new IllegalArgumentException("source name \"" + name + "\" doesn't match [_a-z]+");

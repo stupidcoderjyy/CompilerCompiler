@@ -1,16 +1,12 @@
-package stupidcoder.generate.transform;
+package stupidcoder.generate;
 
-import stupidcoder.generate.ITransform;
-import stupidcoder.util.input.BufferedInput;
-import stupidcoder.util.input.IInput;
-import stupidcoder.util.input.InputException;
-import stupidcoder.util.input.StringInput;
+import stupidcoder.util.input.*;
 
 import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FormatTransform implements ITransform {
+public class TransformFormat extends Transform {
     private static final int INTEGER = 0;
     private static final int STRING = 1;
     private static final int CHAR = 2;
@@ -19,7 +15,33 @@ public class FormatTransform implements ITransform {
     private String fmt;
     private Object[] args;
 
-    FormatTransform() {
+    TransformFormat() {
+    }
+
+    @Override
+    public void writeOnce(FileWriter writer, IInput src) throws Exception {
+        for (int i = 0 ; i < types.size() ; i ++) {
+            switch (types.get(i)) {
+                case INTEGER -> args[i] = readInt(src);
+                case STRING -> args[i] = readString(src);
+                case CHAR -> args[i] = (char) src.read();
+                case LB -> {}
+            }
+        }
+        writer.write(String.format(fmt, args));
+    }
+
+    @Override
+    public void init(Generator g, WriteUnit unit, CompilerInput input) throws CompileException {
+        WriteUnitParser.checkNext(input, '\"');
+        input.mark();
+        if (input.approach('\"', '\r') != '\"') {
+            throw input.errorMarkToForward("unclosed '\"'");
+        }
+        input.mark();
+        fmt = input.capture();
+        parseFmt(new StringInput(fmt));
+        input.read();
     }
 
     private void parseFmt(IInput input) {
@@ -41,30 +63,6 @@ public class FormatTransform implements ITransform {
             }
         }
         args = new Object[types.size()];
-    }
-
-    @Override
-    public void writeOnce(FileWriter writer, BufferedInput src) throws Exception {
-        for (int i = 0 ; i < types.size() ; i ++) {
-            switch (types.get(i)) {
-                case INTEGER -> args[i] = readInt(src);
-                case STRING -> args[i] = readString(src);
-                case CHAR -> args[i] = (char) src.read();
-                case LB -> {}
-            }
-        }
-        writer.write(String.format(fmt, args));
-    }
-
-    @Override
-    public String id() {
-        return "format";
-    }
-
-    @Override
-    public void init(List<String> args) {
-        this.fmt = args.get(0);
-        parseFmt(new StringInput(fmt));
     }
 
     @Override

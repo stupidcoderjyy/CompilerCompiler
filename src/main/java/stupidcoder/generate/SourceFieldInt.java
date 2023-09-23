@@ -1,9 +1,9 @@
-package stupidcoder.generate.source.field;
+package stupidcoder.generate;
 
 import java.util.function.Supplier;
 
-public class IntFieldSource extends FieldSource<Integer>{
-    public IntFieldSource(String id, Supplier<Integer> supplier) {
+public class SourceFieldInt extends SourceField<Integer> {
+    public SourceFieldInt(String id, Supplier<Integer> supplier) {
         super(id, supplier);
     }
 

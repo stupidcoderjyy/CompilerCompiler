@@ -1,10 +1,10 @@
-package stupidcoder.generate.source.field;
+package stupidcoder.generate;
 
 import java.nio.charset.StandardCharsets;
 import java.util.function.Supplier;
 
-public class StringFieldSource extends FieldSource<String> {
-    public StringFieldSource(String id, Supplier<String> supplier) {
+public class SourceFieldString extends SourceField<String> {
+    public SourceFieldString(String id, Supplier<String> supplier) {
         super(id, supplier);
     }
 

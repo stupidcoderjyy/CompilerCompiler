@@ -1,59 +1,71 @@
 package stupidcoder.generate;
 
 import stupidcoder.Config;
-import stupidcoder.generate.transform.DefaultTransformers;
-import stupidcoder.util.ASCII;
 import stupidcoder.util.input.BitClass;
-import stupidcoder.util.input.BufferedInput;
-import stupidcoder.util.input.CompileException;
+import stupidcoder.util.input.CompilerInput;
 
 import java.io.FileWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class Generator {
-    private final Map<String, Source> sources = new HashMap<>();
-    private final Map<String, ITransform> transformers = new HashMap<>();
-    private final String targetFile, scriptPath;
-    private final BitClass clazzArgEnd = BitClass.of(',', '}', '\r');
-    private final BitClass clazzArgBegin = BitClass.of('\"', '}', '\r');
-    private final BitClass clazzQuoteEnd = BitClass.of('\"', '\r', ',', '}');
+    private static final Map<String, Transform> DEFAULT_TRANSFORMS = new HashMap<>();
+    final WriteUnitParser parser;
+    final Map<String, Source> sources;
+    final Map<String, Transform> transformers;
+    protected final String outFile, scriptPath;
+    protected final Generator parent;
     private FileWriter writer;
-    private BufferedInput input;
-    private boolean locked = false;
+    private CompilerInput input;
+    protected boolean locked = false;
+    
+    static {
+        DEFAULT_TRANSFORMS.put("f", DefaultTransforms.FORMAT);
+        DEFAULT_TRANSFORMS.put("format", DefaultTransforms.FORMAT);
+        DEFAULT_TRANSFORMS.put("", DefaultTransforms.PLAIN);
+        DEFAULT_TRANSFORMS.put("plain", DefaultTransforms.PLAIN);
+        DEFAULT_TRANSFORMS.put("const", DefaultTransforms.CONST);
+        DEFAULT_TRANSFORMS.put("c", DefaultTransforms.COMPLEX);
+        DEFAULT_TRANSFORMS.put("complex", DefaultTransforms.COMPLEX);
+    }
 
     public Generator(String outPath, String scriptPath) {
-        this.targetFile = Config.outputPath(outPath);
+        this(null, outPath, scriptPath);
+    }
+
+    public Generator(Generator parent,String outPath, String scriptPath) {
+        this.outFile = Config.outputPath(outPath);
         this.scriptPath = Config.resourcePath(scriptPath);
-        transformers.put("f", DefaultTransformers.FORMAT);
-        transformers.put("format", DefaultTransformers.FORMAT);
-        transformers.put("", DefaultTransformers.PLAIN);
-        transformers.put("plain", DefaultTransformers.PLAIN);
-        transformers.put("const", DefaultTransformers.CONST);
+        this.parent = parent;
+        this.sources = new HashMap<>();
+        this.transformers = new HashMap<>();
+        this.parser = new WriteUnitParser(this);
     }
 
     public void registerSrc(Source src) {
-        if (locked) {
-            throw new IllegalCallerException("generator locked");
-        }
+        ensureUnlocked();
         sources.put(src.id, src);
     }
 
-    public void registerTransform(String name, ITransform transform) {
+    public void registerTransform(String name, Transform transform) {
+        ensureUnlocked();
         transformers.put(name, transform);
+    }
+
+    protected void ensureUnlocked() {
+        if (locked) {
+            throw new IllegalStateException("generator locked: " + this);
+        }
     }
 
     public void run() {
         sources.forEach((name, src) -> src.lock());
         this.locked = true;
-        try (FileWriter w = new FileWriter(targetFile, StandardCharsets.UTF_8);
-             BufferedInput i = BufferedInput.fromResource(scriptPath)) {
+        try (FileWriter w = new FileWriter(outFile, StandardCharsets.UTF_8);
+             CompilerInput i = CompilerInput.fromResource(scriptPath)) {
             writer = w;
             input = i;
-            input.ignoreLexemeLengthLimit();
             loadScript();
         } catch (Exception e) {
             e.printStackTrace();
@@ -61,177 +73,59 @@ public class Generator {
     }
 
     private void loadScript() throws Exception {
-        while (input.available()) {
-            int b = input.read();
-            switch (b) {
-                case '\n' -> {
-                    writer.write(input.lexeme());
-                    input.markLexemeStart();
-                }
+        BitClass clazz = BitClass.of('\r', '$');
+        while (true) {
+            switch (input.approach(clazz)) {
                 case '$' -> {
-                    Source src = parseSource();
-                    Output out = parseOutput();
-                    ITransform tr = parseTransform();
-                    out.setSrc(src);
-                    out.setTransform(tr);
-                    out.output(writer);
-                    tr.clear();
+                    input.removeMark();
+                    parser.parse(input).output(writer);
                     input.skipLine();
-                    input.markLexemeStart();
+                    input.mark();
                 }
-            }
-        }
-        writer.write(input.lexeme());
-    }
-
-    private Source parseSource() throws CompileException {
-        input.markColumn();
-        input.markLexemeStart();
-        if ('$' != input.find('$', '\r', '{')) {
-            throw rangeException("unclosed $");
-        }
-        input.retract();
-        String srcName = input.lexeme();
-        if (!sources.containsKey(srcName)) {
-            throw rangeException("source not found: " + srcName);
-        }
-        Source src = sources.get(srcName);
-        if (src.used) {
-            try {
-                src.reset();
-            } catch (UnsupportedOperationException e) {
-                throw rangeException("source can not be reset: " + srcName);
-            }
-        }
-        return src;
-    }
-
-    private Output parseOutput() throws CompileException {
-        input.read();
-        checkNext('{', "missing '{'");
-        checkNext('\"', "missing '\"'");
-        Output output = new Output();
-        parseOutputType(output);
-        return output;
-    }
-
-    private void parseOutputType(Output output) throws CompileException {
-        while (input.available()) {
-            int b = input.read();
-            switch (b) {
-                case '-', '{' -> {
+                case -1 -> {
+                    input.mark();
+                    writer.write(input.capture());
                     return;
                 }
-                case 'R', 'r' -> {
-                    String str = readInt();
-                    output.setRepeat(str.isEmpty() ? Integer.MAX_VALUE : Integer.parseInt(str));
-                }
-                case 'I', 'i' -> {
-                    String str = readInt();
-                    if (str.isEmpty()) {
-                        throw pointException("missing indent count");
-                    }
-                    output.setIndent(Integer.parseInt(str));
-                }
-                case 'L', 'l' -> {
-                    String str = readInt();
-                    if (!str.isEmpty()) {
-                        output.setLineBreak(Integer.parseInt(str));
-                    }
-                }
-                default -> throw pointException("unknown symbol: \"" + (char)b + "\"");
-            }
-        }
-    }
-
-    private String readInt() {
-        input.markLexemeStart();
-        while (input.available()) {
-            if (ASCII.isDigit(input.read())) {
-                continue;
-            }
-            input.retract();
-            break;
-        }
-        return input.lexeme();
-    }
-
-    private ITransform parseTransform() throws CompileException {
-        input.markColumn();
-        input.markLexemeStart();
-        if (input.find(clazzQuoteEnd) != '\"') {
-            throw rangeException("unclosed '\"'");
-        }
-        input.retract();
-        String type = input.lexeme();
-        ITransform t = transformers.get(type);
-        if (t == null) {
-            throw rangeException("transform not found: " + type);
-        }
-        input.read();
-        initTransform(t);
-        return t;
-    }
-
-    private void initTransform(ITransform t) throws CompileException {
-        List<String> args = new ArrayList<>();
-        int start = input.posColumn();
-        LOOP:
-        while (input.available()) {
-            input.markColumn();
-            int i = input.find(clazzArgEnd);
-            switch (i) {
-                case '}' -> {
-                    break LOOP;
-                }
-                case ',' -> args.add(parseArg());
                 default -> {
-                    input.retract();
-                    throw rangeException("unclosed arg");
+                    input.read();
+                    input.mark();
+                    writer.write(input.capture());
+                    input.mark();
                 }
             }
         }
-        try {
-            t.init(args);
-        } catch (Exception e) {
-            throw rangeException(e.getMessage(), start, input.posColumn());
+    }
+
+    public Source getSource(String name) {
+        if (name.isEmpty()) {
+            return Source.EMPTY;
         }
-    }
-
-    private String parseArg() throws CompileException {
-        if (input.find(clazzArgBegin) != '\"') {
-            throw pointException("missing \"");
+        Source res;
+        Generator g = this;
+        while (g != null) {
+            res = g.sources.get(name);
+            if (res != null) {
+                return res;
+            }
+            g = g.parent;
         }
-        input.markColumn();
-        input.markLexemeStart();
-        if (input.find(clazzQuoteEnd) != '\"') {
-            throw rangeException("unclosed \"");
+        return null;
+    }
+
+    public Transform getTransform(String name) {
+        Transform res = DEFAULT_TRANSFORMS.get(name);
+        if (res != null) {
+            return res;
         }
-        input.retract();
-        return input.lexeme();
-    }
-
-    private CompileException pointException(String msg) {
-        int p = input.posColumn() - 1;
-        input.find('\r');
-        return new CompileException(msg, input.posRow(), input.currentLine(), scriptPath).setPos(p);
-    }
-
-    private CompileException rangeException(String msg) {
-        int mp = input.posColumnMark();
-        int p = Math.max(mp, input.posColumn() - 1);
-        input.find('\r');
-        return new CompileException(msg, input.posRow(), input.currentLine(), scriptPath).setPos(mp, p);
-    }
-
-    private CompileException rangeException(String msg, int start, int end) {
-        input.find('\r');
-        return new CompileException(msg, input.posRow(), input.currentLine(), scriptPath).setPos(start, end);
-    }
-
-    private void checkNext(int expected, String msg) throws CompileException {
-        if (input.read() != expected) {
-            throw pointException(msg);
+        Generator g = this;
+        while (g != null) {
+            res = g.transformers.get(name);
+            if (res != null) {
+                return res;
+            }
+            g = g.parent;
         }
+        return null;
     }
 }

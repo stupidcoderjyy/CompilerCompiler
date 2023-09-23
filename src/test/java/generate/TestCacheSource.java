@@ -2,14 +2,14 @@ package generate;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import stupidcoder.generate.source.CacheSource;
+import stupidcoder.generate.SourceBuffered;
 import stupidcoder.util.ReflectionUtil;
 
 public class TestCacheSource {
 
     @Test
     public void testWriteInt() {
-        CacheSource s = new CacheSource("a_b");
+        SourceBuffered s = new SourceBuffered("a_b");
         s.writeInt(0xEEFFEEFF);
         byte[] data = ReflectionUtil.getObjectField(s, "data");
         int count = ReflectionUtil.getObjectField(s, "count");
@@ -23,7 +23,7 @@ public class TestCacheSource {
 
     @Test
     public void testWriteString() {
-        CacheSource s = new CacheSource("a_b");
+        SourceBuffered s = new SourceBuffered("a_b");
         s.writeString("0123456789");
         byte[] data = ReflectionUtil.getObjectField(s, "data");
         int count = ReflectionUtil.getObjectField(s, "count");
@@ -35,7 +35,7 @@ public class TestCacheSource {
 
     @Test
     public void testCreateCache() {
-        CacheSource s = new CacheSource("a_b");
+        SourceBuffered s = new SourceBuffered("a_b");
         for (int i = 0 ; i < 512 ; i ++) {
             s.writeByte('1');
         }

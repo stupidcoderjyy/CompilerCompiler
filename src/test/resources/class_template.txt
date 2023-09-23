@@ -1,0 +1,16 @@
+$pkg${"-f", "package %s;"}
+
+$import${"-f", "import %s.%s;"}
+
+$ex_import${"-plain"}
+
+public class JavaClassGenerator extends Generator {
+    private final String pkg, clazzName;
+
+    public JavaClassGenerator(String pkg, String clazzName, String scriptPath) {
+        super(pkg.replace('.', '/') + '/' + clazzName + ".java", scriptPath);
+        this.pkg = pkg;
+        this.clazzName = clazzName;
+        this.srcClazzName = new StringFieldSource("f_class_name", () -> clazzName);
+    }
+}

@@ -59,8 +59,8 @@ public class DFA {
     }
 
     public IToken run() {
-        input.markLexemeStart();
-        input.skipSpaceTabLineBreak();
+        input.mark();
+        input.skip(' ', '\t', '\r', '\n');
         if (!input.available()) {
             return TokenFileEnd.INSTANCE;
         }
@@ -90,9 +90,9 @@ public class DFA {
                     break;
                 }
             }
-            return TokenError.INSTANCE.fromLexeme(input.lexeme());
+            return TokenError.INSTANCE.fromLexeme(input.capture());
         }
         input.retract(extraLoadedBytes);
-        return operations[lastAccepted].onMatched(input.lexeme(), input);
+        return operations[lastAccepted].onMatched(input.capture(), input);
     }
 }

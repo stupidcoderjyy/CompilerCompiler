@@ -143,8 +143,8 @@ public class VarParser {
                                 tokens.add(0, tokenStack.pop());
                             }
                         }
-                        reducedActions.get(g.id()).invoke(iActions, tokens);
                         states.push(goTo[states.peek()][g.head().id]);
+                        reducedActions.get(g.id()).invoke(iActions, tokens);
                         break;
                 }
             }
