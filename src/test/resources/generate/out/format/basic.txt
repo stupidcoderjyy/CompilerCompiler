@@ -1,0 +1,2 @@
+$f[src1]{"abc%d%c%s", L1}
+$f[src2]{"abc%d", I1L1R2}

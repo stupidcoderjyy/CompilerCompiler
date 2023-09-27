@@ -1,8 +1,0 @@
-############
-$$[L0-c]{
-    "I am const string transform with normal format, " +
-    [I0-f]{"I am format transform"} +
-    "I am enhanced transform format.",
-    "R2I1"
-}
-############

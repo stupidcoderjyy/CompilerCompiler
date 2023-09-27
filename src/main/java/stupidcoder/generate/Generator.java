@@ -1,6 +1,8 @@
 package stupidcoder.generate;
 
 import stupidcoder.Config;
+import stupidcoder.generate.parse.InternalParsers;
+import stupidcoder.generate.parse.Parser;
 import stupidcoder.util.input.BitClass;
 import stupidcoder.util.input.CompilerInput;
 
@@ -10,119 +12,96 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Generator {
-    private static final Map<String, Transform> DEFAULT_TRANSFORMS = new HashMap<>();
-    final WriteUnitParser parser;
-    final Map<String, Source> sources;
-    final Map<String, Transform> transformers;
-    protected final String outFile, scriptPath;
+    protected static final Map<String, Parser> DEFAULT_UNIT_PARSERS = new HashMap<>();
+    protected final Map<String, Source> sources = new HashMap<>();
+    protected final Map<String, Parser> customUnitParsers = new HashMap<>();
     protected final Generator parent;
-    private FileWriter writer;
-    private CompilerInput input;
-    protected boolean locked = false;
-    
+    protected final Map<String, OutUnitField> fields = new HashMap<>();
+
     static {
-        DEFAULT_TRANSFORMS.put("f", DefaultTransforms.FORMAT);
-        DEFAULT_TRANSFORMS.put("format", DefaultTransforms.FORMAT);
-        DEFAULT_TRANSFORMS.put("", DefaultTransforms.PLAIN);
-        DEFAULT_TRANSFORMS.put("plain", DefaultTransforms.PLAIN);
-        DEFAULT_TRANSFORMS.put("const", DefaultTransforms.CONST);
-        DEFAULT_TRANSFORMS.put("c", DefaultTransforms.COMPLEX);
-        DEFAULT_TRANSFORMS.put("complex", DefaultTransforms.COMPLEX);
+        DEFAULT_UNIT_PARSERS.put("f", InternalParsers.UNIT_FORMAT);
+        DEFAULT_UNIT_PARSERS.put("format", InternalParsers.UNIT_FORMAT);
+        DEFAULT_UNIT_PARSERS.put("c", InternalParsers.UNIT_COMPLEX);
+        DEFAULT_UNIT_PARSERS.put("complex", InternalParsers.UNIT_COMPLEX);
+        DEFAULT_UNIT_PARSERS.put("const", InternalParsers.UNIT_CONST);
+        DEFAULT_UNIT_PARSERS.put("r", InternalParsers.UNIT_REPEAT);
+        DEFAULT_UNIT_PARSERS.put("repeat", InternalParsers.UNIT_REPEAT);
+        DEFAULT_UNIT_PARSERS.put("s", InternalParsers.UNIT_SWITCH);
+        DEFAULT_UNIT_PARSERS.put("switch", InternalParsers.UNIT_SWITCH);
     }
 
-    public Generator(String outPath, String scriptPath) {
-        this(null, outPath, scriptPath);
-    }
-
-    public Generator(Generator parent,String outPath, String scriptPath) {
-        this.outFile = Config.outputPath(outPath);
-        this.scriptPath = Config.resourcePath(scriptPath);
+    public Generator(Generator parent) {
         this.parent = parent;
-        this.sources = new HashMap<>();
-        this.transformers = new HashMap<>();
-        this.parser = new WriteUnitParser(this);
+    }
+
+    public Generator() {
+        this(null);
+    }
+
+    public void registerParser(String name, Parser parser) {
+        customUnitParsers.put(name, parser);
     }
 
     public void registerSrc(Source src) {
-        ensureUnlocked();
         sources.put(src.id, src);
     }
 
-    public void registerTransform(String name, Transform transform) {
-        ensureUnlocked();
-        transformers.put(name, transform);
-    }
-
-    protected void ensureUnlocked() {
-        if (locked) {
-            throw new IllegalStateException("generator locked: " + this);
-        }
-    }
-
-    public void run() {
+    public void loadScript(String scriptFile, String targetFile) {
+        BitClass sign = BitClass.of('$', '\r');
         sources.forEach((name, src) -> src.lock());
-        this.locked = true;
-        try (FileWriter w = new FileWriter(outFile, StandardCharsets.UTF_8);
-             CompilerInput i = CompilerInput.fromResource(scriptPath)) {
-            writer = w;
-            input = i;
-            loadScript();
+        try (CompilerInput input = CompilerInput.fromResource(scriptFile);
+             FileWriter writer = new FileWriter(Config.outputPath(targetFile), StandardCharsets.UTF_8)){
+            while (true) {
+                input.mark();
+                switch (input.approach(sign)) {
+                    case '$' -> {
+                        input.removeMark();
+                        InternalParsers.UNIT
+                                .parse(this, input, null)
+                                .writeAll(writer, null);
+                        input.skipLine();
+                    }
+                    case '\r' -> {
+                        input.mark();
+                        writer.write(input.capture());
+                        input.skipLine();
+                    }
+                    default -> {
+                        input.mark();
+                        writer.write(input.capture());
+                        return;
+                    }
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
+        sources.forEach((name, src) -> src.close());
     }
 
-    private void loadScript() throws Exception {
-        BitClass clazz = BitClass.of('\r', '$');
-        while (true) {
-            switch (input.approach(clazz)) {
-                case '$' -> {
-                    input.removeMark();
-                    parser.parse(input).output(writer);
-                    input.skipLine();
-                    input.mark();
-                }
-                case -1 -> {
-                    input.mark();
-                    writer.write(input.capture());
-                    return;
-                }
-                default -> {
-                    input.read();
-                    input.mark();
-                    writer.write(input.capture());
-                    input.mark();
-                }
-            }
-        }
-    }
-
-    public Source getSource(String name) {
-        if (name.isEmpty()) {
-            return Source.EMPTY;
-        }
-        Source res;
+    public Source getSrc(String name) {
         Generator g = this;
+        Source src;
         while (g != null) {
-            res = g.sources.get(name);
-            if (res != null) {
-                return res;
+            src = g.sources.get(name);
+            if (src != null) {
+                return src;
             }
             g = g.parent;
         }
         return null;
     }
 
-    public Transform getTransform(String name) {
-        Transform res = DEFAULT_TRANSFORMS.get(name);
-        if (res != null) {
-            return res;
+    public Parser getUnitParser(String name) {
+        Parser p = DEFAULT_UNIT_PARSERS.get(name);
+        if (p != null) {
+            return p;
         }
         Generator g = this;
         while (g != null) {
-            res = g.transformers.get(name);
-            if (res != null) {
-                return res;
+            p = g.customUnitParsers.get(name);
+            if (p != null) {
+                return p;
             }
             g = g.parent;
         }

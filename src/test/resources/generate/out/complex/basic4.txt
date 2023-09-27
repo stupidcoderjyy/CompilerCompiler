@@ -1,0 +1,5 @@
+$c[src1]{%
+    aa$f{"%d"}bb
+    $f{"%d"}aabb
+    aabb$f{"%d"}
+%, I1L1}

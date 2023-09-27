@@ -1,0 +1,9 @@
+$r[src]{
+    $f{"-%d-"},
+    %first-prefix: $f{"first-prefix%d"},
+    %prefix: $f{"prefix%d"},
+    %last-prefix: $f{"last-prefix%d"},
+    %first-postfix: $f{"first-postfix%d", L1},
+    %postfix: $f{"postfix%d", L1},
+    %last-postfix: $f{"last-postfix%d", L1}
+}

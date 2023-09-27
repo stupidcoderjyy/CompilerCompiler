@@ -1,0 +1,97 @@
+$pkg$[-f]{"package %s.%s;"}
+
+$internal_import$[R-f]{"import %s;"}
+
+import java.lang.reflect.Method;
+import java.util.*;
+import java.util.function.Supplier;
+
+public class GrammarAnalyst {
+    private static final int ACCEPT = 0x10000;
+    private static final int MOVE = 0x20000;
+    private static final int REDUCE = 0x30000;
+
+    private final int[][] actions;
+    private final int[][] goTo;
+    private final int[] terminalRemap;
+    private final Method[] reducedActions;
+    private final Production[] productions;
+    private final Supplier<IProperty>[] propertySuppliers;
+
+    protected GrammarAnalyst() {
+        this.iActions = iActions;
+        $ga_init$[L0-c]{
+            [-f]{"this.productions = new Production[%d];"} +
+            [-f]{"this.actions = new int[%d][%d];"} +
+            [-f]{"this.goTo = new int[%d][%d];"} +
+            [-f]{"this.terminalRemap = new int[%d];"} +
+            [-f]{"this.propertySuppliers = new Supplier[%d];"},
+            "I2"
+        }
+        initTable();
+        initGrammars();
+    }
+
+    private void initTable() {
+        $goto$[I2R-f]{"goTo[%d][%d] = %d;"}
+        $action$[I2R-f]{"actions[%d][%d] = %s"}
+        $terminal_remap$[I2R-f]{"terminalRemap[%d] = %d"}
+        $property$[I2R-f]{"propertySuppliers[%d] = Property%s::new;"}
+    }
+
+    private void initGrammars() {
+        $symbol_def$[I2R-f]{"Symbol e%d = new Symbol(\"%s\", %d, %d);"}
+        $prod_def$[R-c]{
+            [-f]{"productions[%d] = new Production(0, e%d, List.of("} +
+            [-prod_init_list]{} +
+            [-f]{")); //%s"},
+            "I2"
+        }
+    }
+
+    public void run(DFA dfa) {
+        try {
+            Stack<Integer> states = new Stack<>();
+            Stack<IProperty> properties = new Stack<>();
+            states.push(0);
+            IToken token = dfa.run();
+            if (token == TokenFileEnd.INSTANCE) {
+                return;
+            }
+            LOOP:
+            while (true) {
+                int s = states.peek();
+                int order = actions[s][terminalRemap[token.type()]];
+                int type = order >> 16;
+                int target = order % 0x10000;
+                switch (type) {
+                    case 0:
+                        return;
+                    case 1:
+                        reducedActions[0].invoke(iActions, new ArrayList<IToken>());
+                        break LOOP;
+                    case 2:
+                        states.push(target);
+                        properties.push(new PropertyTerminal<>(token));
+                        token = dfa.run();
+                        break;
+                    case 3:
+                        Production p = productions[target];
+                        int size = p.body().size();
+                        IProperty[] body = new IProperty[size];
+                        for (int i = 0 ; i < size ; i ++) {
+                            states.pop();
+                            body[i] = properties.pop();
+                        }
+                        IProperty pHead = propertySuppliers[p.head().id].get();
+                        pHead.onReduced(p, body);
+                        properties.push(pHead);
+                        states.push(goTo[states.peek()][p.head().id]);
+                        break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}

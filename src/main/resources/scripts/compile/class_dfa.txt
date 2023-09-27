@@ -1,0 +1,64 @@
+$pkg$[-f]{"package %s.%s;"}
+
+$internal_import$[R-f]{"import %s.%s.%s;"}
+
+$external_import$[R-f]{"import %s;"}
+
+public class DFA {
+    private final int[][] goTo;
+    private final boolean[] accepted;
+    private final IOperation[] operations;
+    public final IInput input;
+
+    public DFA(IInput input) {
+        this.input = input;
+        $states_count$[I2-f]{"accepted = new boolean[%d];"}
+        $states_count$[I2-f]{"goTo = new int[%d][128];"}
+        $states_count$[I2-f]{"operations = new IOperation[%d];"}
+        init();
+    }
+
+    private void init() {
+        $goto$[I2-dfaSetGoto]{}
+        $op_def$[RI2-f]{"IOperation e%d = %s;"}
+        $op_set$[RI2-f]{"IOperation e%d = %s;"}
+    }
+
+    public IToken run() {
+        input.markLexemeStart();
+        input.skipSpaceTabLineBreak();
+        if (!input.available()) {
+            return TokenFileEnd.INSTANCE;
+        }
+        $start_state$[I2-f]{"int state = %d;"}
+        int lastAccepted = -2;
+        int extraLoadedBytes = 0;
+        while (input.available()){
+            int b = input.read();
+            state = goTo[state][b];
+            if (state == 0) {
+                extraLoadedBytes++;
+                break;
+            }
+
+            if (accepted[state]) {
+                lastAccepted = state;
+                extraLoadedBytes = 0;
+            } else {
+                extraLoadedBytes++;
+            }
+        }
+        if (lastAccepted < 0 || operations[lastAccepted] == null) {
+            while (input.available()) {
+                int b = input.read();
+                if (b == ' ') {
+                    input.retract();
+                    break;
+                }
+            }
+            return TokenError.INSTANCE.fromLexeme(input.lexeme());
+        }
+        input.retract(extraLoadedBytes);
+        return operations[lastAccepted].onMatched(input.lexeme(), input);
+    }
+}
