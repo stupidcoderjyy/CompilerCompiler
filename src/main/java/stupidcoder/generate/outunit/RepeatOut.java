@@ -10,6 +10,7 @@ public class RepeatOut extends OutUnit {
     public OutUnit unit;
     public final OutUnitField firstPrefix , prefix , lastPrefix;
     public final OutUnitField firstPostfix , postfix , lastPostfix;
+    public final OutUnitField singlePrefix, singlePostFix;
 
     public RepeatOut() {
         this.firstPrefix = new OutUnitField(this, "first-prefix");
@@ -18,6 +19,8 @@ public class RepeatOut extends OutUnit {
         this.firstPostfix = new OutUnitField(this, "first-postfix");
         this.postfix = new OutUnitField(this, "postfix");
         this.lastPostfix = new OutUnitField(this, "last-postfix");
+        this.singlePrefix = new OutUnitField(this, "single-prefix");
+        this.singlePostFix = new OutUnitField(this, "single-postfix");
     }
 
     @Override
@@ -26,7 +29,7 @@ public class RepeatOut extends OutUnit {
         check();
         switch (count) {
             case 0 -> {}
-            case 1 -> writeOnce(writer, srcIn, prefix.value, postfix.value);
+            case 1 -> writeOnce(writer, srcIn, singlePrefix.value, singlePostFix.value);
             default -> {
                 writeOnce(writer, srcIn, firstPrefix.value, firstPostfix.value);
                 for (int i = 1 ; i < count - 1 ; i ++) {
@@ -59,6 +62,12 @@ public class RepeatOut extends OutUnit {
         }
         if (lastPostfix.value == null) {
             lastPostfix.value = postfix.value;
+        }
+        if (singlePostFix.value == null) {
+            singlePostFix.value = postfix.value;
+        }
+        if (singlePrefix.value == null) {
+            singlePrefix.value = prefix.value;
         }
     }
 }

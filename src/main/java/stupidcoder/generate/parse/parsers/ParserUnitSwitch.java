@@ -13,7 +13,10 @@ public class ParserUnitSwitch implements Parser {
     public OutUnit parse(Generator g, CompilerInput input, OutUnit raw) throws CompileException {
         SwitchOut switchOut = new SwitchOut();
         while (true) {
-            switchOut.units.add(InternalParsers.UNIT.parse(g, input, null));
+            switch (approachNext(input)) {
+                case '$', '"' -> switchOut.units.add(InternalParsers.UNIT.parse(g, input, null));
+                default -> InternalParsers.ARG_COMMON_OUTPUT_CONFIG.parse(g, input, switchOut);
+            }
             if (checkArgInterval(input)) {
                 return switchOut;
             }

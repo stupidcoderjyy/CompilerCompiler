@@ -16,7 +16,7 @@ public class SourceCached extends Source {
     private BufferedOutputStream cacheOut;
     private BufferedInputStream cacheIn;
     private boolean useCache;
-    private boolean locked;
+    protected boolean locked;
 
     static {
         CACHE_DIR = Config.outputPath("source-caches");
@@ -36,9 +36,7 @@ public class SourceCached extends Source {
 
     public void writeInt(int i) {
         try {
-            if (locked) {
-                throw new IllegalStateException("source locked");
-            }
+            ensureState(false);
             byte[] bs = new byte[]{
                     (byte) (i >> 24),
                     (byte) (i >> 16),
@@ -62,9 +60,7 @@ public class SourceCached extends Source {
 
     public void writeString(String str) {
         try {
-            if (locked) {
-                throw new IllegalCallerException("source locked");
-            }
+            ensureState(false);
             byte[] temp = str.getBytes(StandardCharsets.UTF_8);
             writeInt(temp.length);
             if (useCache || tooLarge(temp.length)) {
@@ -80,9 +76,7 @@ public class SourceCached extends Source {
 
     public void writeByte(int b) {
         try {
-            if (locked) {
-                throw new IllegalCallerException("source locked");
-            }
+            ensureState(false);
             if (useCache || tooLarge(1)) {
                 cacheOut.write(b);
             } else {
@@ -132,9 +126,7 @@ public class SourceCached extends Source {
     public int read(byte[] arr, int offset, int len) {
         try {
             used = true;
-            if (!locked) {
-                throw new IllegalStateException("source still open");
-            }
+            ensureState(true);
             if (useCache) {
                 if (cacheIn == null) {
                     cacheIn = new BufferedInputStream(new FileInputStream(getCacheFileName()));
@@ -170,5 +162,15 @@ public class SourceCached extends Source {
 
     private String getCacheFileName() {
         return CACHE_DIR + "/" + id + ".cache";
+    }
+
+    protected void ensureState(boolean locked) {
+        if (this.locked != locked) {
+            if (locked) {
+                throw new IllegalStateException("source still open");
+            } else {
+                throw new IllegalCallerException("source locked");
+            }
+        }
     }
 }

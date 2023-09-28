@@ -4,15 +4,19 @@ import org.junit.jupiter.api.Test;
 import stupidcoder.generate.Generator;
 import stupidcoder.generate.sources.SourceCached;
 
+import java.util.Random;
+
 public class TestSwitchOut {
 
     @Test
     public void testBasic() {
         SourceCached src = new SourceCached("src");
-        src.writeInt(1); //item id
-        src.writeInt(12); //data
+        for (int i = 0 ; i < 10 ; i ++) {
+            src.writeInt(new Random().nextInt(2)); //switch
+            src.writeInt(i);
+        }
         Generator g = new Generator();
         g.registerSrc(src);
-        g.loadScript("generate/out/switch/basic.txt", "switch_basic.txt");
+        g.loadScript("generate/out/switch/basic1.txt", "switch_basic.txt");
     }
 }

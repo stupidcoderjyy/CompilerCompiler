@@ -28,13 +28,19 @@ public class ParserComplexArg0Paragraph implements Parser {
                 switch (input.approach(LINE_KEY)) {
                     case '$' -> {
                         input.mark();
-                        cpx.append(new ConstOut(input.capture()));
+                        String capture = input.capture();
+                        if (!capture.isEmpty()) {
+                            cpx.append(new ConstOut(capture));
+                        }
                         cpx.append(InternalParsers.UNIT.parse(g, input, null));
                         input.mark();
                     }
                     case '\r' -> {
                         input.mark();
-                        cpx.append(new ConstOut(input.capture()));
+                        String capture = input.capture();
+                        if (!capture.isEmpty()) {
+                            cpx.append(new ConstOut(capture));
+                        }
                         input.skipLine();
                         break LOOP_LINE;
                     }

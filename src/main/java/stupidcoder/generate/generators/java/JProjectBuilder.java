@@ -86,8 +86,11 @@ public class JProjectBuilder {
         rootPkgGen.gen();
     }
 
-    public void registerClazzSrc(String clazzName, Source src) {
-        findClass(clazzName).registerSrc(src);
+    public void registerClazzSrc(String clazzName, Source ... src) {
+        JClassGen clazz = findClass(clazzName);
+        for (Source s : src) {
+            clazz.registerSrc(s);
+        }
     }
 
     public void registerPackageSrc(String pkg, Source src) {

@@ -47,6 +47,20 @@ public class TestComplexOut {
     }
 
     @Test
+    public void testBasic5() {
+        Generator g = new Generator();
+        SourceCached src = new SourceCached("src");
+        for (int i = 0 ; i < 3 ; i ++) {
+            src.writeInt(1); //switch
+            src.writeInt(10);
+            for (int k = 0; k < 10; k++) {
+                src.writeInt(k);
+            }
+        }
+        g.registerSrc(src);
+        g.loadScript("generate/out/complex/basic5.txt", "cpx_basic5.txt");
+    }
+    @Test
     public void testErr() {
         Generator g = new Generator();
         for (int i = 1 ; i <= 2 ; i ++) {

@@ -1,0 +1,8 @@
+$s[src]{
+    $f{"%n"},
+    $c{%
+        xxxxxxx
+        $r{$f{"%d", I2}, %postfix:$f{"%n"}, %last-postfix:"", I0}
+        xxxxxxx
+    %, IL}
+, R}
