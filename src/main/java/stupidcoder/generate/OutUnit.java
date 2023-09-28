@@ -18,8 +18,11 @@ public abstract class OutUnit {
     public void writeAll(FileWriter writer, BufferedInput parentSrc) throws Exception{
         initConfig();
         boolean nativeSrc = src != Source.EMPTY;
+        if (nativeSrc && src.used) {
+            src.reset();
+        }
         BufferedInput srcIn = nativeSrc ? new BufferedInput(src) : parentSrc;
-        for (int i = 0; i < repeat; i++) {
+        for (int i = 0; shouldRepeat(i, srcIn) ; i++) {
             writer.write("    ".repeat(indents));
             writeContentOnce(writer, srcIn);
             writer.write("\r\n".repeat(lineBreaks));
@@ -28,6 +31,13 @@ public abstract class OutUnit {
             srcIn.close();
             src.close();
         }
+    }
+
+    protected boolean shouldRepeat(int count, BufferedInput input) {
+        if (count >= repeat) {
+            return false;
+        }
+        return input == null || input.available();
     }
 
     protected final int readInt(BufferedInput input) {

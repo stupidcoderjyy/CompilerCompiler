@@ -18,7 +18,7 @@ public class FormatOut extends OutUnit {
 
     @Override
     public void writeContentOnce(FileWriter writer, BufferedInput srcIn) throws Exception {
-        if (srcIn == null) {
+        if (srcIn == null || !srcIn.available()) {
             return;
         }
         for (int i = 0 ; i < types.size() ; i ++) {

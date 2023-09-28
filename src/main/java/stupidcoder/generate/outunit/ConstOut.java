@@ -16,4 +16,9 @@ public class ConstOut extends OutUnit {
     public void writeContentOnce(FileWriter writer, BufferedInput srcIn) throws Exception {
         writer.write(val);
     }
+
+    @Override
+    protected boolean shouldRepeat(int count, BufferedInput input) {
+        return count < repeat;
+    }
 }

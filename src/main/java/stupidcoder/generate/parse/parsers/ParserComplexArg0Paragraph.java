@@ -15,42 +15,37 @@ public class ParserComplexArg0Paragraph implements Parser {
 
     @Override
     public OutUnit parse(Generator g, CompilerInput input, OutUnit raw) throws CompileException {
-        ComplexOut complex = (ComplexOut) raw;
+        ComplexOut cpx = (ComplexOut) raw;
         checkNext(input, '%');
         input.skipLine();
-        //新的一行，不断读取
+        LOOP_PARA:
         while (true) {
-            if (!parseLine(g, input, complex)) {
-                break;
+            input.skip(BitClass.BLANK);
+            cpx.newLine();
+            LOOP_LINE:
+            while (true) {
+                input.mark();
+                switch (input.approach(LINE_KEY)) {
+                    case '$' -> {
+                        input.mark();
+                        cpx.append(new ConstOut(input.capture()));
+                        cpx.append(InternalParsers.UNIT.parse(g, input, null));
+                        input.mark();
+                    }
+                    case '\r' -> {
+                        input.mark();
+                        cpx.append(new ConstOut(input.capture()));
+                        input.skipLine();
+                        break LOOP_LINE;
+                    }
+                    case '%' -> {
+                        input.read();
+                        break LOOP_PARA;
+                    }
+                    case -1 -> throw input.errorAtForward("unclosed '%'");
+                }
             }
         }
-        return complex;
-    }
-
-    private boolean parseLine(Generator g, CompilerInput input, ComplexOut cpx) throws CompileException {
-        input.skip(BitClass.BLANK);
-        cpx.newLine();
-        while (true) {
-            input.mark();
-            switch (input.approach(LINE_KEY)) {
-                case '$' -> {
-                    input.mark();
-                    cpx.append(new ConstOut(input.capture()));
-                    cpx.append(InternalParsers.UNIT.parse(g, input, null));
-                    input.mark();
-                }
-                case '\r' -> {
-                    input.mark();
-                    cpx.append(new ConstOut(input.capture()));
-                    input.skipLine();
-                    return true;
-                }
-                case '%' -> {
-                    input.read();
-                    return false;
-                }
-                case -1 -> throw input.errorAtForward("unclosed '%'");
-            }
-        }
+        return cpx;
     }
 }

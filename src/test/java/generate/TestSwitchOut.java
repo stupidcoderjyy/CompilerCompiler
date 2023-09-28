@@ -13,6 +13,6 @@ public class TestSwitchOut {
         src.writeInt(12); //data
         Generator g = new Generator();
         g.registerSrc(src);
-        g.loadScript("/generate/out/switch/basic.txt", "switch_basic.txt");
+        g.loadScript("generate/out/switch/basic.txt", "switch_basic.txt");
     }
 }

@@ -18,14 +18,14 @@ public class TestFormatOut {
         Generator g = new Generator();
         g.registerSrc(src1);
         g.registerSrc(src2);
-        g.loadScript("/generate/out/format/basic.txt", "format_basic.txt");
+        g.loadScript("generate/out/format/basic.txt", "format_basic.txt");
     }
 
     @Test
     public void testErr() {
         Generator g = new Generator();
         for (int i = 1 ; i <= 5 ; i ++) {
-            g.loadScript(String.format("/generate/out/format/err%d.txt", i), "err.txt");
+            g.loadScript(String.format("generate/out/format/err%d.txt", i), "err.txt");
         }
     }
 }

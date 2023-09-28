@@ -16,7 +16,6 @@ public class Generator {
     protected final Map<String, Source> sources = new HashMap<>();
     protected final Map<String, Parser> customUnitParsers = new HashMap<>();
     protected final Generator parent;
-    protected final Map<String, OutUnitField> fields = new HashMap<>();
 
     static {
         DEFAULT_UNIT_PARSERS.put("f", InternalParsers.UNIT_FORMAT);
@@ -47,36 +46,41 @@ public class Generator {
     }
 
     public void loadScript(String scriptFile, String targetFile) {
-        BitClass sign = BitClass.of('$', '\r');
         sources.forEach((name, src) -> src.lock());
-        try (CompilerInput input = CompilerInput.fromResource(scriptFile);
+        try (CompilerInput input = CompilerInput.fromResource(Config.resourcePath(scriptFile));
              FileWriter writer = new FileWriter(Config.outputPath(targetFile), StandardCharsets.UTF_8)){
-            while (true) {
-                input.mark();
-                switch (input.approach(sign)) {
-                    case '$' -> {
-                        input.removeMark();
-                        InternalParsers.UNIT
-                                .parse(this, input, null)
-                                .writeAll(writer, null);
-                        input.skipLine();
-                    }
-                    case '\r' -> {
-                        input.mark();
-                        writer.write(input.capture());
-                        input.skipLine();
-                    }
-                    default -> {
-                        input.mark();
-                        writer.write(input.capture());
-                        return;
-                    }
-                }
-            }
+            loadScript(input, writer);
         } catch (Exception e) {
             e.printStackTrace();
         }
         sources.forEach((name, src) -> src.close());
+    }
+
+    public void loadScript(CompilerInput input, FileWriter writer) throws Exception{
+        BitClass sign = BitClass.of('$', '\r');
+        while (true) {
+            input.mark();
+            switch (input.approach(sign)) {
+                case '$' -> {
+                    input.removeMark();
+                    InternalParsers.UNIT
+                            .parse(this, input, null)
+                            .writeAll(writer, null);
+                    input.skipLine();
+                }
+                case '\r' -> {
+                    input.mark();
+                    writer.write(input.capture());
+                    writer.write("\r\n");
+                    input.skipLine();
+                }
+                default -> {
+                    input.mark();
+                    writer.write(input.capture());
+                    return;
+                }
+            }
+        }
     }
 
     public Source getSrc(String name) {

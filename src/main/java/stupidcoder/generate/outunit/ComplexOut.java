@@ -25,7 +25,7 @@ public class ComplexOut extends OutUnit {
         boolean nativeSrc = src != Source.EMPTY;
         BufferedInput srcIn = nativeSrc ? new BufferedInput(src) : parentSrc;
         boolean hasLb = lineBreaks > 0;
-        for (int i = 0 ; i < repeat ; i ++) {
+        for (int i = 0 ; shouldRepeat(i, srcIn) ; i ++) {
             for (List<OutUnit> lineUnits : units) {
                 if (lineUnits.isEmpty()) {
                     continue;

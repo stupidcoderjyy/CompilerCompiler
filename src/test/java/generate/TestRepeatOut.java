@@ -17,14 +17,14 @@ public class TestRepeatOut {
             src.writeInt(i); //后缀
         }
         g.registerSrc(src);
-        g.loadScript("/generate/out/repeat/basic.txt", "repeat_basic.txt");
+        g.loadScript("generate/out/repeat/basic.txt", "repeat_basic.txt");
     }
 
     @Test
     public void testErr() {
         Generator g = new Generator();
         for (int i = 1 ; i <= 3 ; i ++) {
-            g.loadScript(String.format("/generate/out/repeat/err%d.txt", i), "err.txt");
+            g.loadScript(String.format("generate/out/repeat/err%d.txt", i), "err.txt");
         }
     }
 }

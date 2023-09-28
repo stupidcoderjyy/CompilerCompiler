@@ -1,8 +1,4 @@
-$pkg$[-f]{"package %s.%s;"}
-
-$internal_import$[R-f]{"import %s.%s.%s;"}
-
-$external_import$[R-f]{"import %s;"}
+$clazzHead${["IOperation", "IToken", "TokenFileEnd", "IInput"]}
 
 public class DFA {
     private final int[][] goTo;
@@ -12,16 +8,17 @@ public class DFA {
 
     public DFA(IInput input) {
         this.input = input;
-        $states_count$[I2-f]{"accepted = new boolean[%d];"}
-        $states_count$[I2-f]{"goTo = new int[%d][128];"}
-        $states_count$[I2-f]{"operations = new IOperation[%d];"}
+        $c[statesCount]{%
+            $f{"accepted = new boolean[%d];"}
+            $f{"goTo = new int[%d][128];"}
+            $f{"operations = new IOperation[%d];"}
+        %, I2L1}
         init();
     }
 
     private void init() {
-        $goto$[I2-dfaSetGoto]{}
-        $op_def$[RI2-f]{"IOperation e%d = %s;"}
-        $op_set$[RI2-f]{"IOperation e%d = %s;"}
+        $DfaArraySetter[goTo]{"goTo", I2L1}
+        $ArraySetter[op]{"IOperation e%d = %s;", I2}
     }
 
     public IToken run() {
@@ -30,7 +27,7 @@ public class DFA {
         if (!input.available()) {
             return TokenFileEnd.INSTANCE;
         }
-        $start_state$[I2-f]{"int state = %d;"}
+        $f[startState]{"int state = %d;", L1I2}
         int lastAccepted = -2;
         int extraLoadedBytes = 0;
         while (input.available()){

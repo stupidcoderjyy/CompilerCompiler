@@ -9,7 +9,7 @@ public class TestComplexOut {
     @Test
     public void testBasic1() {
         Generator g = new Generator();
-        g.loadScript("/generate/out/complex/basic1.txt", "cpx_basic1.txt");
+        g.loadScript("generate/out/complex/basic1.txt", "cpx_basic1.txt");
     }
 
     @Test
@@ -21,7 +21,7 @@ public class TestComplexOut {
         src2.writeInt(100);
         g.registerSrc(src1);
         g.registerSrc(src2);
-        g.loadScript("/generate/out/complex/basic2.txt", "cpx_basic2.txt");
+        g.loadScript("generate/out/complex/basic2.txt", "cpx_basic2.txt");
     }
 
     @Test
@@ -32,7 +32,7 @@ public class TestComplexOut {
         src1.writeInt(2);
         src1.writeInt(3);
         g.registerSrc(src1);
-        g.loadScript("/generate/out/complex/basic3.txt", "cpx_basic3.txt");
+        g.loadScript("generate/out/complex/basic3.txt", "cpx_basic3.txt");
     }
 
     @Test
@@ -43,14 +43,14 @@ public class TestComplexOut {
         src1.writeInt(2);
         src1.writeInt(3);
         g.registerSrc(src1);
-        g.loadScript("/generate/out/complex/basic4.txt", "cpx_basic4.txt");
+        g.loadScript("generate/out/complex/basic4.txt", "cpx_basic4.txt");
     }
 
     @Test
     public void testErr() {
         Generator g = new Generator();
         for (int i = 1 ; i <= 2 ; i ++) {
-            g.loadScript(String.format("/generate/out/complex/err%d.txt", i), "err.txt");
+            g.loadScript(String.format("generate/out/complex/err%d.txt", i), "err.txt");
         }
     }
 }
