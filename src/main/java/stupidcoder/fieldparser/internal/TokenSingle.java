@@ -12,9 +12,8 @@ public class TokenSingle implements IToken {
 
     @Override
     public IToken fromLexeme(String lexeme) {
-        TokenSingle t = new TokenSingle();
-        t.ch = lexeme.charAt(0);
-        return t;
+        this.ch = lexeme.charAt(0);
+        return this;
     }
 
     @Override

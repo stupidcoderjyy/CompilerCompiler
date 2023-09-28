@@ -12,9 +12,8 @@ public class TokenString implements IToken {
 
     @Override
     public IToken fromLexeme(String lexeme) {
-        TokenString t = new TokenString();
-        t.lexeme = lexeme.substring(1, lexeme.length() - 1);
-        return t;
+        this.lexeme = lexeme.substring(1, lexeme.length() - 1);
+        return this;
     }
 
     @Override
