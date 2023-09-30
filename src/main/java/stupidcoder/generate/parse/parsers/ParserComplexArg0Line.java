@@ -5,7 +5,6 @@ import stupidcoder.generate.OutUnit;
 import stupidcoder.generate.outunit.ComplexOut;
 import stupidcoder.generate.parse.InternalParsers;
 import stupidcoder.generate.parse.Parser;
-import stupidcoder.util.input.BitClass;
 import stupidcoder.util.input.CompileException;
 import stupidcoder.util.input.CompilerInput;
 
@@ -17,18 +16,12 @@ public class ParserComplexArg0Line implements Parser {
         cpx.newLine();
         while (true) {
             cpx.append(InternalParsers.UNIT.parse(g, input, null));
-            input.skip(BitClass.BLANK);
-            int b = input.read();
-            switch (b) {
-                case '+' -> {}
-                case ',' -> {
-                    input.retract();
+            switch (approachNext(input)) {
+                case '+' -> input.read();
+                case ',', '}' -> {
                     return cpx;
                 }
-                default -> {
-                    input.retract();
-                    throw input.errorAtForward("unexpected symbol");
-                }
+                default -> throw input.errorAtForward("unexpected symbol");
             }
         }
     }

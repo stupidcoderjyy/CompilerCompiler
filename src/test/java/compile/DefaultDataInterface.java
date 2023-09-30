@@ -1,9 +1,10 @@
 package compile;
 
-import stupidcoder.compile.grammar.IDataHandler;
+import stupidcoder.compile.syntax.ISyntaxAccess;
+import stupidcoder.compile.syntax.ISyntaxAnalyzerSetter;
 
 public class DefaultDataInterface {
-    public static final IDataHandler ACCEPT = new IDataHandler() {
+    public static final ISyntaxAnalyzerSetter ACCEPT = new ISyntaxAnalyzerSetter() {
         @Override
         public void setActionShift(int from, int to, int inputTerminal) {
             System.out.printf("actions[%d][%d] = MOVE | %d;\n", from, inputTerminal, to);
@@ -25,27 +26,13 @@ public class DefaultDataInterface {
         }
 
         @Override
-        public void setTerminalSymbolIdRemap(int origin, int after) {
-//            if (origin > 0 && origin < 128) {
-//                System.out.println((char) origin + "->" + after);
-//            } else {
-                System.out.println(origin + "->" + after);
-//            }
-        }
-
-        @Override
         public void setStatesCount(int count) {
             System.out.println("states: " + count);
         }
 
         @Override
-        public void setTerminalCount(int count) {
-            System.out.println("nt: " + count);
-        }
+        public void setOthers(ISyntaxAccess access) {
 
-        @Override
-        public void setNonTerminalCount(int count) {
-            System.out.println("t: " + count);
         }
     };
 }

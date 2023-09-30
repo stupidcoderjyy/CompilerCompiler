@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
 
 public class SourceCached extends Source {
+    private static int srcCount = 0;
     private static final String CACHE_DIR;
     private static final int DATA_SIZE_THRESHOLD = 128;
     private static final Pattern NAME_PATTERN = Pattern.compile("[_a-z][_a-zA-Z0-9]*");
@@ -17,6 +18,7 @@ public class SourceCached extends Source {
     private BufferedInputStream cacheIn;
     private boolean useCache;
     protected boolean locked;
+    private final int id;
 
     static {
         CACHE_DIR = Config.outputPath("source-caches");
@@ -31,6 +33,7 @@ public class SourceCached extends Source {
         this.data = new byte[DATA_SIZE_THRESHOLD];
         this.useCache = false;
         this.count = 0;
+        this.id = srcCount++;
         locked = false;
     }
 
@@ -55,6 +58,12 @@ public class SourceCached extends Source {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    public void writeInt(int ... ints) {
+        for (int anInt : ints) {
+            writeInt(anInt);
         }
     }
 
@@ -161,7 +170,7 @@ public class SourceCached extends Source {
     }
 
     private String getCacheFileName() {
-        return CACHE_DIR + "/" + id + ".cache";
+        return CACHE_DIR + "/" + name + "$" + id + ".cache";
     }
 
     protected void ensureState(boolean locked) {

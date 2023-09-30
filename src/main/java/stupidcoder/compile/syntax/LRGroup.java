@@ -1,4 +1,4 @@
-package stupidcoder.compile.grammar;
+package stupidcoder.compile.syntax;
 
 import stupidcoder.common.Production;
 

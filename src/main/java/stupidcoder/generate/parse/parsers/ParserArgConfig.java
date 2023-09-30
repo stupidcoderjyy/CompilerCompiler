@@ -28,7 +28,7 @@ public class ParserArgConfig implements Parser {
                     input.retract();
                     return raw;
                 }
-                case ' ' -> {}
+                case ' ', '\r', '\n' -> {}
                 default -> {
                     input.retract();
                     throw input.errorAtForward("invalid output unit config flag");

@@ -61,6 +61,12 @@ public abstract class SourceField<T> extends Source {
         data = null;
     }
 
+    @Override
+    public void destroy() {
+        data = null;
+        supplier = null;
+    }
+
     protected final void writeInt(int v, int start) {
         data[start] = (byte) (v >> 24);
         data[start + 1] = (byte) (v >> 16);

@@ -1,4 +1,4 @@
-package stupidcoder.compile.grammar;
+package stupidcoder.compile.syntax;
 
 import stupidcoder.common.Production;
 import stupidcoder.common.symbol.DefaultSymbols;
@@ -6,19 +6,19 @@ import stupidcoder.common.symbol.Symbol;
 
 import java.util.List;
 
-class PriorityManager implements IPriorityAccess, IPriorityRegistry {
+class PriorityManager implements IPriorityAccess {
     private int[] symbolPriorities;
     private int[] prodPriorities;
-    private final IGrammarAccess access;
+    private final SyntaxLoader loader;
 
-    PriorityManager(IGrammarAccess access) {
-        this.access = access;
+    PriorityManager(SyntaxLoader loader) {
+        this.loader = loader;
     }
 
     void init() {
-        symbolPriorities = new int[access.symbolsCount()];
-        prodPriorities = new int[access.grammar().size()];
-        for (Production production : access.grammar()) {
+        symbolPriorities = new int[loader.lexemeToSymbol.size()];
+        prodPriorities = new int[loader.syntax().size()];
+        for (Production production : loader.syntax()) {
             registerGrammar(production);
         }
     }
@@ -37,10 +37,9 @@ class PriorityManager implements IPriorityAccess, IPriorityRegistry {
         }
     }
 
-    @Override
-    public void registerPriority(String larger, String smaller, int difference) {
-        int pSmaller = symbolPriorities[access.symbolOf(smaller).id];
-        symbolPriorities[access.symbolOf(larger).id] = pSmaller + difference;
+   void registerPriority(String larger, String smaller, int difference) {
+        int pSmaller = symbolPriorities[loader.lexemeToSymbol.get(smaller).id];
+        symbolPriorities[loader.lexemeToSymbol.get(larger).id] = pSmaller + difference;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package stupidcoder.generate.parse;
 
+import org.apache.commons.text.StringEscapeUtils;
 import stupidcoder.generate.Generator;
 import stupidcoder.generate.OutUnit;
 import stupidcoder.util.ASCII;
@@ -37,14 +38,28 @@ public interface Parser {
     }
 
     default String readStringArg(CompilerInput input) throws CompileException {
+        BitClass clazz = BitClass.of('\"', '\r', '\\');
         checkNext(input, '\"');
         input.mark();
-        if (input.approach('\"', '\r') != '\"') {
-            throw input.errorMarkToForward("unclosed '\"'");
+        LOOP:
+        while (true) {
+            switch (input.approach(clazz)) {
+                case '\"' -> {
+                    break LOOP;
+                }
+                case '\\' -> {
+                    input.read();
+                    if (!input.available()) {
+                        throw input.errorAtForward("illegal escape");
+                    }
+                    input.read();
+                }
+                default -> throw input.errorMarkToForward("unclosed '\"'");
+            }
         }
         input.mark();
-        input.read();
-        return input.capture();
+        checkNext(input, '\"');
+        return StringEscapeUtils.unescapeJava(input.capture());
     }
 
     default boolean checkArgInterval(CompilerInput input) throws CompileException{

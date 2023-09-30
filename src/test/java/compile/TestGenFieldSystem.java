@@ -2,16 +2,14 @@ package compile;
 
 import org.junit.jupiter.api.Test;
 import stupidcoder.common.symbol.DefaultSymbols;
-import stupidcoder.compile.grammar.IInitGrammar;
-import stupidcoder.compile.grammar.LRGroupBuilder;
+import stupidcoder.compile.syntax.LRGroupBuilder;
+import stupidcoder.compile.syntax.SyntaxLoader;
 
 public class TestGenFieldSystem {
     @Test
     public void test() {
-        LRGroupBuilder.build(p -> {}, GRAMMAR_INIT, DefaultDataInterface.ACCEPT);
-    }
+        SyntaxLoader loader = new SyntaxLoader();
 
-    private static final IInitGrammar GRAMMAR_INIT = loader -> {
         loader.begin("stmts")
                 .addNonTerminal("stmt")
                 .finish();
@@ -37,7 +35,7 @@ public class TestGenFieldSystem {
                 .addTerminal(']')
                 .finish();
         loader.begin("content")
-                .addSymbol(DefaultSymbols.EPSILON)
+                .add(DefaultSymbols.EPSILON)
                 .finish();
         loader.begin("content")
                 .addNonTerminal("strings")
@@ -50,5 +48,6 @@ public class TestGenFieldSystem {
                 .addTerminal(',')
                 .addTerminal("string", 129)
                 .finish();
-    };
+        LRGroupBuilder.build(loader, DefaultDataInterface.ACCEPT);
+    }
 }

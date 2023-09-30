@@ -5,6 +5,7 @@ import stupidcoder.util.input.BufferedInput;
 
 import java.io.FileWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class FormatOut extends OutUnit {
@@ -17,18 +18,24 @@ public class FormatOut extends OutUnit {
     public Object[] args;
 
     @Override
-    public void writeContentOnce(FileWriter writer, BufferedInput srcIn) throws Exception {
-        if (srcIn == null || !srcIn.available()) {
-            return;
-        }
-        for (int i = 0 ; i < types.size() ; i ++) {
-            switch (types.get(i)) {
-                case INTEGER -> args[i] = readInt(srcIn);
-                case STRING -> args[i] = readString(srcIn);
-                case CHAR -> args[i] = (char) srcIn.read();
-                case LB -> {}
+    public void writeContentOnce(FileWriter writer, BufferedInput srcIn) {
+        try {
+            if (srcIn == null || !srcIn.available()) {
+                return;
             }
+            for (int i = 0 ; i < types.size() ; i ++) {
+                switch (types.get(i)) {
+                    case INTEGER -> args[i] = readInt(srcIn);
+                    case STRING -> args[i] = readString(srcIn);
+                    case CHAR -> args[i] = (char) srcIn.read();
+                    case LB -> {}
+                }
+            }
+            writer.write(String.format(fmt, args));
+        } catch (Exception e) {
+            System.err.println("failed to output format string\r\n"
+                            + "    format:\"" + fmt + "\", args:"
+                            + Arrays.toString(args) + ")");
         }
-        writer.write(String.format(fmt, args));
     }
 }

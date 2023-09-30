@@ -10,8 +10,8 @@ import stupidcoder.fieldparser.internal.IProperty;
 import stupidcoder.fieldparser.internal.PropertyTerminal;
 import stupidcoder.fieldparser.internal.properties.PropertyList;
 
-import java.lang.reflect.Method;
-import java.util.*;
+import java.util.List;
+import java.util.Stack;
 import java.util.function.Supplier;
 
 public class VarParser {
@@ -22,17 +22,10 @@ public class VarParser {
     private final int[][] actions;
     private final int[][] goTo;
     private final int[] terminalRemap;
-    private final Method[] reducedActions;
-    private final IActions iActions;
     private final Production[] productions;
     private final Supplier<IProperty>[] propertySuppliers;
 
     protected VarParser(IActions iActions) {
-        this.iActions = iActions;
-        this.reducedActions = Arrays.stream(iActions.getClass().getDeclaredMethods())
-                .filter(m -> m.getName().startsWith("action"))
-                .sorted(Comparator.comparing(Method::getName))
-                .toArray(Method[]::new);
         this.productions = new Production[10];
         this.actions = new int[16][8];
         this.goTo = new int[16][6];
@@ -93,7 +86,7 @@ public class VarParser {
         Symbol e6 = new Symbol("list", false, 4);
         Symbol e12 = new Symbol("strings", false, 5);
 
-        Symbol e2 = new Symbol("@id", true, 1);
+        Symbol e2 = new Symbol("@name", true, 1);
         Symbol e3 = new Symbol(":", true, 2);
         Symbol e5 = new Symbol(";", true, 3);
         Symbol e7 = new Symbol("@string", true, 4);
@@ -105,7 +98,7 @@ public class VarParser {
         productions[0] = new Production(0, e0, List.of(e13));//$start$ → stmts
         productions[1] = new Production(1, e13, List.of(e1)); //stmts → stmt
         productions[2] = new Production(2, e13, List.of(e13, e1)); //stmts → stmts stmt
-        productions[3] = new Production(3, e1, List.of(e2, e3, e4, e5)); //stmt → @id : val ;
+        productions[3] = new Production(3, e1, List.of(e2, e3, e4, e5)); //stmt → @name : val ;
         productions[4] = new Production(4, e4, List.of(e7)); //val → @string
         productions[5] = new Production(5, e4, List.of(e6)); //val → list
         productions[6] = new Production(6, e6, List.of(e8, e12, e10)); //list → [ strings ]
@@ -128,12 +121,12 @@ public class VarParser {
                 int s = states.peek();
                 int order = actions[s][terminalRemap[token.type()]];
                 int type = order >> 16;
-                int target = order % 0x10000;
+                int target = order & 0xFFFF;
                 switch (type) {
                     case 0:
                         return;
                     case 1:
-                        reducedActions[0].invoke(iActions, new ArrayList<IToken>());
+                        propertySuppliers[0].get().onReduced(productions[0], properties.pop());
                         break LOOP;
                     case 2:
                         states.push(target);

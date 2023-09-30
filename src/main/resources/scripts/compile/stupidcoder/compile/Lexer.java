@@ -6,27 +6,31 @@ public class DFA {
 
     public DFA(IInput input) {
         this.input = input;
-        $c[fStatesCount]{%
-            accepted = new boolean[$f{"%d"}];
-            goTo = new int[$f{"%d"}][128];
-            operations = new IOperation[$f{"%d"}];
+        $c{%
+            accepted = new boolean[$f[fStatesCount]{"%d"}];
+            goTo = new int[$f[fStatesCount]{"%d"}][128];
+            operations = new IOperation[$f[fStatesCount]{"%d"}];
         %, I2L1}
         init();
     }
 
     private void init() {
-        $s{
+        $s[goTo]{
             $f{"goTo[%d][%d] = %d;", LI2},
             $c{%
                 for (int i = $f{"%d"} ; i <= $f{"%d"} ; i ++) {
-                    $r{$f{"goTo[%d][i] = %d;", LI3}};
+                    $r{$f{"goTo[%d][i] = %d;", I3},
+                        %postfix:$f{"%n"},
+                        %last-postfix:"",
+                        %single-postfix:"",
+                    , I0}
                 }
-            %, I2}
+            %, I2L}
         , R}
 
-        $f{"accepted[%d] = true;", RLI2}
+        $f[accepted]{"accepted[%d] = true;", RLI2}
 
-        $s{
+        $s[op]{
             $f{"IOperation %s = %s;", I2L},
             $f{"operations[%d] = %s;", I2L}
         , R}

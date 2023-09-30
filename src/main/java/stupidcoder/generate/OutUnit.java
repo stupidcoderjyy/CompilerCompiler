@@ -29,7 +29,6 @@ public abstract class OutUnit {
         }
         if (nativeSrc) {
             srcIn.close();
-            src.close();
         }
     }
 

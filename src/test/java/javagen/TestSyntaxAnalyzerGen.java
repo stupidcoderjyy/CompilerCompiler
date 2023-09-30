@@ -1,13 +1,17 @@
-package compile;
+package javagen;
 
 import org.junit.jupiter.api.Test;
 import stupidcoder.compile.syntax.LRGroupBuilder;
 import stupidcoder.compile.syntax.SyntaxLoader;
+import stupidcoder.core.SyntaxAnalyzerSourceGen;
+import stupidcoder.generate.generators.java.JProjectBuilder;
 
-public class TestBookExample {
+public class TestSyntaxAnalyzerGen {
 
     @Test
     public void test() {
+        JProjectBuilder builder = new JProjectBuilder("scripts/compile", "syntaxAnalyzerGen");
+        builder.excludeClazz("Lexer");
         SyntaxLoader loader = new SyntaxLoader();
         loader.begin("S")
                 .addNonTerminal("L")
@@ -27,6 +31,7 @@ public class TestBookExample {
         loader.begin("R")
                 .addNonTerminal("L")
                 .finish();
-        LRGroupBuilder.build(loader, DefaultDataInterface.ACCEPT);
+        LRGroupBuilder.build(loader, new SyntaxAnalyzerSourceGen(builder));
+        builder.gen();
     }
 }

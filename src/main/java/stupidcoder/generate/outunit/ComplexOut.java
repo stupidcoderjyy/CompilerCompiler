@@ -50,7 +50,7 @@ public class ComplexOut extends OutUnit {
         }
         if (nativeSrc) {
             srcIn.close();
-            src.close();
+            src.destroy();
         }
     }
 

@@ -12,9 +12,8 @@ public class TokenId implements IToken {
 
     @Override
     public IToken fromLexeme(String lexeme) {
-        TokenId t = new TokenId();
-        t.lexeme = lexeme;
-        return t;
+        this.lexeme = lexeme;
+        return this;
     }
 
     @Override

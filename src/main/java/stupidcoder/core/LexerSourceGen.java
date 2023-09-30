@@ -8,13 +8,13 @@ import stupidcoder.generate.sources.arr.HighFreqPoint;
 import stupidcoder.generate.sources.arr.SourceArrSetterIII;
 import stupidcoder.generate.sources.arr.SourceArrSetterIS;
 
-public class LexerGenerator implements IDfaSetter {
+public class LexerSourceGen implements IDfaSetter {
     private int statesCount, startState;
     private final SourceArrSetterIII goToSetter;
     private final SourceArrSetterIS opSetter;
     private final SourceCached accepted;
 
-    public LexerGenerator(JProjectBuilder root) {
+    public LexerSourceGen(JProjectBuilder root) {
         this.goToSetter = new SourceArrSetterIII("goTo", HighFreqPoint.ARG_2);
         this.opSetter = new SourceArrSetterIS("op");
         this.accepted = new SourceCached("accepted");
@@ -28,7 +28,6 @@ public class LexerGenerator implements IDfaSetter {
 
     @Override
     public void setAccepted(int i, String token) {
-        token = Character.toUpperCase(token.charAt(0)) + token.substring(1);
         opSetter.set(i, String.format("(l, i) -> new Token%s().fromLexeme()", token));
         accepted.writeInt(i);
     }

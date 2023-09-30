@@ -3,17 +3,21 @@ package stupidcoder.generate;
 import stupidcoder.util.input.IByteReader;
 
 public abstract class Source implements IByteReader {
-    protected final String id;
+    protected final String name;
     protected boolean used = false;
 
-    public Source(String id) {
-        this.id = id;
+    public Source(String name) {
+        this.name = name;
     }
 
     public abstract void lock();
 
     protected void reset() {
         throw new UnsupportedOperationException();
+    }
+
+    public void destroy() {
+        close();
     }
 
     public static Source EMPTY = new Source("") {

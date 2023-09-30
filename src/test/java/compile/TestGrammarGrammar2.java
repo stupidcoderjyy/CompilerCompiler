@@ -1,17 +1,14 @@
 package compile;
 
 import org.junit.jupiter.api.Test;
-import stupidcoder.compile.grammar.IInitGrammar;
-import stupidcoder.compile.grammar.LRGroupBuilder;
+import stupidcoder.compile.syntax.LRGroupBuilder;
+import stupidcoder.compile.syntax.SyntaxLoader;
 
 public class TestGrammarGrammar2 {
 
     @Test
     public void test() {
-        LRGroupBuilder.build(p -> {}, GRAMMAR_INIT, DefaultDataInterface.ACCEPT);
-    }
-
-    private static final IInitGrammar GRAMMAR_INIT = loader -> {
+        SyntaxLoader loader = new SyntaxLoader();
         loader.begin("gs")
                 .addNonTerminal("g").finish();
         loader.begin("gs")
@@ -36,5 +33,6 @@ public class TestGrammarGrammar2 {
         loader.begin("seq").addNonTerminal("seq").addNonTerminal("symbol").finish();
         loader.begin("symbol").addTerminal("@nt", 129).finish();
         loader.begin("symbol").addTerminal("@t", 131).finish();
-    };
+        LRGroupBuilder.build(loader, DefaultDataInterface.ACCEPT);
+    }
 }

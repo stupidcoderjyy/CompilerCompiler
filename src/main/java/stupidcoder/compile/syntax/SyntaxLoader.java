@@ -1,4 +1,4 @@
-package stupidcoder.compile.grammar;
+package stupidcoder.compile.syntax;
 
 import stupidcoder.common.Production;
 import stupidcoder.common.symbol.DefaultSymbols;
@@ -7,34 +7,34 @@ import stupidcoder.util.ArrayUtil;
 
 import java.util.*;
 
-class GrammarLoader implements IProductionRegistry, IGrammarAccess {
-    final List<Production> productions = new ArrayList<>();
+public class SyntaxLoader implements ISyntaxAccess {
     private final List<List<Production>> symbolToProductions = new ArrayList<>();
-    private final Map<String, Symbol> lexemeToSymbol = new HashMap<>();
-    private final Map<Integer, Integer> terminalIdRemap = new HashMap<>();
     private Production extendedRoot;
-    private int productionCount = 0;
-    private int terminalCount = 1;
-    private int nonTerminalCount = 1;
     private Symbol tempStart;
     private List<Symbol> tempProduction = new ArrayList<>();
+    final List<Production> productions = new ArrayList<>();
+    final Map<Integer, Integer> terminalIdRemap = new HashMap<>();
+    final Map<String, Symbol> lexemeToSymbol = new HashMap<>();
+    int productionCount = 0;
+    int terminalCount = 1;
+    int nonTerminalCount = 1;
 
-    GrammarLoader() {
+    public SyntaxLoader() {
         symbolToProductions.add(new ArrayList<>());
     }
 
-    @Override
-    public IProductionRegistry begin(String lexeme) {
+    public SyntaxLoader begin(String lexeme) {
         tempStart = registerNonTerminal(lexeme);
         if (extendedRoot == null) {
-            addProduction(DefaultSymbols.ROOT, List.of(tempStart));
+            Symbol root = DefaultSymbols.ROOT;
+            lexemeToSymbol.put(root.toString(), root);
+            addProduction(root, List.of(tempStart));
             extendedRoot = productions.get(0);
         }
         return this;
     }
 
-    @Override
-    public IProductionRegistry addSymbol(Symbol s) {
+    public SyntaxLoader add(Symbol s) {
         if (s == DefaultSymbols.EPSILON) {
             tempProduction.add(s);
             return this;
@@ -44,14 +44,12 @@ class GrammarLoader implements IProductionRegistry, IGrammarAccess {
                 addNonTerminal(s.toString());
     }
 
-    @Override
-    public IProductionRegistry addNonTerminal(String lexeme) {
+    public SyntaxLoader addNonTerminal(String lexeme) {
         tempProduction.add(registerNonTerminal(lexeme));
         return this;
     }
 
-    @Override
-    public IProductionRegistry addTerminal(String lexeme, int id) {
+    public SyntaxLoader addTerminal(String lexeme, int id) {
         if (lexemeToSymbol.containsKey(lexeme)) {
             tempProduction.add(lexemeToSymbol.get(lexeme));
         } else {
@@ -63,12 +61,10 @@ class GrammarLoader implements IProductionRegistry, IGrammarAccess {
         return this;
     }
 
-    @Override
-    public IProductionRegistry addTerminal(char ch) {
+    public SyntaxLoader addTerminal(char ch) {
         return addTerminal(String.valueOf(ch), ch);
     }
 
-    @Override
     public void finish() {
         addProduction(tempStart, tempProduction);
         tempStart = null;
@@ -103,37 +99,31 @@ class GrammarLoader implements IProductionRegistry, IGrammarAccess {
     }
 
     @Override
-    public Symbol symbolOf(String lexeme) {
-        return null;
-    }
-
-    @Override
-    public List<Production> grammar() {
+    public List<Production> syntax() {
         return productions;
     }
 
     @Override
-    public int symbolsCount() {
-        return lexemeToSymbol.size();
+    public Map<String, Symbol> lexemeToSymbol() {
+        return lexemeToSymbol;
     }
 
     @Override
-    public int nonTerminalCount() {
-        return nonTerminalCount;
-    }
-
-    @Override
-    public int terminalCount() {
-        return terminalCount;
-    }
-
-    @Override
-    public Map<Integer, Integer> getTerminalIdRemap() {
+    public Map<Integer, Integer> terminalIdRemap() {
         return terminalIdRemap;
     }
 
     @Override
-    public boolean calcForward(Set<Symbol> result, Production g, int point) {
+    public int terminalSymbolsCount() {
+        return terminalCount;
+    }
+
+    @Override
+    public int nonTerminalSymbolsCount() {
+        return nonTerminalCount;
+    }
+
+    boolean calcForward(Set<Symbol> result, Production g, int point) {
         List<Symbol> symbolsBeta = new ArrayList<>(
                 g.body().subList(point + 1, g.body().size()));
         if (symbolsBeta.isEmpty()) {

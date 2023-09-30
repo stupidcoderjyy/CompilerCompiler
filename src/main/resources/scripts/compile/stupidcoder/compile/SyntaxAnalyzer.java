@@ -1,52 +1,27 @@
-$pkg$[-f]{"package %s.%s;"}
-
-$internal_import$[R-f]{"import %s;"}
-
-import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Supplier;
 
-public class GrammarAnalyst {
+public class SyntaxAnalyzer {
     private static final int ACCEPT = 0x10000;
-    private static final int MOVE = 0x20000;
+    private static final int SHIFT = 0x20000;
     private static final int REDUCE = 0x30000;
 
     private final int[][] actions;
     private final int[][] goTo;
     private final int[] terminalRemap;
-    private final Method[] reducedActions;
     private final Production[] productions;
     private final Supplier<IProperty>[] propertySuppliers;
 
-    protected GrammarAnalyst() {
-        this.iActions = iActions;
-        $ga_init$[L0-c]{
-            [-f]{"this.productions = new Production[%d];"} +
-            [-f]{"this.actions = new int[%d][%d];"} +
-            [-f]{"this.goTo = new int[%d][%d];"} +
-            [-f]{"this.terminalRemap = new int[%d];"} +
-            [-f]{"this.propertySuppliers = new Supplier[%d];"},
-            "I2"
-        }
+    protected SyntaxAnalyzer() {
+        $c{%
+            this.productions = new Production[$f[prodSize]{"%d"}];
+            this.actions = new int[$f[statesCount]{"%d"}][$f[terminalCount]{"%d"}];
+            this.goTo = new int[$f[statesCount]{"%d"}][$f[nonTerminalCount]{"%d"}];
+            this.terminalRemap = new int[$f[remapSize]{"%d"}];
+            this.propertySuppliers = new Supplier[$f[statesCount]{"%d"}];
+        %, I2L}
         initTable();
         initGrammars();
-    }
-
-    private void initTable() {
-        $goto$[I2R-f]{"goTo[%d][%d] = %d;"}
-        $action$[I2R-f]{"actions[%d][%d] = %s"}
-        $terminal_remap$[I2R-f]{"terminalRemap[%d] = %d"}
-        $property$[I2R-f]{"propertySuppliers[%d] = Property%s::new;"}
-    }
-
-    private void initGrammars() {
-        $symbol_def$[I2R-f]{"Symbol e%d = new Symbol(\"%s\", %d, %d);"}
-        $prod_def$[R-c]{
-            [-f]{"productions[%d] = new Production(0, e%d, List.of("} +
-            [-prod_init_list]{} +
-            [-f]{")); //%s"},
-            "I2"
-        }
     }
 
     public void run(DFA dfa) {
@@ -63,12 +38,12 @@ public class GrammarAnalyst {
                 int s = states.peek();
                 int order = actions[s][terminalRemap[token.type()]];
                 int type = order >> 16;
-                int target = order % 0x10000;
+                int target = order & 0xFFFF;
                 switch (type) {
                     case 0:
                         return;
                     case 1:
-                        reducedActions[0].invoke(iActions, new ArrayList<IToken>());
+                        propertySuppliers[0].get().onReduced(productions[0], properties.pop());
                         break LOOP;
                     case 2:
                         states.push(target);
@@ -93,5 +68,37 @@ public class GrammarAnalyst {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private void initTable() {
+        $f[goTo]{"goTo[%d][%d] = %d;", I2LR}
+        $c[actions]{
+            $f{"actions[%d][%d] = ", I2} +
+            $s{
+                "ACCEPT;",
+                $f{"SHIFT | %d;"},
+                $f{"REDUCE | %d;"}
+            , L}
+        , R}
+        $f[remap]{"terminalRemap[%d] = %d;", I2LR}
+        $f[property]{"propertySuppliers[%d] = Property%s::new;", I2LR}
+    }
+
+    private void initGrammars() {
+        $s[syntax]{
+            $f{"Symbol e%d = new Symbol(\"%s\", %s, %d);"},
+            $c{
+                $f{"productions[%d] = new Production(%d, e%d, List.of"} +
+                $r{
+                    $f{"e%d"},
+                    %first-prefix:"(",
+                    %single-prefix:"(",
+                    %postfix:", ",
+                    %last-postfix:")",
+                    %single-postfix:")"
+                } +
+                $f{"); //%s"}
+            }
+        , I2LR}
     }
 }

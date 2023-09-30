@@ -1,4 +1,4 @@
-package stupidcoder.compile.grammar;
+package stupidcoder.compile.syntax;
 
 import stupidcoder.common.Production;
 import stupidcoder.common.symbol.DefaultSymbols;
@@ -7,30 +7,31 @@ import stupidcoder.common.symbol.Symbol;
 import java.util.*;
 
 public class LRGroupBuilder {
-    private final IGrammarAccess loader;
-    private final IPriorityAccess priority;
-    private final IDataHandler receiver;
+    private final SyntaxLoader loader;
+    private final PriorityManager priority;
+    private final ISyntaxAnalyzerSetter receiver;
     private final List<LRGroup> idToCore = new ArrayList<>();
     private final Map<LRGroup, Integer> coreToId = new HashMap<>();
     private final Map<LRItem, List<LRItem>> spreadMap = new HashMap<>();
     private final List<Map<Symbol, LRGroup>> groupToTargets = new ArrayList<>();
 
-    public static void build(IInitPriority priorityReg, IInitGrammar grammarReg, IDataHandler receiver) {
-        new LRGroupBuilder(priorityReg, grammarReg, receiver).build();
+    public static void build(SyntaxLoader l, ISyntaxAnalyzerSetter receiver) {
+        new LRGroupBuilder(l, receiver).build();
     }
 
-    private LRGroupBuilder(IInitPriority priorityReg, IInitGrammar grammarReg, IDataHandler receiver) {
-        GrammarLoader l = new GrammarLoader();
+    private LRGroupBuilder(SyntaxLoader l, ISyntaxAnalyzerSetter receiver) {
         PriorityManager p = new PriorityManager(l);
         this.loader = l;
         this.receiver = receiver;
         this.priority = p;
-        grammarReg.init(l);
-        priorityReg.init(p);
-        p.init();
     }
 
-    private void build() {
+    public void registerPriority(String larger, String smaller, int difference) {
+        priority.registerPriority(larger, smaller, difference);
+    }
+
+    public void build() {
+        priority.init();
         LRItem root = new LRItem(loader.root(), 0);
         registerCore(new LRGroup(List.of(root), 0));
         expandGroups();
@@ -195,10 +196,8 @@ public class LRGroupBuilder {
             group.items.clear();
             group.hashToItem.clear();
         }
-        loader.getTerminalIdRemap().forEach(receiver::setTerminalSymbolIdRemap);
         receiver.setStatesCount(idToCore.size());
-        receiver.setNonTerminalCount(loader.nonTerminalCount());
-        receiver.setNonTerminalCount(loader.terminalCount());
+        receiver.setOthers(loader);
     }
 
     private final Deque<LRItem> unexpanded = new ArrayDeque<>();

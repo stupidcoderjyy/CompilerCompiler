@@ -1,6 +1,6 @@
-package stupidcoder.compile.grammar;
+package stupidcoder.compile.syntax;
 
-public interface IDataHandler {
+public interface ISyntaxAnalyzerSetter {
     /**
      * 注册语法分析器的一条移入指令
      * @param from 当前状态
@@ -33,27 +33,11 @@ public interface IDataHandler {
     void setGoto(int from, int to, int inputNonTerminal);
 
     /**
-     * 设置终结符号id重映射。语法加载器中规定，所有符号的id都是连续的，非终结符号从0号开始往后排，终结符号排在非终结符号后面
-     * @param origin 终结符号原本的id（字符的大小或者Token的id）
-     * @param after 重映射后的id
-     */
-    void setTerminalSymbolIdRemap(int origin, int after);
-
-    /**
      * 设置LR自动机状态个数
      * @param count 个数
      */
     void setStatesCount(int count);
 
-    /**
-     * 设置终结符号个数
-     * @param count 个数
-     */
-    void setTerminalCount(int count);
 
-    /**
-     * 设置非终结符号个数
-     * @param count 个数
-     */
-    void setNonTerminalCount(int count);
+    void setOthers(ISyntaxAccess access);
 }

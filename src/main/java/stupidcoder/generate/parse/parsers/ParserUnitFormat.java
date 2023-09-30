@@ -1,5 +1,6 @@
 package stupidcoder.generate.parse.parsers;
 
+import org.apache.commons.text.StringEscapeUtils;
 import stupidcoder.generate.Generator;
 import stupidcoder.generate.OutUnit;
 import stupidcoder.generate.outunit.FormatOut;
@@ -17,7 +18,7 @@ public class ParserUnitFormat implements Parser{
         input.mark();
         parseFmt(fmt, input);
         input.mark();
-        fmt.fmt = input.capture();
+        fmt.fmt = StringEscapeUtils.unescapeJava(input.capture());
         checkNext(input, '"');
         if (checkArgInterval(input)) {
             return fmt;
@@ -51,6 +52,12 @@ public class ParserUnitFormat implements Parser{
                     input.retract();
                     fmt.args = new Object[fmt.types.size()];
                     return;
+                }
+                case '\\' -> {
+                    if (!input.available()) {
+                        throw input.errorAtForward("illegal escape");
+                    }
+                    input.read();
                 }
                 case '\r' -> throw input.errorAtForward("missing '\"'");
                 default -> {}

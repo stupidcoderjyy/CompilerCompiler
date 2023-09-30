@@ -27,7 +27,7 @@ public interface IActions{
     void actionC(List<IToken> tokens);
 
     /**
-     * stmt → @id : val ;
+     * stmt → @name : val ;
      *
      * @param tokens 产生式中所有的终结符号
      */

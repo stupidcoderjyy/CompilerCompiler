@@ -42,7 +42,7 @@ public class Generator {
     }
 
     public void registerSrc(Source src) {
-        sources.put(src.id, src);
+        sources.put(src.name, src);
     }
 
     public void loadScript(String scriptFile, String targetFile) {
@@ -53,7 +53,7 @@ public class Generator {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        sources.forEach((name, src) -> src.close());
+        sources.forEach((name, src) -> src.destroy());
     }
 
     public void loadScript(CompilerInput input, FileWriter writer) throws Exception{
