@@ -28,4 +28,9 @@ public class JPkgGen extends Generator {
         targets.forEach((n, g) -> g.gen());
         childPackages.forEach((n, g) -> g.gen());
     }
+
+    @Override
+    public String toString() {
+        return pkgName;
+    }
 }

@@ -7,13 +7,11 @@ import stupidcoder.generate.sources.SourceCached;
 public class TestJavaGen {
 
     @Test
-    public void test1() {
-        JProjectBuilder builder = new JProjectBuilder("srcJavaGen", "javaGen");
-        SourceCached src = new SourceCached("src");
-        for (int i = 0; i < 10; i++) {
-            src.writeInt(i);
-        }
-        builder.registerClazzSrc("TestClazz", src);
+    public void testImport() {
+        JProjectBuilder builder = new JProjectBuilder("generate/java", "testJavaGen");
+        builder.addClazzImport("Test", "Test", "Test1");
+        builder.excludeClazz("Test1");
+        builder.excludeClazz("Test2");
         builder.gen();
     }
 

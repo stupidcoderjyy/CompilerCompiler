@@ -238,5 +238,6 @@ public class DFABuilder {
         }
         setter.setStartState(stateToGroup[1]);
         setter.setDfaStatesCount(groupCount);
+        setter.setOthers(tokens);
     }
 }

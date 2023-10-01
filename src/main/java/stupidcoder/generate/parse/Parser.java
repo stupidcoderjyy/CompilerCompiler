@@ -74,7 +74,7 @@ public interface Parser {
             }
             default -> {
                 if (!input.available()) {
-                    throw input.errorAtForward("missing '\"' or ','");
+                    throw input.errorAtForward("missing '}' or ','");
                 }
                 throw input.errorAtForward("unexpected symbol");
             }

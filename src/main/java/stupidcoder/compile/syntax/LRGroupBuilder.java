@@ -26,10 +26,6 @@ public class LRGroupBuilder {
         this.priority = p;
     }
 
-    public void registerPriority(String larger, String smaller, int difference) {
-        priority.registerPriority(larger, smaller, difference);
-    }
-
     public void build() {
         priority.init();
         LRItem root = new LRItem(loader.root(), 0);

@@ -1,6 +1,0 @@
-$c[clazzHead]{%
-    $f{"package %s;%n%n"}
-
-    $f{"import %s.%s;%n", R}
-
-%}

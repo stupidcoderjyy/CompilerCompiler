@@ -21,7 +21,7 @@ public class SourceCached extends Source {
     private final int id;
 
     static {
-        CACHE_DIR = Config.outputPath("source-caches");
+        CACHE_DIR = Config.tempOutPath("source-caches");
         new File(CACHE_DIR).mkdirs();
     }
 

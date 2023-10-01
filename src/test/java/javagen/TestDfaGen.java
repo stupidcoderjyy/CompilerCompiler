@@ -12,9 +12,11 @@ public class TestDfaGen {
     public void test1() {
         JProjectBuilder builder = new JProjectBuilder("scripts/compile", "lexerGen");
         builder.excludeClazz("SyntaxAnalyzer");
+        builder.excludePkg("template");
         NFARegexParser parser = new NFARegexParser();
         parser.register("@d+(L|l)?|0(x|X)@h+", "Integer");
         parser.register("@a@w*", "Word");
+        parser.registerSingle('.');
         DFABuilder.build(new LexerSourceGen(builder), parser);
         builder.gen();
     }

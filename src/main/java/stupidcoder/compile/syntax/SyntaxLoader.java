@@ -37,6 +37,7 @@ public class SyntaxLoader implements ISyntaxAccess {
     public SyntaxLoader add(Symbol s) {
         if (s == DefaultSymbols.EPSILON) {
             tempProduction.add(s);
+            lexemeToSymbol.put("ε", s);
             return this;
         }
         return s.isTerminal ?

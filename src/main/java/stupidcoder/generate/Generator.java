@@ -51,17 +51,25 @@ public class Generator {
              FileWriter writer = new FileWriter(Config.outputPath(targetFile), StandardCharsets.UTF_8)){
             loadScript(input, writer);
         } catch (Exception e) {
+            System.err.println("failed to output file: " + targetFile);
             e.printStackTrace();
         }
         sources.forEach((name, src) -> src.destroy());
     }
 
     public void loadScript(CompilerInput input, FileWriter writer) throws Exception{
-        BitClass sign = BitClass.of('$', '\r');
+        BitClass space = BitClass.of(' ', '\t');
         while (true) {
             input.mark();
-            switch (input.approach(sign)) {
+            input.skip(space);
+            if (!input.available()) {
+                input.mark();
+                writer.write(input.capture());
+                return;
+            }
+            switch (input.read()) {
                 case '$' -> {
+                    input.retract();
                     input.removeMark();
                     InternalParsers.UNIT
                             .parse(this, input, null)
@@ -69,15 +77,19 @@ public class Generator {
                     input.skipLine();
                 }
                 case '\r' -> {
-                    input.mark();
-                    writer.write(input.capture());
+                    input.removeMark();
                     writer.write("\r\n");
                     input.skipLine();
                 }
                 default -> {
+                    int b = input.approach('\r');
                     input.mark();
                     writer.write(input.capture());
-                    return;
+                    if (b < 0) {
+                        return;
+                    }
+                    writer.write("\r\n");
+                    input.skipLine();
                 }
             }
         }

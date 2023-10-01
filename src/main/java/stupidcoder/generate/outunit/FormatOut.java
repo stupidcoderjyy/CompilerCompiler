@@ -31,6 +31,7 @@ public class FormatOut extends OutUnit {
             System.err.println("failed to output format string\r\n"
                             + "    format:\"" + fmt + "\", args:"
                             + Arrays.toString(args) + ")");
+            e.printStackTrace();
         }
     }
 

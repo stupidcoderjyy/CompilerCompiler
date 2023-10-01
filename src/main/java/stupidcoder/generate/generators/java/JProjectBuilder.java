@@ -63,7 +63,7 @@ public class JProjectBuilder {
         String dirName = path.getFileName().toString();
         g.pkgName = parent.pkgName + "." + dirName;
         g.outPath = parent.outPath + "/" + dirName;
-        rootPkgGen.childPackages.put(dirName, g);
+        parent.childPackages.put(dirName, g);
         return g;
     }
 
@@ -99,8 +99,19 @@ public class JProjectBuilder {
         rootPkgGen.registerSrc(src);
     }
 
-    public void excludePkg(String pkg) {
-        findPkg(pkg).excluded = true;
+    public void addClazzImport(String className, String ... imported) {
+        JClassGen clazz = findClass(className);
+        for (String s : imported) {
+            clazz.addProjectImport(s);
+        }
+    }
+
+    public void addPkgImport(String clazzName, String childPkg) {
+        findClass(clazzName).addPkgImport(childPkg);
+    }
+
+    public void excludePkg(String childPkg) {
+        findPkg(childPkg).excluded = true;
     }
 
     public void excludeClazz(String clazz) {

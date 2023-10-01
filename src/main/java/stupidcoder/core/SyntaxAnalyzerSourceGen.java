@@ -36,7 +36,6 @@ public class SyntaxAnalyzerSourceGen implements ISyntaxAnalyzerSetter {
                 srcRemap,
                 srcProperty,
                 srcSyntax);
-        root.excludeClazz("Property"); //样板文件
     }
 
     @Override
@@ -118,7 +117,7 @@ public class SyntaxAnalyzerSourceGen implements ISyntaxAnalyzerSetter {
     private void setPropertyFile(ISyntaxAccess access, Symbol s, String name) {
         String clazzName = "Property" + name;
         String clazzPath = "stupidcoder.compile.properties." + clazzName;
-        root.registerClazz(clazzPath, "stupidcoder/compile/Property.java");
+        root.registerClazz(clazzPath, "stupidcoder/template/Property.java");
         SourceCached srcName = new SourceCached("name");
         srcName.writeString(clazzName);
         SourceCached srcReduceCall = new SourceCached("reduceCall");
@@ -132,6 +131,7 @@ public class SyntaxAnalyzerSourceGen implements ISyntaxAnalyzerSetter {
             for (int i = 0 ; i < size ; i ++) {
                 Production p = ps.get(i);
                 srcReduceCall.writeInt(p.id(), i); //$f{"case %d -> reduce%d("}
+                srcReduceFunc.writeString(p.toString());
                 srcReduceFunc.writeInt(i); // $f{"private void reduce%d("}
                 writeProduction(srcReduceCall, p);
                 writeProduction(srcReduceFunc, p);
@@ -139,6 +139,7 @@ public class SyntaxAnalyzerSourceGen implements ISyntaxAnalyzerSetter {
         } else {
             Production p = ps.get(0);
             srcReduceCall.writeInt(0); //switch
+            srcReduceFunc.writeString(p.toString());
             srcReduceFunc.writeInt(0); // $f{"private void reduce%d("}
             writeProduction(srcReduceCall, p);
             writeProduction(srcReduceFunc, p);

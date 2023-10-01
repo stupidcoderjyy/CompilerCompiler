@@ -1,10 +1,12 @@
-public class DFA {
+$head{"$compile.tokens", "IOperation", "TokenError", "IToken", "IInput", "TokenFileEnd"}
+
+public class Lexer {
     private final int[][] goTo;
     private final boolean[] accepted;
     private final IOperation[] operations;
     public final IInput input;
 
-    public DFA(IInput input) {
+    public Lexer(IInput input) {
         this.input = input;
         $c{%
             accepted = new boolean[$f[fStatesCount]{"%d"}];
@@ -37,8 +39,8 @@ public class DFA {
     }
 
     public IToken run() {
-        input.markLexemeStart();
-        input.skipSpaceTabLineBreak();
+        input.mark();
+        input.skip(' ', '\t', '\r', '\n');
         if (!input.available()) {
             return TokenFileEnd.INSTANCE;
         }
@@ -68,9 +70,9 @@ public class DFA {
                     break;
                 }
             }
-            return TokenError.INSTANCE.fromLexeme(input.lexeme());
+            return TokenError.INSTANCE.fromLexeme(input.capture());
         }
         input.retract(extraLoadedBytes);
-        return operations[lastAccepted].onMatched(input.lexeme(), input);
+        return operations[lastAccepted].onMatched(input.capture(), input);
     }
 }

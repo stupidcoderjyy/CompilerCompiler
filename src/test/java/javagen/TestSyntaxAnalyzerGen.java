@@ -12,6 +12,7 @@ public class TestSyntaxAnalyzerGen {
     public void test() {
         JProjectBuilder builder = new JProjectBuilder("scripts/compile", "syntaxAnalyzerGen");
         builder.excludeClazz("Lexer");
+        builder.excludePkg("template");
         SyntaxLoader loader = new SyntaxLoader();
         loader.begin("S")
                 .addNonTerminal("L")

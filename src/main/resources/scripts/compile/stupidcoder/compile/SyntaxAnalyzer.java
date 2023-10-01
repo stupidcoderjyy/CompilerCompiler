@@ -1,3 +1,4 @@
+$head{"Production", "Symbol", "IProperty" ,"PropertyTerminal", "IToken", "TokenFileEnd", "$compile.properties"}
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -24,12 +25,12 @@ public class SyntaxAnalyzer {
         initGrammars();
     }
 
-    public void run(DFA dfa) {
+    public void run(Lexer lexer) {
         try {
             Stack<Integer> states = new Stack<>();
             Stack<IProperty> properties = new Stack<>();
             states.push(0);
-            IToken token = dfa.run();
+            IToken token = lexer.run();
             if (token == TokenFileEnd.INSTANCE) {
                 return;
             }
@@ -47,8 +48,8 @@ public class SyntaxAnalyzer {
                         break LOOP;
                     case 2:
                         states.push(target);
-                        properties.push(new PropertyTerminal<>(token));
-                        token = dfa.run();
+                        properties.push(new PropertyTerminal(token));
+                        token = lexer.run();
                         break;
                     case 3:
                         Production p = productions[target];

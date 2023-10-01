@@ -1,7 +1,6 @@
 package stupidcoder.generate.generators.java;
 
 import stupidcoder.generate.Generator;
-import stupidcoder.generate.sources.SourceCached;
 import stupidcoder.util.input.CompilerInput;
 
 import java.io.FileWriter;
@@ -11,7 +10,7 @@ public class JClassGen extends Generator {
     final JProjectBuilder root;
     final JPkgGen parent;
     final String clazzName, outPath, scriptPath;
-    final SourceCached headSrc = new SourceCached("clazzHead");
+    final JClassHeadOut headOut;
 
     JClassGen(JProjectBuilder root, JPkgGen parent, String clazzName, String outPath, String scriptPath) {
         super(parent);
@@ -20,31 +19,28 @@ public class JClassGen extends Generator {
         this.root = root;
         this.outPath = outPath;
         this.scriptPath = scriptPath;
-        registerSrc(headSrc);
-        headSrc.writeString(parent.pkgName);
+        this.headOut = new JClassHeadOut(root, this);
+        registerParser("head", new ParserJClassHead(this));
     }
 
-    public void addProjectImport(String clazzName) {
-        JClassGen res = root.findClass(clazzName);
-        headSrc.writeString(res.parent.pkgName);
-        headSrc.writeString(res.clazzName);
+    void addProjectImport(String clazzName) {
+        headOut.imports.add(clazzName);
+    }
+
+    void addPkgImport(String name) {
+        headOut.imports.add('$' + name);
     }
 
     @Override
     public void loadScript(CompilerInput input, FileWriter writer) throws Exception {
-        try (CompilerInput headInput = CompilerInput.fromResource(
-                "/scripts/internal/genjava/classTitle.txt")){
-            super.loadScript(headInput, writer);
-            super.loadScript(input, writer);
-        }
+        headOut.writeContentOnce(writer, null);
+        super.loadScript(input, writer);
     }
 
     public void gen() {
         if (excluded) {
-            headSrc.close();
             return;
         }
         loadScript(scriptPath, outPath);
-        headSrc.close();
     }
 }

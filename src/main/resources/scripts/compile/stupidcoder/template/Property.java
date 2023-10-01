@@ -1,4 +1,6 @@
-$f[name]{"public class Property%s implements IProperty {"}
+$head{"IProperty", "Production", "PropertyTerminal"}
+
+$f[name]{"public class %s implements IProperty {"}
 
     @Override
     public void onReduced(Production p, IProperty... properties) {
@@ -46,6 +48,7 @@ $f[name]{"public class Property%s implements IProperty {"}
 
     $r[reduceFunc]{
         $c{%
+            $f{"//%s"}
             $f{"private void reduce%d("}
             $r{
                 $c{

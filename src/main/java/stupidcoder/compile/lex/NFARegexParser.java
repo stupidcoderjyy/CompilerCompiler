@@ -28,6 +28,15 @@ public class NFARegexParser {
         }
     }
 
+    public void registerSingle(char ... chs) {
+        for (char ch : chs) {
+            if (ch > 128) {
+                throw new IllegalArgumentException("ASCII only");
+            }
+            register("\\" + ch, "single");
+        }
+    }
+
     private void setAcceptedNode(NFA target, String token) {
         target.end.accepted = true;
         ArrayUtil.resize(nodeIdToToken, target.end.id + 1);
