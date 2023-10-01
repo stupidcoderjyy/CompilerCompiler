@@ -1,4 +1,4 @@
-$r[src]{
+$r[src1]{
     $f{"-%d-"},
     %first-prefix: $f{"first-prefix%d"},
     %prefix: $f{"prefix%d"},
@@ -6,4 +6,9 @@ $r[src]{
     %first-postfix: $f{"first-postfix%d", L1},
     %postfix: $f{"postfix%d", L1},
     %last-postfix: $f{"last-postfix%d", L1}
+}
+$r[src2]{
+    $f{"-%d-"},
+    %single-prefix: $f{"single-prefix%d"},
+    %single-postfix: $f{"single-postfix%d", L1}
 }

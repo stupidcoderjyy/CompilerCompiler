@@ -3,7 +3,6 @@ package stupidcoder.generate.generators.java;
 import stupidcoder.Config;
 import stupidcoder.generate.Source;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
@@ -25,7 +24,6 @@ public class JProjectBuilder {
         this.outputRoot = rootOutPath;
         this.scriptsRoot = rootScriptPath;
         this.rootPkgGen = new JPkgGen(null);
-        new File(outputRoot).mkdirs();
         init();
     }
 

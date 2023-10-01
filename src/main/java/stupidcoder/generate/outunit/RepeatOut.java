@@ -7,6 +7,7 @@ import stupidcoder.util.input.BufferedInput;
 import java.io.FileWriter;
 
 public class RepeatOut extends OutUnit {
+    private static final int MAX_REPEAT = 1000;
     public OutUnit unit;
     public final OutUnitField firstPrefix , prefix , lastPrefix;
     public final OutUnitField firstPostfix , postfix , lastPostfix;
@@ -26,6 +27,10 @@ public class RepeatOut extends OutUnit {
     @Override
     public void writeContentOnce(FileWriter writer, BufferedInput srcIn) throws Exception {
         int count = readInt(srcIn);
+        if (count > MAX_REPEAT) {
+            System.err.printf("repeat times too large:0x%s (MAX = %d)%n", Integer.toHexString(count), MAX_REPEAT);
+            return;
+        }
         check();
         switch (count) {
             case 0 -> {}

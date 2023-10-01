@@ -7,10 +7,14 @@ public class PropertyStmts implements IProperty {
 
     @Override
     public void onReduced(Production p, IProperty... properties) {
-        switch (properties.length) {
-            case 1 -> reduce0((PropertyStmt) properties[0]);
-            case 2 -> reduce1((PropertyStmts) properties[0],
-                    (PropertyStmt) properties[1]);
+        switch (p.id()) {
+            case 1 -> reduce0(
+                    (PropertyStmt) properties[0]
+            );
+            case 2 -> reduce1(
+                    (PropertyStmts) properties[0],
+                    (PropertyStmt) properties[1]
+            );
         }
     }
 

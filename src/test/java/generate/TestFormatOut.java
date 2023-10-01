@@ -7,7 +7,7 @@ import stupidcoder.generate.sources.SourceCached;
 public class TestFormatOut {
 
     @Test
-    public void testBasic() {
+    public void testBasic1() {
         SourceCached src1 = new SourceCached("src1");
         src1.writeInt(12);
         src1.writeByte('a');
@@ -18,9 +18,14 @@ public class TestFormatOut {
         Generator g = new Generator();
         g.registerSrc(src1);
         g.registerSrc(src2);
-        g.loadScript("generate/out/format/basic.txt", "format_basic.txt");
+        g.loadScript("generate/out/format/basic1.txt", "format_basic_1.txt");
     }
 
+    @Test
+    public void testBasic2() {
+        Generator g = new Generator();
+        g.loadScript("generate/out/format/basic2.txt", "format_basic_2.txt");
+    }
     @Test
     public void testErr() {
         Generator g = new Generator();

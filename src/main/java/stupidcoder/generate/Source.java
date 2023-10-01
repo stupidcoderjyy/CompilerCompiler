@@ -20,6 +20,11 @@ public abstract class Source implements IByteReader {
         close();
     }
 
+    @Override
+    public String toString() {
+        return name;
+    }
+
     public static Source EMPTY = new Source("") {
         @Override
         public void lock() {

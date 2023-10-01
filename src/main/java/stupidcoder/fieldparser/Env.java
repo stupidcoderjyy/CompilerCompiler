@@ -18,7 +18,7 @@ public class Env implements IActions {
 
     public static Env fromInput(IInput input) {
         Env env = new Env();
-        new VarParser(env).run(new DFA(input));
+        new VarParser().run(new DFA(input));
         return env;
     }
 

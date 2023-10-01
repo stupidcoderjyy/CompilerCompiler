@@ -5,7 +5,6 @@ import stupidcoder.common.symbol.Symbol;
 import stupidcoder.common.token.IToken;
 import stupidcoder.common.token.TokenFileEnd;
 import stupidcoder.fieldparser.internal.DFA;
-import stupidcoder.fieldparser.internal.IActions;
 import stupidcoder.fieldparser.internal.IProperty;
 import stupidcoder.fieldparser.internal.PropertyTerminal;
 import stupidcoder.fieldparser.internal.properties.PropertyList;
@@ -25,7 +24,7 @@ public class VarParser {
     private final Production[] productions;
     private final Supplier<IProperty>[] propertySuppliers;
 
-    protected VarParser(IActions iActions) {
+    protected VarParser() {
         this.productions = new Production[10];
         this.actions = new int[16][8];
         this.goTo = new int[16][6];
@@ -130,7 +129,7 @@ public class VarParser {
                         break LOOP;
                     case 2:
                         states.push(target);
-                        properties.push(new PropertyTerminal<>(token));
+                        properties.push(new PropertyTerminal(token));
                         token = dfa.run();
                         break;
                     case 3:

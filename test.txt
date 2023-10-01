@@ -1,1 +1,64 @@
-a
+a$f[name]{"public class Property%s implements IProperty {"}
+
+     @Override
+     public void onReduced(Production p, IProperty... properties) {
+         $s[reduceCall]{
+             $c{%
+                 reduce0(
+                 $r{
+                     $c{
+                         $s{
+                             $f{"(Property%s)"},
+                             $f{"(PropertyTerminal<Token%s>)"}
+                         } +
+                         $f{"properties[%d]", L}
+                     },
+                     %postfix:$f{",%n"},
+                     %single-postfix:$f{"%n"},
+                     %last-postfix:$f{"%n"}
+                 , L0I4}
+                 );
+             %, LI2},
+             $c{%
+                 switch (p.id()) {
+                 $r{
+                     $c{%
+                         $f{"case %d -> reduce%d("}
+                         $r{
+                             $c{
+                                 $s{
+                                     $f{"(Property%s)"},
+                                     $f{"(PropertyTerminal<Token%s>)"}
+                                 } +
+                                 $f{"properties[%d]"}
+                             },
+                             %postfix:$f{",%n"},
+                             %single-postfix:$f{"%n"},
+                             %last-postfix:$f{"%n"}
+                         , I5}
+                         );
+                     %, L}
+                 , I3}
+                 }
+             %, LI2}
+         }
+     }
+
+     $r[reduceFunc]{
+         $c{%
+             $f{"private void reduce%d("}
+             $r{
+                 $c{
+                     $s{
+                         $f{"(Property%s)"},
+                         $f{"(PropertyTerminal<Token%s>)"}
+                      } +
+                     $f{" p%d"}
+                 },
+                 %postfix:$f{",%n"},
+                 %single-postfix:$f{") {%n"},
+                 %last-postfix:$f{") {%n"}
+             }
+         %}
+     }
+ }

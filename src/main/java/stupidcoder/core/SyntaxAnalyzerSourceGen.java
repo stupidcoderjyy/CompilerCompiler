@@ -16,8 +16,10 @@ import java.util.Map;
 public class SyntaxAnalyzerSourceGen implements ISyntaxAnalyzerSetter {
     private int prodSize, statesCount, terminalCount, nonTerminalCount, remapSize;
     private final SourceCached srcGoto, srcActions, srcRemap, srcProperty, srcSyntax;
+    private final JProjectBuilder root;
 
     public SyntaxAnalyzerSourceGen(JProjectBuilder root) {
+        this.root = root;
         this.srcGoto = new SourceCached("goTo");
         this.srcActions = new SourceCached("actions");
         this.srcRemap = new SourceCached("remap");
@@ -34,6 +36,7 @@ public class SyntaxAnalyzerSourceGen implements ISyntaxAnalyzerSetter {
                 srcRemap,
                 srcProperty,
                 srcSyntax);
+        root.excludeClazz("Property"); //样板文件
     }
 
     @Override
@@ -66,7 +69,9 @@ public class SyntaxAnalyzerSourceGen implements ISyntaxAnalyzerSetter {
         access.lexemeToSymbol().forEach((lexeme, symbol) -> {
             if (!symbol.isTerminal) {
                 srcProperty.writeInt(symbol.id);
-                srcProperty.writeString(StringUtils.capitalize(lexeme));
+                String name = StringUtils.capitalize(lexeme);
+                srcProperty.writeString(name);
+                setPropertyFile(access, symbol, name);
             }
         });
         this.terminalCount = access.terminalSymbolsCount();
@@ -107,6 +112,54 @@ public class SyntaxAnalyzerSourceGen implements ISyntaxAnalyzerSetter {
                 srcSyntax.writeInt(lexemeToVarId.get(s.toString()));
             }
             srcSyntax.writeString(p.toString());
+        }
+    }
+
+    private void setPropertyFile(ISyntaxAccess access, Symbol s, String name) {
+        String clazzName = "Property" + name;
+        String clazzPath = "stupidcoder.compile.properties." + clazzName;
+        root.registerClazz(clazzPath, "stupidcoder/compile/Property.java");
+        SourceCached srcName = new SourceCached("name");
+        srcName.writeString(clazzName);
+        SourceCached srcReduceCall = new SourceCached("reduceCall");
+        SourceCached srcReduceFunc = new SourceCached("reduceFunc");
+        List<Production> ps = access.productionsWithHead(s);
+        int size = ps.size();
+        srcReduceFunc.writeInt(size); //repeat $r[reduceFunc]{
+        if (size > 1) {
+            srcReduceCall.writeInt(1); //switch
+            srcReduceCall.writeInt(size); //repeat
+            for (int i = 0 ; i < size ; i ++) {
+                Production p = ps.get(i);
+                srcReduceCall.writeInt(p.id(), i); //$f{"case %d -> reduce%d("}
+                srcReduceFunc.writeInt(i); // $f{"private void reduce%d("}
+                writeProduction(srcReduceCall, p);
+                writeProduction(srcReduceFunc, p);
+            }
+        } else {
+            Production p = ps.get(0);
+            srcReduceCall.writeInt(0); //switch
+            srcReduceFunc.writeInt(0); // $f{"private void reduce%d("}
+            writeProduction(srcReduceCall, p);
+            writeProduction(srcReduceFunc, p);
+        }
+        root.registerClazzSrc(clazzName,
+                srcName,
+                srcReduceCall,
+                srcReduceFunc);
+    }
+
+    private void writeProduction(SourceCached src, Production p) {
+        src.writeInt(p.body().size()); // repeat
+        int i = 0;
+        for (Symbol bs : p.body()) {
+            if (bs.isTerminal) {
+                src.writeInt(1); //switch
+            } else {
+                src.writeInt(0);
+                src.writeString(StringUtils.capitalize(bs.toString()));
+            }
+            src.writeInt(i++);
         }
     }
 }

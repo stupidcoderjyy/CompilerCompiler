@@ -40,7 +40,7 @@ public class ParserUnitFormat implements Parser{
                         case 'd' -> fmt.types.add(FormatOut.INTEGER);
                         case 's' -> fmt.types.add(FormatOut.STRING);
                         case 'c' -> fmt.types.add(FormatOut.CHAR);
-                        case 'n' -> fmt.types.add(FormatOut.LB);
+                        case 'n' -> {}
                         case '"' -> {
                             input.retract();
                             throw input.errorAtForward("illegal format");
