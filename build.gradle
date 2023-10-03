@@ -4,8 +4,6 @@ plugins {
 
 group = 'org.example'
 version = '1.0-SNAPSHOT'
-def output = 'C:\\Users\\stupid_coder_jyy\\Desktop\\cs\\IdeaProjects\\TestCodeGen'
-def src = '/'
 
 repositories {
     mavenLocal()

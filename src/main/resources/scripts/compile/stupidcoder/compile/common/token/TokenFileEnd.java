@@ -1,3 +1,5 @@
+$head{"CompilerInput"};
+
 public class TokenFileEnd implements IToken{
     public static final TokenFileEnd INSTANCE = new TokenFileEnd();
 
@@ -10,7 +12,12 @@ public class TokenFileEnd implements IToken{
     }
 
     @Override
-    public IToken fromLexeme(String lexeme) {
-        return null;
+    public IToken onMatched(String lexeme, CompilerInput input) {
+        return this;
+    }
+
+    @Override
+    public String toString() {
+        return "$END$";
     }
 }

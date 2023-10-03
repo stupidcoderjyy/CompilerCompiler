@@ -1,3 +1,5 @@
+$head{"CompilerInput", "CompileException"}
+
 $f[name]{"public class %s implements IToken {", L}
     public String lexeme;
 
@@ -7,7 +9,13 @@ $f[name]{"public class %s implements IToken {", L}
     }
 
     @Override
-    public IToken fromLexeme(String lexeme) {
+    public IToken onMatched(String lexeme, CompilerInput input) throws CompileException {
         return this;
+    }
+
+
+    @Override
+    public String toString() {
+        return lexeme;
     }
 }

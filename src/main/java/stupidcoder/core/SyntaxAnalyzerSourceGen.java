@@ -40,7 +40,7 @@ public class SyntaxAnalyzerSourceGen implements ISyntaxAnalyzerSetter {
 
     @Override
     public void setActionShift(int from, int to, int inputTerminal) {
-        srcActions.writeInt(from, to, 1, inputTerminal);
+        srcActions.writeInt(from, inputTerminal, 1, to);
     }
 
     @Override
@@ -55,7 +55,7 @@ public class SyntaxAnalyzerSourceGen implements ISyntaxAnalyzerSetter {
 
     @Override
     public void setGoto(int from, int to, int inputNonTerminal) {
-        srcGoto.writeInt(from, to, inputNonTerminal);
+        srcGoto.writeInt(from, inputNonTerminal, to);
     }
 
     @Override

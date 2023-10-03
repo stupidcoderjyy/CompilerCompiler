@@ -1,4 +1,6 @@
+$head{"CompilerInput", "CompileException"}
+
 public interface IToken {
     int type();
-    IToken fromLexeme(String lexeme);
+    IToken onMatched(String lexeme, CompilerInput input) throws CompileException;
 }

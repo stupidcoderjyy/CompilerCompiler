@@ -1,8 +1,6 @@
 package javagen;
 
 import org.junit.jupiter.api.Test;
-import stupidcoder.Config;
-import stupidcoder.PathUtil;
 import stupidcoder.common.symbol.DefaultSymbols;
 import stupidcoder.compile.lex.DFABuilder;
 import stupidcoder.compile.lex.NFARegexParser;
@@ -18,8 +16,8 @@ public class TestVarParserGen {
 
     @Test
     public void test() {
-        Config.set(Config.OUTPUT_DIR, PathUtil.desktopPath("cs\\IdeaProjects\\TestCodeGen\\src"));
-        JProjectBuilder builder = new JProjectBuilder("scripts/compile", "");
+//        Config.set(Config.OUTPUT_DIR, PathUtil.desktopPath("cs\\IdeaProjects\\TestCodeGen\\src"));
+        JProjectBuilder builder = new JProjectBuilder("scripts/compile", "testJavaGen/varParser");
         builder.excludePkg("template");
         loader = new SyntaxLoader();
         parser = new NFARegexParser();

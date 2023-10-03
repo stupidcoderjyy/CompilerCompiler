@@ -1,46 +1,32 @@
-$head{"$compile.tokens", "IOperation", "TokenError", "IToken", "IInput", "TokenFileEnd"}
+$head{"$compile.tokens", "IToken", "CompilerInput", "TokenFileEnd", "BitClass", "CompileException"}
 
 public class Lexer {
     private final int[][] goTo;
     private final boolean[] accepted;
-    private final IOperation[] operations;
-    public final IInput input;
+    private final TokenSupplier[] suppliers;
+    public final CompilerInput input;
 
-    public Lexer(IInput input) {
+    public Lexer(CompilerInput input) {
         this.input = input;
         $c{%
             accepted = new boolean[$f[fStatesCount]{"%d"}];
             goTo = new int[$f[fStatesCount]{"%d"}][128];
-            operations = new IOperation[$f[fStatesCount]{"%d"}];
+            suppliers = new TokenSupplier[$f[fStatesCount]{"%d"}];
         %, I2L1}
         init();
     }
 
     private void init() {
-        $s[goTo]{
-            $f{"goTo[%d][%d] = %d;", LI2},
-            $c{%
-                for (int i = $f{"%d"} ; i <= $f{"%d"} ; i ++) {
-                    $r{$f{"goTo[%d][i] = %d;", I3},
-                        %postfix:$f{"%n"},
-                        %last-postfix:"",
-                        %single-postfix:"",
-                    , I0}
-                }
-            %, I2L}
-        , R}
+        $arrIII[goTo]{"goTo", I2}
 
         $f[accepted]{"accepted[%d] = true;", RLI2}
 
-        $s[op]{
-            $f{"IOperation %s = %s;", I2L},
-            $f{"operations[%d] = %s;", I2L}
-        , R}
+        $arrIS[op]{"suppliers", "TokenSupplier", $f{"(l, i) -> new Token%s().onMatched(l, i)"}, I2}
     }
 
-    public IToken run() {
+    public IToken run() throws CompileException{
+        input.skip(BitClass.BLANK);
         input.mark();
-        input.skip(' ', '\t', '\r', '\n');
         if (!input.available()) {
             return TokenFileEnd.INSTANCE;
         }
@@ -54,7 +40,6 @@ public class Lexer {
                 extraLoadedBytes++;
                 break;
             }
-
             if (accepted[state]) {
                 lastAccepted = state;
                 extraLoadedBytes = 0;
@@ -62,17 +47,18 @@ public class Lexer {
                 extraLoadedBytes++;
             }
         }
-        if (lastAccepted < 0 || operations[lastAccepted] == null) {
-            while (input.available()) {
-                int b = input.read();
-                if (b == ' ') {
-                    input.retract();
-                    break;
-                }
-            }
-            return TokenError.INSTANCE.fromLexeme(input.capture());
+        if (lastAccepted < 0 || suppliers[lastAccepted] == null) {
+            input.approach('\r', ' ', '\t');
+            throw input.errorMarkToForward("unexpected symbol");
         }
         input.retract(extraLoadedBytes);
-        return operations[lastAccepted].onMatched(input.capture(), input);
+        input.mark();
+        return suppliers[lastAccepted].get(input.capture(), input);
+    }
+
+
+    @FunctionalInterface
+    private interface TokenSupplier{
+        IToken get(String lexeme, CompilerInput input) throws CompileException;
     }
 }

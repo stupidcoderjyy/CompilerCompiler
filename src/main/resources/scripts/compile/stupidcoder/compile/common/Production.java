@@ -1,4 +1,3 @@
-import java.util.List;
 $head{"Symbol"}
 import java.util.List;
 

@@ -1,4 +1,4 @@
-$head{"IToken"}
+$head{"IToken", "CompilerInput"}
 
 public class TokenSingle implements IToken {
     private char ch;
@@ -9,7 +9,7 @@ public class TokenSingle implements IToken {
     }
 
     @Override
-    public IToken fromLexeme(String lexeme) {
+    public IToken onMatched(String lexeme, CompilerInput input) {
         this.ch = lexeme.charAt(0);
         return this;
     }

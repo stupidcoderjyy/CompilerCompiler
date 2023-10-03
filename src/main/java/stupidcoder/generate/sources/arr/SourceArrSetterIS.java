@@ -41,16 +41,20 @@ public class SourceArrSetterIS extends SourceCached {
                 continue;
             }
             writeInt(0); //switch
-            writeString("e" + varId);
+            writeInt(varId);
             writeString(varIdToExpr.get(varId));
         }
         //数组赋值
         setPosToVarId.forEach((target, varId) -> {
             writeInt(1); //switch
             writeInt(target);
-            writeString(varRepeatCount.get(varId) > 1 ?
-                    "e" + varId :
-                    varIdToExpr.get(varId));
+            if (varRepeatCount.get(varId) > 1) {
+                writeInt(0);
+                writeInt(varId);
+            } else {
+                writeInt(1);
+                writeString(varIdToExpr.get(varId));
+            }
         });
         setPosToVarId = null;
         varIdToExpr = null;

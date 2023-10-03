@@ -36,7 +36,7 @@ public class LexerSourceGen implements IDfaSetter {
     @Override
     public void setAccepted(int i, String token) {
         String tokenName = StringUtils.capitalize(token);
-        opSetter.set(i, String.format("(l, i) -> new Token%s().fromLexeme(l)", tokenName));
+        opSetter.set(i, tokenName);
         accepted.writeInt(i);
     }
 

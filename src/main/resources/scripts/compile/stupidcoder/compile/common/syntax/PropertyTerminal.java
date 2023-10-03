@@ -1,7 +1,7 @@
 $head{"Production", "IToken"}
 
 public final class PropertyTerminal implements IProperty{
-    public final IToken token;
+    private final IToken token;
 
     public PropertyTerminal(IToken token) {
         this.token = token;

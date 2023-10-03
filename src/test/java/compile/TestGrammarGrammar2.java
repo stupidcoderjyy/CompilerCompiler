@@ -19,7 +19,7 @@ public class TestGrammarGrammar2 {
                 .addTerminal("@nt", 129)
                 .addTerminal("@p", 130)
                 .addNonTerminal("prod")
-                .addTerminal("end", 132)
+                .addTerminal(';')
                 .finish();
         loader.begin("prod")
                 .addNonTerminal("seq")

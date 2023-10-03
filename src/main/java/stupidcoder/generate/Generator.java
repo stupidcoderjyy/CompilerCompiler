@@ -3,6 +3,8 @@ package stupidcoder.generate;
 import stupidcoder.Config;
 import stupidcoder.generate.parse.InternalParsers;
 import stupidcoder.generate.parse.Parser;
+import stupidcoder.generate.parse.parsers.ParserUnitArraySetterIII;
+import stupidcoder.generate.parse.parsers.ParserUnitArraySetterIS;
 import stupidcoder.util.input.BitClass;
 import stupidcoder.util.input.CompilerInput;
 
@@ -27,6 +29,8 @@ public class Generator {
         DEFAULT_UNIT_PARSERS.put("repeat", InternalParsers.UNIT_REPEAT);
         DEFAULT_UNIT_PARSERS.put("s", InternalParsers.UNIT_SWITCH);
         DEFAULT_UNIT_PARSERS.put("switch", InternalParsers.UNIT_SWITCH);
+        DEFAULT_UNIT_PARSERS.put("arrIS", new ParserUnitArraySetterIS());
+        DEFAULT_UNIT_PARSERS.put("arrIII", new ParserUnitArraySetterIII());
     }
 
     public Generator(Generator parent) {

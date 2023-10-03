@@ -39,7 +39,7 @@ public class SourceArrSetterIII extends SourceCached {
             int key2 = key.k2;
             range.forEach((l, r) -> {
                 if (r - l > 2) {
-                    Unit k = new Unit(l, r);
+                    Unit k = new Unit(l + 1, r - 1);
                     repeatedFor.computeIfAbsent(k, k1 -> new ArrayList<>()).add(key);
                 } else {
                     writeInt(0); //switch

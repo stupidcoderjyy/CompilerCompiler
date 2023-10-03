@@ -1,4 +1,7 @@
 $head{"Production", "Symbol", "IProperty" ,"PropertyTerminal", "IToken", "TokenFileEnd", "$compile.properties"}
+import stupidcoder.util.input.CompileException;
+import stupidcoder.util.input.CompilerInput;
+
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -13,61 +16,68 @@ public class SyntaxAnalyzer {
     private final Production[] productions;
     private final Supplier<IProperty>[] propertySuppliers;
 
-    protected SyntaxAnalyzer() {
+    public SyntaxAnalyzer() {
         $c{%
             this.productions = new Production[$f[prodSize]{"%d"}];
             this.actions = new int[$f[statesCount]{"%d"}][$f[terminalCount]{"%d"}];
             this.goTo = new int[$f[statesCount]{"%d"}][$f[nonTerminalCount]{"%d"}];
             this.terminalRemap = new int[$f[remapSize]{"%d"}];
-            this.propertySuppliers = new Supplier[$f[statesCount]{"%d"}];
+            this.propertySuppliers = new Supplier[$f[nonTerminalCount]{"%d"}];
         %, I2L}
         initTable();
         initGrammars();
     }
 
-    public void run(Lexer lexer) {
-        try {
-            Stack<Integer> states = new Stack<>();
-            Stack<IProperty> properties = new Stack<>();
-            states.push(0);
-            IToken token = lexer.run();
-            if (token == TokenFileEnd.INSTANCE) {
-                return;
-            }
-            LOOP:
-            while (true) {
-                int s = states.peek();
-                int order = actions[s][terminalRemap[token.type()]];
-                int type = order >> 16;
-                int target = order & 0xFFFF;
-                switch (type) {
-                    case 0:
-                        return;
-                    case 1:
-                        propertySuppliers[0].get().onReduced(productions[0], properties.pop());
-                        break LOOP;
-                    case 2:
-                        states.push(target);
-                        properties.push(new PropertyTerminal(token));
-                        token = lexer.run();
-                        break;
-                    case 3:
-                        Production p = productions[target];
-                        int size = p.body().size();
-                        IProperty[] body = new IProperty[size];
-                        for (int i = 0 ; i < size ; i ++) {
-                            states.pop();
-                            body[i] = properties.pop();
+    public void run(Lexer lexer) throws CompileException {
+        CompilerInput input = lexer.input;
+        input.mark();
+        Stack<Integer> states = new Stack<>();
+        Stack<IProperty> properties = new Stack<>();
+        states.push(0);
+        IToken token = lexer.run();
+        if (token == TokenFileEnd.INSTANCE) {
+            return;
+        }
+        LOOP:
+        while (true) {
+            int s = states.peek();
+            int order = actions[s][terminalRemap[token.type()]];
+            int type = order >> 16;
+            int target = order & 0xFFFF;
+            switch (type) {
+                case 0:
+                    input.recover(false);
+                    throw lexer.input.errorAtMark("syntax error");
+                case 1:
+                    propertySuppliers[0].get().onReduced(productions[0], properties.pop());
+                    break LOOP;
+                case 2:
+                    input.mark();
+                    states.push(target);
+                    properties.push(new PropertyTerminal(token));
+                    token = lexer.run();
+                    break;
+                case 3:
+                    Production p = productions[target];
+                    int size = p.body().size();
+                    IProperty[] body = new IProperty[size];
+                    for (int i = size - 1 ; i >= 0 ; i --) {
+                        Symbol symbol = p.body().get(i);
+                        if (symbol.id < 0) {
+                            continue; //ε
                         }
-                        IProperty pHead = propertySuppliers[p.head().id].get();
-                        pHead.onReduced(p, body);
-                        properties.push(pHead);
-                        states.push(goTo[states.peek()][p.head().id]);
-                        break;
-                }
+                        states.pop();
+                        body[i] = properties.pop();
+                        if (symbol.isTerminal) {
+                            input.removeMark();
+                        }
+                    }
+                    IProperty pHead = propertySuppliers[p.head().id].get();
+                    pHead.onReduced(p, body);
+                    properties.push(pHead);
+                    states.push(goTo[states.peek()][p.head().id]);
+                    break;
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
