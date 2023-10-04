@@ -8,7 +8,6 @@ import java.util.*;
 
 public class LRGroupBuilder {
     private final SyntaxLoader loader;
-    private final PriorityManager priority;
     private final ISyntaxAnalyzerSetter receiver;
     private final List<LRGroup> idToCore = new ArrayList<>();
     private final Map<LRGroup, Integer> coreToId = new HashMap<>();
@@ -20,14 +19,11 @@ public class LRGroupBuilder {
     }
 
     private LRGroupBuilder(SyntaxLoader l, ISyntaxAnalyzerSetter receiver) {
-        PriorityManager p = new PriorityManager(l);
         this.loader = l;
         this.receiver = receiver;
-        this.priority = p;
     }
 
     public void build() {
-        priority.init();
         LRItem root = new LRItem(loader.root(), 0);
         registerCore(new LRGroup(List.of(root), 0));
         expandGroups();
@@ -40,6 +36,7 @@ public class LRGroupBuilder {
     private List<Integer> spreadSrc;
     private List<LRItem> tempCoreItems;
     private LRGroup tempGroup;
+    private LRGroup curCore;
 
     private void expandGroups() {
         while (!unchecked.empty()) {
@@ -47,10 +44,10 @@ public class LRGroupBuilder {
             spreadSrc = new ArrayList<>();
             tempCoreItems = new ArrayList<>();
             tempGroup = new LRGroup();
-            LRGroup core = unchecked.pop();
-            initTempItems(core);
+            curCore = unchecked.pop();
+            initTempItems(curCore);
             expandTempItems();
-            tempGoto.forEach((input, items) -> buildTargetCores(core, input, items));
+            tempGoto.forEach(this::buildTargetCores);
         }
     }
 
@@ -110,9 +107,9 @@ public class LRGroupBuilder {
         }
     }
 
-    private void buildTargetCores(LRGroup core, Symbol input, List<LRItem> items) {
+    private void buildTargetCores(Symbol input, List<LRItem> items) {
         LRGroup target = getOrCreateCore(items);
-        groupToTargets.get(core.id).put(input, target);
+        groupToTargets.get(curCore.id).put(input, target);
         for (LRItem temp : items) {
             LRItem targetItem = target.getItem(temp.production, temp.point + 1);
             if (spread(temp, targetItem)) {
@@ -186,6 +183,9 @@ public class LRGroupBuilder {
     }
 
     private void emitActions() {
+        if (receiver == null) {
+            return;
+        }
         for (LRGroup group : idToCore) {
             expand(group);
             emitActions(group);
@@ -224,6 +224,7 @@ public class LRGroupBuilder {
 
     private void emitActions(LRGroup core) {
         Map<Symbol, LRGroup> goToMap = groupToTargets.get(core.id);
+        Set<Integer> addedTarget = new HashSet<>();
         //输出数据
         for (LRItem item : core.items) {
             Symbol next = item.nextSymbol();
@@ -231,16 +232,21 @@ public class LRGroupBuilder {
                 emitReduceAndAccept(item, goToMap, core);
             } else {
                 //GOTO和移入
-                emitGotoAndShift(next, goToMap, core);
+                emitGotoAndShift(next, goToMap, core, addedTarget);
             }
         }
     }
 
-    private void emitGotoAndShift(Symbol next, Map<Symbol, LRGroup> goToMap, LRGroup core) {
+    private void emitGotoAndShift(Symbol next, Map<Symbol, LRGroup> goToMap, LRGroup core, Set<Integer> addedTarget) {
+        int targetCore = goToMap.get(next).id;
         if (next.isTerminal) {
-            receiver.setActionShift(core.id, goToMap.get(next).id, next.id);
+            receiver.setActionShift(core.id, targetCore, next.id);
         } else {
-            receiver.setGoto(core.id, goToMap.get(next).id, next.id);
+            if (addedTarget.contains(targetCore)) {
+                return;
+            }
+            addedTarget.add(targetCore);
+            receiver.setGoto(core.id, targetCore, next.id);
         }
     }
 
@@ -252,11 +258,22 @@ public class LRGroupBuilder {
         }
         //规约
         for (Symbol f : item.forwardSymbols) {
-            if (goToMap.containsKey(f) && priority.compare(f, item.production) > 0) {
-                //移入规约冲突
+            boolean conflict = goToMap.containsKey(f);
+            if (!conflict || loader.shouldReduce(item.production, f)) {
+                receiver.setActionReduce(core.id, f.id, item.production.id());
+                if (conflict) {
+                    warnConflict(item, f, false);
+                }
                 continue;
             }
-            receiver.setActionReduce(core.id, f.id, item.production.id());
+            warnConflict(item, f, true);
         }
+    }
+
+    private void warnConflict(LRItem item, Symbol f, boolean shift) {
+        System.err.println("shift-reduce conflict:");
+        System.err.println("    item:" + item);
+        System.err.println("    forward:" + f);
+        System.err.println("    action:" + (shift ? "SHIFT" : "REDUCE"));
     }
 }

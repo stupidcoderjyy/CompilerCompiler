@@ -14,4 +14,5 @@ public interface ISyntaxAccess {
     Map<Integer, Integer> terminalIdRemap();
     int terminalSymbolsCount();
     int nonTerminalSymbolsCount();
+    boolean shouldReduce(Production target, Symbol forward);
 }

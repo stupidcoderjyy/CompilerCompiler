@@ -139,6 +139,8 @@ public class DFABuilder {
 
     private final List<Set<Integer>> groups = new ArrayList<>();
     private final Stack<Integer> unchecked = new Stack<>();
+    private final Stack<Integer> suspiciousGroups = new Stack<>();
+    private boolean splitInRound = false;
     private int groupCount;
     private int[] stateToGroup;
 
@@ -153,14 +155,21 @@ public class DFABuilder {
     }
 
     private void splitGroups() {
-        while (!unchecked.empty()) {
-            int curGroupId = unchecked.pop();
-            Set<Integer> curGroup = groups.get(curGroupId);
-            if (curGroup.size() == 1) {
-                continue;
+        do {
+            unchecked.addAll(suspiciousGroups);
+            suspiciousGroups.clear();
+            splitInRound = false;
+            while (!unchecked.empty()) {
+                int curGroupId = unchecked.pop();
+                Set<Integer> curGroup = groups.get(curGroupId);
+                if (curGroup.size() == 1) {
+                    continue;
+                }
+                if (split(curGroup)) {
+                    suspiciousGroups.add(curGroupId);
+                }
             }
-            split(curGroup);
-        }
+        } while (splitInRound && !suspiciousGroups.empty());
     }
 
     private void initGroup() {
@@ -181,7 +190,7 @@ public class DFABuilder {
         createGroup(nonAcceptedGroup);
     }
 
-    private void split(Set<Integer> curGroup) {
+    private boolean split(Set<Integer> curGroup) {
         Set<Integer> newGroup = null;
         int std = curGroup.iterator().next();
         curGroup.remove(std);
@@ -206,8 +215,10 @@ public class DFABuilder {
         }
         curGroup.add(std);
         if (newGroup != null) {
+            splitInRound = true;
             createGroup(newGroup);
         }
+        return curGroup.size() > 1;
     }
 
     private void createGroup(Set<Integer> states) {

@@ -1,64 +1,99 @@
-a$f[name]{"public class Property%s implements IProperty {"}
 
-     @Override
-     public void onReduced(Production p, IProperty... properties) {
-         $s[reduceCall]{
-             $c{%
-                 reduce0(
-                 $r{
-                     $c{
-                         $s{
-                             $f{"(Property%s)"},
-                             $f{"(PropertyTerminal<Token%s>)"}
-                         } +
-                         $f{"properties[%d]", L}
-                     },
-                     %postfix:$f{",%n"},
-                     %single-postfix:$f{"%n"},
-                     %last-postfix:$f{"%n"}
-                 , L0I4}
-                 );
-             %, LI2},
-             $c{%
-                 switch (p.id()) {
-                 $r{
-                     $c{%
-                         $f{"case %d -> reduce%d("}
-                         $r{
-                             $c{
-                                 $s{
-                                     $f{"(Property%s)"},
-                                     $f{"(PropertyTerminal<Token%s>)"}
-                                 } +
-                                 $f{"properties[%d]"}
-                             },
-                             %postfix:$f{",%n"},
-                             %single-postfix:$f{"%n"},
-                             %last-postfix:$f{"%n"}
-                         , I5}
-                         );
-                     %, L}
-                 , I3}
-                 }
-             %, LI2}
-         }
-     }
+    script -> block | script block
+    block -> content @blockEnd
+    content -> @syntaxBegin syntax | @tokenBegin tokens
 
-     $r[reduceFunc]{
-         $c{%
-             $f{"private void reduce%d("}
-             $r{
-                 $c{
-                     $s{
-                         $f{"(Property%s)"},
-                         $f{"(PropertyTerminal<Token%s>)"}
-                      } +
-                     $f{" p%d"}
-                 },
-                 %postfix:$f{",%n"},
-                 %single-postfix:$f{") {%n"},
-                 %last-postfix:$f{") {%n"}
-             }
-         %}
-     }
- }
+    syntax -> production | syntax production
+    production -> @nt @p body ';'
+    body -> body '|' slice | slice
+    slice -> seq priorityP
+    priorityP -> ε | @pMarkP
+    seq -> seq symbol | symbol
+    symbol -> @nt | @t priorityT
+    priorityT -> ε | @pMarkT
+
+    tokens -> token | tokens token
+    token -> @id ':' @string ';'
+}
+@~
+
+
+$tokens$
+
+    nt: "@a+";
+    t: "\\@(~|@a+)|'@.'";
+
+$$
+
+$syntax$
+
+    expr -> expr '+' expr
+        |   expr '-' expr
+        |   '+' expr            %2
+        |   '-' expr            %2
+        |   expr '*' $1 expr
+        |   expr '/' $1 expr
+        |   '(' expr ')'
+        ;
+
+$$
+
+0
+    root → · syntax                 [$]
+    syntax → · production           [$, @nt]
+    syntax → · syntax production    [$, @nt]
+    production → · @nt @p body ;    [$, @nt]
+1
+    root → syntax ·                 [$]
+    syntax → syntax · production    [$, @nt]
+    production → · @nt @p body ;    [$, @nt]
+2
+    production → @nt · @p body ;    [$, @nt]
+3
+    syntax → production ·           [$, @nt]
+4
+    production → @nt @p · body ;    [$, @nt]
+    body → · slice                  [;, |]
+    body → · body | slice           [;, |]
+    slice → · seq priority          [;, |]
+    seq → · symbol                  [@nt, @pMark, @t]  //这里应当继承上面的向前看符号
+    seq → · seq symbol              [@nt, @pMark, @t]
+    symbol → · @nt                  [@nt, @pMark, @t]
+    symbol → · @t                   [@nt, @pMark, @t]
+5
+    symbol → @nt ·                  [@nt, @pMark, @t] //关键在于这里的向前看符号缺少';'和'|'
+6
+    production → @nt @p body · ;    [$, @nt]
+    body → body · | slice           [;, |]
+7
+    body → slice ·                  [;, |]
+8
+    slice → seq · priority          [;, |]
+    priority → · ε                  [;, |]
+    priority → · @pMark             [;, |]
+    seq → seq · symbol              [@nt, @pMark, @t]
+    symbol → · @nt                  [@nt, @pMark, @t]
+    symbol → · @t                   [@nt, @pMark, @t]
+9
+    symbol → @t ·                   [@nt, @pMark, @t]
+10
+    seq → symbol ·                  [@nt, @pMark, @t]
+11
+    priority → @pMark ·             [;, |]
+12
+    slice → seq priority ·          [;, |]
+13
+    seq → seq symbol ·              [@nt, @pMark, @t]
+14
+    production → @nt @p body ; ·    [$, @nt]
+15
+    slice → · seq priority          [;, |]
+    body → body | · slice           [;, |]
+    seq → · symbol                  [@nt, @pMark, @t]
+    seq → · seq symbol              [@nt, @pMark, @t]
+    symbol → · @nt                  [@nt, @pMark, @t]
+    symbol → · @t                   [@nt, @pMark, @t]
+16
+    body → body | slice ·           [;, |]
+17
+    syntax → syntax production ·   [$, @nt]

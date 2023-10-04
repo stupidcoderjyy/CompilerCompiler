@@ -9,6 +9,8 @@ import java.util.*;
 
 public class SyntaxLoader implements ISyntaxAccess {
     private final List<List<Production>> symbolToProductions = new ArrayList<>();
+    private final List<Integer> terminalPriority = new ArrayList<>();
+    private final List<Integer> productionPriority = new ArrayList<>();
     private Production extendedRoot;
     private Symbol tempStart;
     private List<Symbol> tempProduction = new ArrayList<>();
@@ -28,7 +30,7 @@ public class SyntaxLoader implements ISyntaxAccess {
         if (extendedRoot == null) {
             Symbol root = DefaultSymbols.ROOT;
             lexemeToSymbol.put(root.toString(), root);
-            addProduction(root, List.of(tempStart));
+            addProduction(root, List.of(tempStart), false);
             extendedRoot = productions.get(0);
         }
         return this;
@@ -62,13 +64,35 @@ public class SyntaxLoader implements ISyntaxAccess {
         return this;
     }
 
+    public SyntaxLoader setPriority(int value) {
+        if (tempProduction.isEmpty()) {
+            throw new RuntimeException("empty production");
+        }
+        Symbol pre = tempProduction.get(tempProduction.size() - 1);
+        if (!pre.isTerminal) {
+            throw new RuntimeException("cannot set priority to a nonTerminal symbol");
+        }
+        ArrayUtil.resize(terminalPriority, pre.id + 1,  () -> 0);
+        terminalPriority.set(pre.id, value);
+        return this;
+    }
+
     public SyntaxLoader addTerminal(char ch) {
         return addTerminal(String.valueOf(ch), ch);
     }
 
     public void finish() {
-        addProduction(tempStart, tempProduction);
-        tempStart = null;
+        finish0(false);
+    }
+
+    public void finish(int priority) {
+        finish0(true);
+        ArrayUtil.resize(productionPriority, productionCount, () -> 0);
+        productionPriority.set(productionCount - 1, priority);
+    }
+
+    private void finish0(boolean customPriority) {
+        addProduction(tempStart, tempProduction, customPriority);
         tempProduction = new ArrayList<>();
     }
 
@@ -81,16 +105,35 @@ public class SyntaxLoader implements ISyntaxAccess {
         return s;
     }
 
-    private void addProduction(Symbol head, List<Symbol> body) {
+    private void addProduction(Symbol head, List<Symbol> body, boolean customPriority) {
         ArrayUtil.resize(symbolToProductions, head.id + 1, ArrayList::new);
-        Production g = new Production(productionCount, head, body);
-        symbolToProductions.get(head.id).add(g);
-        productions.add(g);
+        Production p = new Production(productionCount, head, body);
+        symbolToProductions.get(head.id).add(p);
+        productions.add(p);
         productionCount++;
+        if (customPriority) {
+            return;
+        }
+        int size = body.size();
+        for (int i = size - 1 ; i >= 0 ; i --) {
+            Symbol s = body.get(i);
+            if (s.isTerminal && s != DefaultSymbols.EPSILON) {
+                ArrayUtil.resize(productionPriority, p.id() + 1, () -> 0);
+                ArrayUtil.resize(terminalPriority, s.id + 1, () -> 0);
+                productionPriority.set(p.id(), terminalPriority.get(s.id));
+                break;
+            }
+        }
     }
 
     @Override
     public List<Production> productionsWithHead(Symbol head) {
+        if (head.isTerminal) {
+            throw new RuntimeException("terminal");
+        }
+        if (head.id >= symbolToProductions.size() || symbolToProductions.get(head.id).isEmpty()) {
+            throw new RuntimeException("no productions found, head:" + head);
+        }
         return symbolToProductions.get(head.id);
     }
 
@@ -124,6 +167,11 @@ public class SyntaxLoader implements ISyntaxAccess {
         return nonTerminalCount;
     }
 
+    @Override
+    public boolean shouldReduce(Production target, Symbol forward) {
+        return productionPriority.get(target.id()) >= terminalPriority.get(forward.id);
+    }
+
     boolean calcForward(Set<Symbol> result, Production g, int point) {
         List<Symbol> symbolsBeta = new ArrayList<>(
                 g.body().subList(point + 1, g.body().size()));
@@ -141,7 +189,6 @@ public class SyntaxLoader implements ISyntaxAccess {
             if (!result.contains(DefaultSymbols.EPSILON)) {
                 break;
             }
-            result.remove(DefaultSymbols.EPSILON);
         }
     }
 
@@ -156,7 +203,6 @@ public class SyntaxLoader implements ISyntaxAccess {
                 if (!result.contains(DefaultSymbols.EPSILON)) {
                     break;
                 }
-                result.remove(DefaultSymbols.EPSILON);
             }
         }
     }
