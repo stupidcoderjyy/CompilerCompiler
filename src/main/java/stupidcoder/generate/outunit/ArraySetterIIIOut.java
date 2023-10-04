@@ -17,9 +17,9 @@ public class ArraySetterIIIOut extends OutUnit {
                 writer.write(String.format("[%d][%d] = %d;%n", readInt(srcIn), readInt(srcIn), readInt(srcIn)));
             } else {
                 writer.write(String.format("for (int i = %d ; i <= %d ; i ++) {%n", readInt(srcIn), readInt(srcIn)));
-                prefix.writeAll(writer, srcIn);
                 int count = readInt(srcIn);
                 for (int i = 0; i < count; i++) {
+                    prefix.writeAll(writer, srcIn);
                     writer.write("    ");
                     arrName.writeContentOnce(writer, srcIn);
                     writer.write(String.format("[%d][i] = %d;%n", readInt(srcIn), readInt(srcIn)));

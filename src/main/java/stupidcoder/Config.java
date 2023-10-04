@@ -22,7 +22,7 @@ public class Config {
 
     public static void set(int type, String data) {
         if (!INSTANCE.configs.containsKey(type)) {
-            throw new IllegalArgumentException("unknown type: " + type);
+            throw new IllegalArgumentException("unknown terminalType: " + type);
         }
         if ((type & FLAG_OUT_PATH) != 0) {
             new File(data).mkdirs();

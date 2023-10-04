@@ -63,7 +63,7 @@ public class ParserUnit implements Parser {
         Parser parser = g.getUnitParser(unitType);
         if (parser == null) {
             input.retract();
-            throw input.errorMarkToForward("unknown unit type: " + unitType);
+            throw input.errorMarkToForward("unknown unit terminalType: " + unitType);
         }
         input.removeMark(); //0
         return parser;

@@ -127,7 +127,7 @@ public class JProjectBuilder {
         for (String element : elements) {
             g = g.childPackages.get(element);
             if (g == null) {
-                return null;
+                throw new RuntimeException("pkg not found:" + pkg);
             }
         }
         return g;

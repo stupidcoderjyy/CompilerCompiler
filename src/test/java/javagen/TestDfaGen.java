@@ -3,7 +3,7 @@ package javagen;
 import org.junit.jupiter.api.Test;
 import stupidcoder.compile.lex.DFABuilder;
 import stupidcoder.compile.lex.NFARegexParser;
-import stupidcoder.core.LexerSourceGen;
+import stupidcoder.core.SrcGenLexer;
 import stupidcoder.generate.generators.java.JProjectBuilder;
 
 public class TestDfaGen {
@@ -17,7 +17,7 @@ public class TestDfaGen {
         parser.register("@d+(L|l)?|0(x|X)@h+", "Integer");
         parser.register("@a@w*", "Word");
         parser.registerSingle('.');
-        DFABuilder.build(new LexerSourceGen(builder), parser);
+        DFABuilder.build(new SrcGenLexer(builder), parser);
         builder.gen();
     }
 }

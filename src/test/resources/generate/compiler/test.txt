@@ -1,0 +1,17 @@
+$token$
+    num: "@d+";
+$$
+
+$syntax$
+
+    expr -> expr '+' expr
+        |   expr '-' expr
+        |   '+' expr            %10
+        |   '-' expr            %10
+        |   expr '*' $1 expr
+        |   expr '/' $1 expr
+        |   '(' expr ')'
+        |   @num
+        ;
+
+$$

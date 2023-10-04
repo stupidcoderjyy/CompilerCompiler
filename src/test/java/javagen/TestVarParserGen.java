@@ -6,8 +6,8 @@ import stupidcoder.compile.lex.DFABuilder;
 import stupidcoder.compile.lex.NFARegexParser;
 import stupidcoder.compile.syntax.LRGroupBuilder;
 import stupidcoder.compile.syntax.SyntaxLoader;
-import stupidcoder.core.LexerSourceGen;
-import stupidcoder.core.SyntaxAnalyzerSourceGen;
+import stupidcoder.core.SrcGenLexer;
+import stupidcoder.core.SrcGenSyntaxAnalyzer;
 import stupidcoder.generate.generators.java.JProjectBuilder;
 
 public class TestVarParserGen {
@@ -23,8 +23,8 @@ public class TestVarParserGen {
         parser = new NFARegexParser();
         registerTokens();
         registerSyntax();
-        DFABuilder.build(new LexerSourceGen(builder), parser);
-        LRGroupBuilder.build(loader, new SyntaxAnalyzerSourceGen(builder));
+        DFABuilder.build(new SrcGenLexer(builder), parser);
+        LRGroupBuilder.build(loader, new SrcGenSyntaxAnalyzer(builder));
         builder.gen();
     }
 

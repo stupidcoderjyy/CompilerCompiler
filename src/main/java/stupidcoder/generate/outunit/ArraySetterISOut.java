@@ -16,13 +16,15 @@ public class ArraySetterISOut extends OutUnit {
                 arrType.writeContentOnce(writer, srcIn);
                 writer.write(" e" + readInt(srcIn) + " = ");
                 setterExpr.writeContentOnce(writer, srcIn);
+                writer.write(";");
             } else {
                 arrName.writeContentOnce(writer, srcIn);
                 writer.write("[" + readInt(srcIn) + "] = ");
                 if (readInt(srcIn) == 0) {
-                    writer.write("e" + readInt(srcIn));
+                    writer.write("e" + readInt(srcIn) + ";");
                 } else {
                     setterExpr.writeContentOnce(writer, srcIn);
+                    writer.write(";");
                 }
             }
             writer.write("\r\n");
