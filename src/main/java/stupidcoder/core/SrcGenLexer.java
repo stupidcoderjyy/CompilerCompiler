@@ -6,32 +6,41 @@ import stupidcoder.generate.generators.java.JProjectBuilder;
 import stupidcoder.generate.sources.SourceCached;
 import stupidcoder.generate.sources.SourceFieldInt;
 import stupidcoder.generate.sources.arr.Source1DArrSetter;
-import stupidcoder.generate.sources.arr.Source2DArrSetter;
 import stupidcoder.generate.sources.arr.SourceArrSetter;
+import stupidcoder.util.ArrayCompressor;
+import stupidcoder.util.ICompressedArraySetter;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class SrcGenLexer implements IDfaSetter {
-    private int statesCount, startState;
-    private final Source2DArrSetter goTo;
-    private final Source1DArrSetter op;
+public class SrcGenLexer implements IDfaSetter, ICompressedArraySetter {
+    private int statesCount, startState, dataSize, startSize, offsetsSize;
+    private final Source1DArrSetter op, goTo, start, offsets;
     private final SourceCached accepted;
     private final JProjectBuilder root;
     private final ScriptLoader loader;
+    private final ArrayCompressor compressor;
 
     public SrcGenLexer(ScriptLoader loader, JProjectBuilder root) {
         this.loader = loader;
         this.root = root;
-        this.goTo = new Source2DArrSetter("goTo", SourceArrSetter.FOLD_OPTIMIZE);
+        this.goTo = new Source1DArrSetter("goTo", SourceArrSetter.FOLD_OPTIMIZE);
+        this.start = new Source1DArrSetter("start", SourceArrSetter.FOLD_OPTIMIZE);
+        this.offsets = new Source1DArrSetter("offsets", SourceArrSetter.FOLD_OPTIMIZE);
         this.op = new Source1DArrSetter("op",
                 SourceArrSetter.FOLD_OPTIMIZE | SourceArrSetter.EXTRACT_COMMON_DATA);
+        this.compressor = new ArrayCompressor(this);
         this.accepted = new SourceCached("accepted");
         root.registerClazzSrc("Lexer",
                 new SourceFieldInt("fStatesCount", () -> statesCount),
                 new SourceFieldInt("fStartState", () -> startState),
+                new SourceFieldInt("dataSize", () -> dataSize),
+                new SourceFieldInt("startSize", () -> startSize),
+                new SourceFieldInt("offsetsSize", () -> offsetsSize),
                 goTo,
+                start,
+                offsets,
                 op,
                 accepted);
     }
@@ -49,7 +58,7 @@ public class SrcGenLexer implements IDfaSetter {
 
     @Override
     public void setGoTo(int start, int input, int target) {
-        goTo.set(start, input, target);
+        compressor.set(start, input, String.valueOf(target));
     }
 
     @Override
@@ -72,6 +81,7 @@ public class SrcGenLexer implements IDfaSetter {
             setTokenFile(token);
             added.add(token);
         }
+        compressor.finish();
     }
 
     private void setTokenFile(String token) {
@@ -83,5 +93,29 @@ public class SrcGenLexer implements IDfaSetter {
         srcName.writeString(name);
         srcId.writeInt(loader == null ? 0 : loader.nameToTerminalId.get(token));
         root.registerClazzSrc(name, srcName, srcId);
+    }
+
+    @Override
+    public void setData(int i, String val) {
+        if (val != null) {
+            goTo.set(i, val);
+        }
+    }
+
+    @Override
+    public void setStart(int i, int pos) {
+        start.set(i, pos);
+    }
+
+    @Override
+    public void setOffset(int i, int offset) {
+        offsets.set(i, offset);
+    }
+
+    @Override
+    public void setSize(int dataSize, int startSize, int offsetsSize) {
+        this.dataSize = dataSize;
+        this.startSize = startSize;
+        this.offsetsSize = offsetsSize;
     }
 }

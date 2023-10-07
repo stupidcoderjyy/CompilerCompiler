@@ -48,7 +48,6 @@ public class SrcGenSyntaxAnalyzer implements ISyntaxAnalyzerSetter {
 
     @Override
     public void setActionReduce(int state, int forward, int productionId) {
-        System.out.printf("actions[%d][%d] = REDUCE | %d%n", state, forward, productionId);
         actions.set(state, forward, "REDUCE | " + productionId);
     }
 
