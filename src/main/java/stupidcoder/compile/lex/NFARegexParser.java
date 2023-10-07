@@ -13,11 +13,16 @@ import java.util.Set;
 public class NFARegexParser {
     private IInput input;
     private NFA nfa;
+    private String regex;
     private final List<String> nodeIdToToken = new ArrayList<>();
 
     public void register(String regex, String token) {
+        if (regex.isEmpty()) {
+            return;
+        }
+        this.regex = regex;
         input = new StringInput(regex);
-        NFA regexNfa = expr();
+        NFA regexNfa = expr(false);
         setAcceptedNode(regexNfa, token);
         if (nfa == null) {
             nfa = regexNfa;
@@ -51,20 +56,29 @@ public class NFARegexParser {
         return nodeIdToToken;
     }
 
-    private NFA expr() {
+    private NFA expr(boolean group) {
         NFA result = new NFA();
         while (input.available()) {
             int b = input.read();
             switch (b) {
                 case ')' -> {
+                    if (!group) {
+                        throw new RuntimeException("failed to parse regex(unclosed group):" + regex);
+                    }
                     return result;
                 }
                 case '|' -> {
+                    if (!input.available()) {
+                        throw new RuntimeException("failed to parse regex(missing expr):" + regex);
+                    }
                     input.read();
                     result.or(seq());
                 }
                 default -> result.and(seq());
             }
+        }
+        if (group) {
+            throw new RuntimeException("failed to parse regex(unclosed group):" + regex);
         }
         return result;
     }
@@ -75,7 +89,7 @@ public class NFARegexParser {
         while (input.available()) {
             int b = input.read();
             switch (b) {
-                case '(' -> result.and(checkClosure(expr()));
+                case '(' -> result.and(checkClosure(expr(true)));
                 case '|', ')' -> {
                     input.retract();
                     return result;
@@ -92,9 +106,12 @@ public class NFARegexParser {
         ICharPredicate predicate;
         switch (b) {
             case '[' -> predicate = clazz();
-            case '\\' -> predicate = ICharPredicate.single(input.read());
-            case '@' -> predicate = escape(input.read());
+            case '\\' -> predicate = input.available() ? ICharPredicate.single(input.read()) : null;
+            case '@' -> predicate = escape();
             default -> predicate = ICharPredicate.single(b);
+        }
+        if (predicate == null) {
+            throw new RuntimeException("failed to parse regex(invalid predicate):" + regex);
         }
         return checkClosure(new NFA().andAtom(predicate));
     }
@@ -116,11 +133,23 @@ public class NFARegexParser {
         while (input.available()) {
             int b = input.read();
             switch (b) {
-                case '[' -> result = ICharPredicate.or(result, clazz());
+                case '[' -> {
+                    ICharPredicate clazz = clazz();
+                    if (clazz == null) {
+                        return null;
+                    }
+                    result = ICharPredicate.or(result, clazz);
+                }
                 case ']' -> {
                     return result;
                 }
-                default -> result = ICharPredicate.or(result, minClazzPredicate());
+                default -> {
+                    ICharPredicate p = minClazzPredicate();
+                    if (p == null) {
+                        return null;
+                    }
+                    result = ICharPredicate.or(result, p);
+                }
             }
         }
         return result;
@@ -141,8 +170,14 @@ public class NFARegexParser {
             }
             return c -> !excluded.contains(c);
         }
+        if (!input.available()) {
+            return null;
+        }
         int b1 = input.read();
         if (b1 == '-') {
+            if (!input.available()) {
+                return null;
+            }
             int b2 = input.read();
             if (b2 == '[' || b2 == ']') {
                 input.retract();
@@ -154,14 +189,18 @@ public class NFARegexParser {
         return ICharPredicate.single(b);
     }
 
-    private ICharPredicate escape(int b) {
-        return switch (b) {
+    private ICharPredicate escape() {
+        if (!input.available()) {
+            return null;
+        }
+        return switch (input.read()) {
             case 'D', 'd' -> ASCII::isDigit;
             case 'W', 'w' -> ASCII::isWord;
             case 'U', 'u' -> ASCII::isAlnum;
             case 'H', 'h' -> ASCII::isHex;
             case 'A', 'a' -> ASCII::isAlpha;
-            default -> ch -> true;
+            case '.' -> ch -> true;
+            default -> null;
         };
     }
 }

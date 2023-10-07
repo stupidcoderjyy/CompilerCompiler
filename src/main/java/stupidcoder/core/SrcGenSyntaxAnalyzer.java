@@ -8,6 +8,8 @@ import stupidcoder.compile.syntax.ISyntaxAnalyzerSetter;
 import stupidcoder.generate.generators.java.JProjectBuilder;
 import stupidcoder.generate.sources.SourceCached;
 import stupidcoder.generate.sources.SourceFieldInt;
+import stupidcoder.generate.sources.arr.Source2DArrSetter;
+import stupidcoder.generate.sources.arr.SourceArrSetter;
 
 import java.util.HashMap;
 import java.util.List;
@@ -15,24 +17,25 @@ import java.util.Map;
 
 public class SrcGenSyntaxAnalyzer implements ISyntaxAnalyzerSetter {
     private int prodSize, statesCount, terminalCount, nonTerminalCount, remapSize;
-    private final SourceCached srcGoto, srcActions, srcRemap, srcProperty, srcSyntax;
+    private final SourceCached srcRemap, srcProperty, srcSyntax;
+    private final Source2DArrSetter goTo, actions;
     private final JProjectBuilder root;
 
     public SrcGenSyntaxAnalyzer(JProjectBuilder root) {
         this.root = root;
-        this.srcGoto = new SourceCached("goTo");
-        this.srcActions = new SourceCached("actions");
         this.srcRemap = new SourceCached("remap");
         this.srcProperty = new SourceCached("property");
         this.srcSyntax = new SourceCached("syntax");
+        this.goTo = new Source2DArrSetter("goTo", SourceArrSetter.FOLD_OPTIMIZE);
+        this.actions = new Source2DArrSetter("actions", SourceArrSetter.FOLD_OPTIMIZE);
         root.registerClazzSrc("SyntaxAnalyzer",
                 new SourceFieldInt("prodSize", () -> prodSize),
                 new SourceFieldInt("statesCount", () -> statesCount),
                 new SourceFieldInt("terminalCount", () -> terminalCount),
                 new SourceFieldInt("nonTerminalCount", () -> nonTerminalCount),
                 new SourceFieldInt("remapSize", () -> remapSize),
-                srcGoto,
-                srcActions,
+                goTo,
+                actions,
                 srcRemap,
                 srcProperty,
                 srcSyntax);
@@ -40,22 +43,23 @@ public class SrcGenSyntaxAnalyzer implements ISyntaxAnalyzerSetter {
 
     @Override
     public void setActionShift(int from, int to, int inputTerminal) {
-        srcActions.writeInt(from, inputTerminal, 1, to);
+        actions.set(from, inputTerminal, "SHIFT | " + to);
     }
 
     @Override
     public void setActionReduce(int state, int forward, int productionId) {
-        srcActions.writeInt(state, forward, 2, productionId);
+        System.out.printf("actions[%d][%d] = REDUCE | %d%n", state, forward, productionId);
+        actions.set(state, forward, "REDUCE | " + productionId);
     }
 
     @Override
     public void setActionAccept(int state, int forward) {
-        srcActions.writeInt(state, forward, 0);
+        actions.set(state, forward, "ACCEPT");
     }
 
     @Override
     public void setGoto(int from, int to, int inputNonTerminal) {
-        srcGoto.writeInt(from, inputNonTerminal, to);
+        goTo.set(from, inputNonTerminal, to);
     }
 
     @Override

@@ -1,0 +1,1 @@
+$arr[src]{"arr", "int", $f{"%s"}, I}

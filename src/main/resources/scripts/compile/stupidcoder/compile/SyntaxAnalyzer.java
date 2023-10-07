@@ -1,6 +1,7 @@
-$head{"Production", "Symbol", "IProperty" ,"PropertyTerminal", "IToken", "TokenFileEnd", "$compile.properties"}
-import stupidcoder.util.input.CompileException;
-import stupidcoder.util.input.CompilerInput;
+$head{
+    "Production", "Symbol", "IProperty" ,"PropertyTerminal",
+    "IToken", "TokenFileEnd", "$compile.properties", "CompileException", "CompilerInput"
+}
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -19,13 +20,38 @@ public class SyntaxAnalyzer {
     public SyntaxAnalyzer() {
         $c{%
             this.productions = new Production[$f[prodSize]{"%d"}];
-            this.actions = new int[$f[statesCount]{"%d"}][$f[terminalCount]{"%d"}];
-            this.goTo = new int[$f[statesCount]{"%d"}][$f[nonTerminalCount]{"%d"}];
             this.terminalRemap = new int[$f[remapSize]{"%d"}];
             this.propertySuppliers = new Supplier[$f[nonTerminalCount]{"%d"}];
+            this.actions = new int[$f[statesCount]{"%d"}][$f[terminalCount]{"%d"}];
+            this.goTo = new int[$f[statesCount]{"%d"}][$f[nonTerminalCount]{"%d"}];
         %, I2L}
         initTable();
         initGrammars();
+    }
+
+    private void initTable() {
+        $arr[goTo]{"goTo", "int", $f{"%s"}, I2}
+        $arr[actions]{"actions", "int", $f{"%s"}, I2}
+        $f[remap]{"terminalRemap[%d] = %d;", I2LR}
+        $f[property]{"propertySuppliers[%d] = Property%s::new;", I2LR}
+    }
+
+    private void initGrammars() {
+        $s[syntax]{
+            $f{"Symbol e%d = new Symbol(\"%s\", %s, %d);"},
+            $c{
+                $f{"productions[%d] = new Production(%d, e%d, List.of"} +
+                $r{
+                    $f{"e%d"},
+                    %first-prefix:"(",
+                    %single-prefix:"(",
+                    %postfix:", ",
+                    %last-postfix:")",
+                    %single-postfix:")"
+                } +
+                $f{"); //%s"}
+            }
+        , I2LR}
     }
 
     public void run(Lexer lexer) throws CompileException {
@@ -79,37 +105,5 @@ public class SyntaxAnalyzer {
                     break;
             }
         }
-    }
-
-    private void initTable() {
-        $f[goTo]{"goTo[%d][%d] = %d;", I2LR}
-        $c[actions]{
-            $f{"actions[%d][%d] = ", I2} +
-            $s{
-                "ACCEPT;",
-                $f{"SHIFT | %d;"},
-                $f{"REDUCE | %d;"}
-            , L}
-        , R}
-        $f[remap]{"terminalRemap[%d] = %d;", I2LR}
-        $f[property]{"propertySuppliers[%d] = Property%s::new;", I2LR}
-    }
-
-    private void initGrammars() {
-        $s[syntax]{
-            $f{"Symbol e%d = new Symbol(\"%s\", %s, %d);"},
-            $c{
-                $f{"productions[%d] = new Production(%d, e%d, List.of"} +
-                $r{
-                    $f{"e%d"},
-                    %first-prefix:"(",
-                    %single-prefix:"(",
-                    %postfix:", ",
-                    %last-postfix:")",
-                    %single-postfix:")"
-                } +
-                $f{"); //%s"}
-            }
-        , I2LR}
     }
 }

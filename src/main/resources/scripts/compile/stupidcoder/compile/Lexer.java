@@ -1,8 +1,8 @@
 $head{"$compile.tokens", "IToken", "CompilerInput", "TokenFileEnd", "BitClass", "CompileException"}
 
 public class Lexer {
-    private final int[][] goTo;
     private final boolean[] accepted;
+    private final int[][] goTo;
     private final TokenSupplier[] suppliers;
     public final CompilerInput input;
 
@@ -12,16 +12,16 @@ public class Lexer {
             accepted = new boolean[$f[fStatesCount]{"%d"}];
             goTo = new int[$f[fStatesCount]{"%d"}][128];
             suppliers = new TokenSupplier[$f[fStatesCount]{"%d"}];
-        %, I2L1}
+        %}
         init();
     }
 
     private void init() {
-        $arrIII[goTo]{"goTo", I2}
+        $arr[goTo]{"goTo", "int", $f{"%s"}, I2}
 
         $f[accepted]{"accepted[%d] = true;", RLI2}
 
-        $arrIS[op]{"suppliers", "TokenSupplier", $f{"(l, i) -> new Token%s().onMatched(l, i)"}, I2}
+        $arr[op]{"suppliers", "TokenSupplier", $f{"(l, i) -> new Token%s().onMatched(l, i)"}, I2}
     }
 
     public IToken run() throws CompileException{
@@ -55,7 +55,6 @@ public class Lexer {
         input.mark();
         return suppliers[lastAccepted].get(input.capture(), input);
     }
-
 
     @FunctionalInterface
     private interface TokenSupplier{

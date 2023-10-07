@@ -5,9 +5,9 @@ import stupidcoder.compile.lex.IDfaSetter;
 import stupidcoder.generate.generators.java.JProjectBuilder;
 import stupidcoder.generate.sources.SourceCached;
 import stupidcoder.generate.sources.SourceFieldInt;
-import stupidcoder.generate.sources.arr.HighFreqPoint;
-import stupidcoder.generate.sources.arr.SourceArrSetterIII;
-import stupidcoder.generate.sources.arr.SourceArrSetterIS;
+import stupidcoder.generate.sources.arr.Source1DArrSetter;
+import stupidcoder.generate.sources.arr.Source2DArrSetter;
+import stupidcoder.generate.sources.arr.SourceArrSetter;
 
 import java.util.HashSet;
 import java.util.List;
@@ -15,8 +15,8 @@ import java.util.Set;
 
 public class SrcGenLexer implements IDfaSetter {
     private int statesCount, startState;
-    private final SourceArrSetterIII goToSetter;
-    private final SourceArrSetterIS opSetter;
+    private final Source2DArrSetter goTo;
+    private final Source1DArrSetter op;
     private final SourceCached accepted;
     private final JProjectBuilder root;
     private final ScriptLoader loader;
@@ -24,14 +24,15 @@ public class SrcGenLexer implements IDfaSetter {
     public SrcGenLexer(ScriptLoader loader, JProjectBuilder root) {
         this.loader = loader;
         this.root = root;
-        this.goToSetter = new SourceArrSetterIII("goTo", HighFreqPoint.ARG_2);
-        this.opSetter = new SourceArrSetterIS("op");
+        this.goTo = new Source2DArrSetter("goTo", SourceArrSetter.FOLD_OPTIMIZE);
+        this.op = new Source1DArrSetter("op",
+                SourceArrSetter.FOLD_OPTIMIZE | SourceArrSetter.EXTRACT_COMMON_DATA);
         this.accepted = new SourceCached("accepted");
         root.registerClazzSrc("Lexer",
                 new SourceFieldInt("fStatesCount", () -> statesCount),
                 new SourceFieldInt("fStartState", () -> startState),
-                goToSetter,
-                opSetter,
+                goTo,
+                op,
                 accepted);
     }
 
@@ -42,13 +43,13 @@ public class SrcGenLexer implements IDfaSetter {
     @Override
     public void setAccepted(int i, String token) {
         String tokenName = StringUtils.capitalize(token);
-        opSetter.set(i, tokenName);
+        op.set(i, tokenName);
         accepted.writeInt(i);
     }
 
     @Override
     public void setGoTo(int start, int input, int target) {
-        goToSetter.set(start, input, target);
+        goTo.set(start, input, target);
     }
 
     @Override

@@ -10,6 +10,7 @@ $f[name]{"public class %s implements IToken {", L}
 
     @Override
     public IToken onMatched(String lexeme, CompilerInput input) throws CompileException {
+        this.lexeme = lexeme;
         return this;
     }
 
