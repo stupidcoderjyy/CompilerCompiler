@@ -1,3 +1,4 @@
+package stupidcoder.util;
 
 public class Pair<L,R> {
     public L l;

@@ -75,4 +75,9 @@ public class RepeatOut extends OutUnit {
             singlePrefix.value = prefix.value;
         }
     }
+
+    @Override
+    public String toString() {
+        return "Repeat";
+    }
 }

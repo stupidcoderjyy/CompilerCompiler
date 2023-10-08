@@ -1,4 +1,4 @@
-package stupidcoder.core.tokens;
+package stupidcoder.generate.generators.java.importParser.tokens;
 
 import stupidcoder.common.token.IToken;
 import stupidcoder.util.input.CompilerInput;

@@ -1,46 +1,56 @@
 package stupidcoder.core;
 
 import org.apache.commons.lang3.StringUtils;
+import stupidcoder.Config;
 import stupidcoder.compile.lex.IDfaSetter;
 import stupidcoder.generate.generators.java.JProjectBuilder;
 import stupidcoder.generate.sources.SourceCached;
 import stupidcoder.generate.sources.SourceFieldInt;
 import stupidcoder.generate.sources.arr.Source1DArrSetter;
+import stupidcoder.generate.sources.arr.Source2DArrSetter;
 import stupidcoder.generate.sources.arr.SourceArrSetter;
 import stupidcoder.util.ArrayCompressor;
-import stupidcoder.util.ICompressedArraySetter;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class SrcGenLexer implements IDfaSetter, ICompressedArraySetter {
-    private int statesCount, startState, dataSize, startSize, offsetsSize;
-    private final Source1DArrSetter op, goTo, start, offsets;
-    private final SourceCached accepted;
+public class SrcGenLexer implements IDfaSetter {
+    private int statesCount, startState, goToSize, goToStartSize, goToOffsetsSize;
+    private final Source1DArrSetter op;
+    private final Source2DArrSetter goTo;
+    private final Source1DArrSetter accepted;
     private final JProjectBuilder root;
     private final ScriptLoader loader;
-    private final ArrayCompressor compressor;
+    private final boolean compressUsed = Config.getBool(Config.COMPRESSED_ARR);
+    private ArrayCompressor compressor = null;
 
     public SrcGenLexer(ScriptLoader loader, JProjectBuilder root) {
         this.loader = loader;
         this.root = root;
-        this.goTo = new Source1DArrSetter("goTo", SourceArrSetter.FOLD_OPTIMIZE);
-        this.start = new Source1DArrSetter("start", SourceArrSetter.FOLD_OPTIMIZE);
-        this.offsets = new Source1DArrSetter("offsets", SourceArrSetter.FOLD_OPTIMIZE);
+        this.goTo = new Source2DArrSetter("goTo", SourceArrSetter.FOLD_OPTIMIZE);
         this.op = new Source1DArrSetter("op",
                 SourceArrSetter.FOLD_OPTIMIZE | SourceArrSetter.EXTRACT_COMMON_DATA);
-        this.compressor = new ArrayCompressor(this);
-        this.accepted = new SourceCached("accepted");
+        if (compressUsed) {
+            this.compressor = new ArrayCompressor(new CompressedArrSetter(goTo) {
+                @Override
+                public void setSize(int dataSize, int startSize, int offsetsSize) {
+                    goToSize = dataSize;
+                    goToStartSize = startSize;
+                    goToOffsetsSize = offsetsSize;
+                }
+            });
+            root.addClazzImport("Lexer", "ArrayCompressor");
+        }
+        this.accepted = new Source1DArrSetter("accepted");
         root.registerClazzSrc("Lexer",
                 new SourceFieldInt("fStatesCount", () -> statesCount),
                 new SourceFieldInt("fStartState", () -> startState),
-                new SourceFieldInt("dataSize", () -> dataSize),
-                new SourceFieldInt("startSize", () -> startSize),
-                new SourceFieldInt("offsetsSize", () -> offsetsSize),
+                new SourceFieldInt("dataSize", () -> goToSize),
+                new SourceFieldInt("startSize", () -> goToStartSize),
+                new SourceFieldInt("offsetsSize", () -> goToOffsetsSize),
+                new SourceFieldInt("compressUsed", () -> compressUsed ? 0 : 1),
                 goTo,
-                start,
-                offsets,
                 op,
                 accepted);
     }
@@ -53,12 +63,16 @@ public class SrcGenLexer implements IDfaSetter, ICompressedArraySetter {
     public void setAccepted(int i, String token) {
         String tokenName = StringUtils.capitalize(token);
         op.set(i, tokenName);
-        accepted.writeInt(i);
+        accepted.set(i, "true");
     }
 
     @Override
     public void setGoTo(int start, int input, int target) {
-        compressor.set(start, input, String.valueOf(target));
+        if (compressUsed) {
+            compressor.set(start, input, String.valueOf(target));
+        } else {
+            goTo.set(start, input, target);
+        }
     }
 
     @Override
@@ -81,7 +95,9 @@ public class SrcGenLexer implements IDfaSetter, ICompressedArraySetter {
             setTokenFile(token);
             added.add(token);
         }
-        compressor.finish();
+        if (compressUsed) {
+            compressor.finish();
+        }
     }
 
     private void setTokenFile(String token) {
@@ -93,29 +109,5 @@ public class SrcGenLexer implements IDfaSetter, ICompressedArraySetter {
         srcName.writeString(name);
         srcId.writeInt(loader == null ? 0 : loader.nameToTerminalId.get(token));
         root.registerClazzSrc(name, srcName, srcId);
-    }
-
-    @Override
-    public void setData(int i, String val) {
-        if (val != null) {
-            goTo.set(i, val);
-        }
-    }
-
-    @Override
-    public void setStart(int i, int pos) {
-        start.set(i, pos);
-    }
-
-    @Override
-    public void setOffset(int i, int offset) {
-        offsets.set(i, offset);
-    }
-
-    @Override
-    public void setSize(int dataSize, int startSize, int offsetsSize) {
-        this.dataSize = dataSize;
-        this.startSize = startSize;
-        this.offsetsSize = offsetsSize;
     }
 }

@@ -1,3 +1,4 @@
+package stupidcoder.util.input;
 
 public class BitClass {
     public static final BitClass BLANK = BitClass.of(' ', '\t', '\r', '\n');

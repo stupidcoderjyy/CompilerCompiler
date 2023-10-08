@@ -1,3 +1,4 @@
+package stupidcoder.util.input;
 
 public class InputException extends RuntimeException{
     public InputException() {

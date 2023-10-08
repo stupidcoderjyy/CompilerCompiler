@@ -1,3 +1,4 @@
+package stupidcoder.util.input.readers;
 
 import stupidcoder.util.input.IByteReader;
 

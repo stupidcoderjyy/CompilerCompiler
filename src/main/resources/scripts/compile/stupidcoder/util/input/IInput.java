@@ -1,3 +1,4 @@
+package stupidcoder.util.input;
 
 import java.nio.charset.StandardCharsets;
 

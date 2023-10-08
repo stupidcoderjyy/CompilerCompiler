@@ -60,6 +60,9 @@ public class Source1DArrSetter extends SourceArrSetter {
 
     @Override
     public void finish() {
+        if (posToVarId == null) {
+            return;
+        }
         if (isOpen(EXTRACT_COMMON_DATA)) {
             for (int varId = 0; varId < repeatCount.size(); varId++) {
                 if (repeatCount.get(varId) == 1) {

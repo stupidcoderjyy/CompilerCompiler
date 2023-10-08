@@ -16,19 +16,24 @@ public abstract class OutUnit {
     public abstract void writeContentOnce(FileWriter writer, BufferedInput srcIn) throws Exception;
 
     public void writeAll(FileWriter writer, BufferedInput parentSrc) throws Exception{
-        initConfig();
-        boolean nativeSrc = src != Source.EMPTY;
-        if (nativeSrc && src.used) {
-            src.reset();
-        }
-        BufferedInput srcIn = nativeSrc ? new BufferedInput(src) : parentSrc;
-        for (int i = 0; shouldRepeat(i, srcIn) ; i++) {
-            writer.write("    ".repeat(indents));
-            writeContentOnce(writer, srcIn);
-            writer.write("\r\n".repeat(lineBreaks));
-        }
-        if (nativeSrc) {
-            srcIn.close();
+        try {
+            initConfig();
+            boolean nativeSrc = src != Source.EMPTY;
+            if (nativeSrc && src.used) {
+                src.reset();
+            }
+            BufferedInput srcIn = nativeSrc ? new BufferedInput(src) : parentSrc;
+            for (int i = 0; shouldRepeat(i, srcIn) ; i++) {
+                writer.write("    ".repeat(indents));
+                writeContentOnce(writer, srcIn);
+                writer.write("\r\n".repeat(lineBreaks));
+            }
+            if (nativeSrc) {
+                srcIn.close();
+            }
+        } catch (Exception e) {
+            System.err.println("OutUnit:{" + this + "}, Source: " + (src == Source.EMPTY ? "NULL" : src));
+            throw new RuntimeException(e.getMessage());
         }
     }
 

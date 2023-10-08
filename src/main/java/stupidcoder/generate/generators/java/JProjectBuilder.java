@@ -2,6 +2,8 @@ package stupidcoder.generate.generators.java;
 
 import stupidcoder.Config;
 import stupidcoder.generate.Source;
+import stupidcoder.generate.generators.java.importParser.ImportParser;
+import stupidcoder.generate.generators.java.importParser.Lexer;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -18,12 +20,14 @@ public class JProjectBuilder {
     private final String outputRoot;
     private final String scriptsRoot;
     private final Map<String, List<JClassGen>> nameToClazz = new HashMap<>();
+    final ImportParser parser;
     final JPkgGen rootPkgGen;
 
     public JProjectBuilder(String rootScriptPath, String rootOutPath) {
         this.outputRoot = rootOutPath;
         this.scriptsRoot = rootScriptPath;
         this.rootPkgGen = new JPkgGen(null);
+        this.parser = new ImportParser(this, new Lexer());
         init();
     }
 
@@ -84,6 +88,10 @@ public class JProjectBuilder {
         rootPkgGen.gen();
     }
 
+    public String getRootPackage() {
+        return rootPkgGen.pkgName;
+    }
+
     public void registerClazzSrc(String clazzName, Source ... src) {
         JClassGen clazz = findClass(clazzName);
         for (Source s : src) {
@@ -102,7 +110,7 @@ public class JProjectBuilder {
     public void addClazzImport(String className, String ... imported) {
         JClassGen clazz = findClass(className);
         for (String s : imported) {
-            clazz.addProjectImport(s);
+            clazz.addClazzImport(s);
         }
     }
 
@@ -127,7 +135,7 @@ public class JProjectBuilder {
         for (String element : elements) {
             g = g.childPackages.get(element);
             if (g == null) {
-                throw new RuntimeException("pkg not found:" + pkg);
+                throw new RuntimeException("pkg not found: " + rootPkgGen.pkgName + "." + pkg);
             }
         }
         return g;
@@ -159,6 +167,10 @@ public class JProjectBuilder {
         if (elements.length == 1) {
             clazz = fastFindClass(clazzName);
         } else {
+            clazz = fastFindClass(elements[elements.length - 1]);
+            if (clazz != null) {
+                return clazz;
+            }
             String pkg = elements[0];
             List<JClassGen> candidates = nameToClazz.get(elements[1]);
             for (JClassGen c : candidates) {

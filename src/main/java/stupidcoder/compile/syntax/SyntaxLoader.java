@@ -7,7 +7,7 @@ import stupidcoder.util.ArrayUtil;
 
 import java.util.*;
 
-public class SyntaxLoader implements ISyntaxAccess {
+public class SyntaxLoader {
     private final List<List<Production>> symbolToProductions = new ArrayList<>();
     private final List<Integer> terminalPriority = new ArrayList<>();
     private final List<Integer> productionPriority = new ArrayList<>();
@@ -126,7 +126,6 @@ public class SyntaxLoader implements ISyntaxAccess {
         }
     }
 
-    @Override
     public List<Production> productionsWithHead(Symbol head) {
         if (head.isTerminal) {
             throw new RuntimeException("terminal");
@@ -137,37 +136,30 @@ public class SyntaxLoader implements ISyntaxAccess {
         return symbolToProductions.get(head.id);
     }
 
-    @Override
     public Production root() {
         return extendedRoot;
     }
 
-    @Override
     public List<Production> syntax() {
         return productions;
     }
 
-    @Override
     public Map<String, Symbol> lexemeToSymbol() {
         return lexemeToSymbol;
     }
 
-    @Override
     public Map<Integer, Integer> terminalIdRemap() {
         return terminalIdRemap;
     }
 
-    @Override
     public int terminalSymbolsCount() {
         return terminalCount;
     }
 
-    @Override
     public int nonTerminalSymbolsCount() {
         return nonTerminalCount;
     }
 
-    @Override
     public boolean shouldReduce(Production target, Symbol forward) {
         return productionPriority.get(target.id()) >= terminalPriority.get(forward.id);
     }

@@ -53,7 +53,7 @@ public class Generator {
              FileWriter writer = new FileWriter(Config.outputPath(targetFile), StandardCharsets.UTF_8)){
             loadScript(input, writer);
         } catch (Exception e) {
-            System.err.println("failed to output file: " + targetFile);
+            System.err.println("failed to output file:" + targetFile);
             e.printStackTrace();
         }
         sources.forEach((name, src) -> src.destroy());

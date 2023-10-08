@@ -1,15 +1,17 @@
 package stupidcoder.core;
 
 import org.apache.commons.lang3.StringUtils;
+import stupidcoder.Config;
 import stupidcoder.common.Production;
 import stupidcoder.common.symbol.Symbol;
-import stupidcoder.compile.syntax.ISyntaxAccess;
 import stupidcoder.compile.syntax.ISyntaxAnalyzerSetter;
+import stupidcoder.compile.syntax.SyntaxLoader;
 import stupidcoder.generate.generators.java.JProjectBuilder;
 import stupidcoder.generate.sources.SourceCached;
 import stupidcoder.generate.sources.SourceFieldInt;
 import stupidcoder.generate.sources.arr.Source2DArrSetter;
 import stupidcoder.generate.sources.arr.SourceArrSetter;
+import stupidcoder.util.ArrayCompressor;
 
 import java.util.HashMap;
 import java.util.List;
@@ -17,9 +19,12 @@ import java.util.Map;
 
 public class SrcGenSyntaxAnalyzer implements ISyntaxAnalyzerSetter {
     private int prodSize, statesCount, terminalCount, nonTerminalCount, remapSize;
+    private int goToSize, goToStartSize, goToOffsetsSize, actionsSize, actionsStartSize, actionsOffsetsSize;
     private final SourceCached srcRemap, srcProperty, srcSyntax;
     private final Source2DArrSetter goTo, actions;
     private final JProjectBuilder root;
+    private ArrayCompressor goToCompressor, actionsCompressor;
+    private final boolean compressUsed = Config.getBool(Config.COMPRESSED_ARR);
 
     public SrcGenSyntaxAnalyzer(JProjectBuilder root) {
         this.root = root;
@@ -28,12 +33,38 @@ public class SrcGenSyntaxAnalyzer implements ISyntaxAnalyzerSetter {
         this.srcSyntax = new SourceCached("syntax");
         this.goTo = new Source2DArrSetter("goTo", SourceArrSetter.FOLD_OPTIMIZE);
         this.actions = new Source2DArrSetter("actions", SourceArrSetter.FOLD_OPTIMIZE);
+        if (compressUsed) {
+            this.goToCompressor = new ArrayCompressor(new CompressedArrSetter(goTo) {
+                @Override
+                public void setSize(int dataSize, int startSize, int offsetsSize) {
+                    goToSize = dataSize;
+                    goToStartSize = startSize;
+                    goToOffsetsSize = offsetsSize;
+                }
+            });
+            this.actionsCompressor = new ArrayCompressor(new CompressedArrSetter(actions) {
+                @Override
+                public void setSize(int dataSize, int startSize, int offsetsSize) {
+                    actionsSize = dataSize;
+                    actionsStartSize = startSize;
+                    actionsOffsetsSize = offsetsSize;
+                }
+            });
+            root.addClazzImport("SyntaxAnalyzer", "ArrayCompressor");
+        }
         root.registerClazzSrc("SyntaxAnalyzer",
                 new SourceFieldInt("prodSize", () -> prodSize),
                 new SourceFieldInt("statesCount", () -> statesCount),
                 new SourceFieldInt("terminalCount", () -> terminalCount),
                 new SourceFieldInt("nonTerminalCount", () -> nonTerminalCount),
                 new SourceFieldInt("remapSize", () -> remapSize),
+                new SourceFieldInt("goToSize", () -> goToSize),
+                new SourceFieldInt("goToStartSize", () -> goToStartSize),
+                new SourceFieldInt("goToOffsetsSize", () -> goToOffsetsSize),
+                new SourceFieldInt("actionsSize", () -> actionsSize),
+                new SourceFieldInt("actionsStartSize", () -> actionsStartSize),
+                new SourceFieldInt("actionsOffsetsSize", () -> actionsOffsetsSize),
+                new SourceFieldInt("compressUsed", () -> compressUsed ? 0 : 1),
                 goTo,
                 actions,
                 srcRemap,
@@ -43,22 +74,38 @@ public class SrcGenSyntaxAnalyzer implements ISyntaxAnalyzerSetter {
 
     @Override
     public void setActionShift(int from, int to, int inputTerminal) {
-        actions.set(from, inputTerminal, "SHIFT | " + to);
+        if (compressUsed) {
+            actionsCompressor.set(from, inputTerminal, "SHIFT | " + to);
+        } else {
+            actions.set(from, inputTerminal, "SHIFT | " + to);
+        }
     }
 
     @Override
     public void setActionReduce(int state, int forward, int productionId) {
-        actions.set(state, forward, "REDUCE | " + productionId);
+        if (compressUsed) {
+            actionsCompressor.set(state, forward, "REDUCE | " + productionId);
+        } else {
+            actions.set(state, forward, "REDUCE | " + productionId);
+        }
     }
 
     @Override
     public void setActionAccept(int state, int forward) {
-        actions.set(state, forward, "ACCEPT");
+        if (compressUsed) {
+            actionsCompressor.set(state, forward, "ACCEPT");
+        } else {
+            actions.set(state, forward, "ACCEPT");
+        }
     }
 
     @Override
     public void setGoto(int from, int to, int inputNonTerminal) {
-        goTo.set(from, inputNonTerminal, to);
+        if (compressUsed) {
+            goToCompressor.set(from, inputNonTerminal, String.valueOf(to));
+        } else {
+            goTo.set(from, inputNonTerminal, String.valueOf(to));
+        }
     }
 
     @Override
@@ -67,32 +114,36 @@ public class SrcGenSyntaxAnalyzer implements ISyntaxAnalyzerSetter {
     }
 
     @Override
-    public void setOthers(ISyntaxAccess access) {
-        access.lexemeToSymbol().forEach((lexeme, symbol) -> {
+    public void setOthers(SyntaxLoader loader) {
+        loader.lexemeToSymbol().forEach((lexeme, symbol) -> {
             if (!symbol.isTerminal) {
                 srcProperty.writeInt(symbol.id);
                 String name = StringUtils.capitalize(lexeme);
                 srcProperty.writeString(name);
-                setPropertyFile(access, symbol, name);
+                setPropertyFile(loader, symbol, name);
             }
         });
-        this.terminalCount = access.terminalSymbolsCount();
-        this.nonTerminalCount = access.nonTerminalSymbolsCount();
-        this.prodSize = access.syntax().size();
+        this.terminalCount = loader.terminalSymbolsCount();
+        this.nonTerminalCount = loader.nonTerminalSymbolsCount();
+        this.prodSize = loader.syntax().size();
         int maxId = 0;
-        for (var entry : access.terminalIdRemap().entrySet()) {
+        for (var entry : loader.terminalIdRemap().entrySet()) {
             maxId = Math.max(entry.getKey(), maxId);
             srcRemap.writeInt(entry.getKey(), entry.getValue());
         }
         this.remapSize = maxId + 1;
-        setGrammar(access);
+        setGrammar(loader);
+        if (compressUsed) {
+            goToCompressor.finish();
+            actionsCompressor.finish();
+        }
     }
 
-    private void setGrammar(ISyntaxAccess access) {
+    private void setGrammar(SyntaxLoader loader) {
         Map<String, Integer> lexemeToVarId = new HashMap<>();
         int varCount = 0;
         // symbols
-        for (var entry : access.lexemeToSymbol().entrySet()) {
+        for (var entry : loader.lexemeToSymbol().entrySet()) {
             Symbol s = entry.getValue();
             String l = entry.getKey();
             lexemeToVarId.put(l, varCount);
@@ -104,7 +155,7 @@ public class SrcGenSyntaxAnalyzer implements ISyntaxAnalyzerSetter {
             varCount++;
         }
         // productions
-        List<Production> syntax = access.syntax();
+        List<Production> syntax = loader.syntax();
         for (int i = 0; i < syntax.size(); i++) {
             Production p = syntax.get(i);
             srcSyntax.writeInt(1); //switch
@@ -117,7 +168,7 @@ public class SrcGenSyntaxAnalyzer implements ISyntaxAnalyzerSetter {
         }
     }
 
-    private void setPropertyFile(ISyntaxAccess access, Symbol s, String name) {
+    private void setPropertyFile(SyntaxLoader access, Symbol s, String name) {
         String clazzName = "Property" + name;
         String clazzPath = "stupidcoder.compile.properties." + clazzName;
         root.registerClazz(clazzPath, "stupidcoder/template/Property.java");

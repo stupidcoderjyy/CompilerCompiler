@@ -17,22 +17,15 @@ public class FormatOut extends OutUnit {
     public Object[] args;
 
     @Override
-    public void writeContentOnce(FileWriter writer, BufferedInput srcIn) {
-        try {
-            for (int i = 0 ; i < types.size() ; i ++) {
-                switch (types.get(i)) {
-                    case INTEGER -> args[i] = readInt(srcIn);
-                    case STRING -> args[i] = readString(srcIn);
-                    case CHAR -> args[i] = (char) srcIn.read();
-                }
+    public void writeContentOnce(FileWriter writer, BufferedInput srcIn) throws Exception{
+        for (int i = 0 ; i < types.size() ; i ++) {
+            switch (types.get(i)) {
+                case INTEGER -> args[i] = readInt(srcIn);
+                case STRING -> args[i] = readString(srcIn);
+                case CHAR -> args[i] = (char) srcIn.read();
             }
-            writer.write(String.format(fmt, args));
-        } catch (Exception e) {
-            System.err.println("failed to output format string\r\n"
-                            + "    format:\"" + fmt + "\", args:"
-                            + Arrays.toString(args) + ")");
-            e.printStackTrace();
         }
+        writer.write(String.format(fmt, args));
     }
 
     @Override
@@ -41,5 +34,10 @@ public class FormatOut extends OutUnit {
             return super.shouldRepeat(count, input);
         }
         return count < repeat;
+    }
+
+    @Override
+    public String toString() {
+        return "Format{fmt:" + fmt + ", args:" + Arrays.toString(args) + "}";
     }
 }

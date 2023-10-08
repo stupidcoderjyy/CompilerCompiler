@@ -61,4 +61,9 @@ public class ArraySetterOut extends OutUnit {
         }
         writer.write(";\r\n");
     }
+
+    @Override
+    public String toString() {
+        return "ArraySetter{arrName:" + arrName + ", dataExpr:" + dataExpr + "}";
+    }
 }

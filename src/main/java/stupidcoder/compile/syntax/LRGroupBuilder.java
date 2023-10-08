@@ -1,5 +1,6 @@
 package stupidcoder.compile.syntax;
 
+import stupidcoder.Config;
 import stupidcoder.common.Production;
 import stupidcoder.common.symbol.DefaultSymbols;
 import stupidcoder.common.symbol.Symbol;
@@ -271,9 +272,12 @@ public class LRGroupBuilder {
     }
 
     private void warnConflict(LRItem item, Symbol f, boolean shift) {
-        System.err.println("shift-reduce conflict:");
-        System.err.println("    item:" + item);
-        System.err.println("    forward:" + f);
-        System.err.println("    action:" + (shift ? "SHIFT" : "REDUCE"));
+        if (!Config.getBool(Config.SHOW_SHIFT_REDUCE_CONFLICT)) {
+            return;
+        }
+        System.out.print("shift-reduce conflict:");
+        System.out.print("    prod:" + item.production);
+        System.out.print("    forward:'" + f + "'");
+        System.out.println("    action:" + (shift ? "SHIFT" : "REDUCE"));
     }
 }

@@ -1,4 +1,8 @@
-$head{"IProperty", "Production", "PropertyTerminal"}
+package stupidcoder.compile.properties;
+
+import stupidcoder.compile.common.syntax.IProperty;
+import stupidcoder.compile.common.syntax.PropertyTerminal;
+import stupidcoder.compile.common.Production;
 
 $f[name]{"public class %s implements IProperty {"}
 

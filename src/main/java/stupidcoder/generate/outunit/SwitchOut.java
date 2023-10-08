@@ -18,4 +18,9 @@ public class SwitchOut extends OutUnit {
         }
         units.get(i).writeAll(writer, srcIn);
     }
+
+    @Override
+    public String toString() {
+        return "Switch";
+    }
 }

@@ -21,4 +21,9 @@ public class ConstOut extends OutUnit {
     protected boolean shouldRepeat(int count, BufferedInput input) {
         return count < repeat;
     }
+
+    @Override
+    public String toString() {
+        return "Const{\"" + val + "\"}";
+    }
 }

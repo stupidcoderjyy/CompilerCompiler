@@ -1,7 +1,7 @@
 package compile;
 
-import stupidcoder.compile.syntax.ISyntaxAccess;
 import stupidcoder.compile.syntax.ISyntaxAnalyzerSetter;
+import stupidcoder.compile.syntax.SyntaxLoader;
 
 public class DefaultDataInterface {
     public static final ISyntaxAnalyzerSetter ACCEPT = new ISyntaxAnalyzerSetter() {
@@ -31,7 +31,7 @@ public class DefaultDataInterface {
         }
 
         @Override
-        public void setOthers(ISyntaxAccess access) {
+        public void setOthers(SyntaxLoader access) {
 
         }
     };

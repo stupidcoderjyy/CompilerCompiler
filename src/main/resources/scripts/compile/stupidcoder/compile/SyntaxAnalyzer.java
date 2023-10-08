@@ -1,7 +1,14 @@
-$head{
-    "Production", "Symbol", "IProperty" ,"PropertyTerminal",
-    "IToken", "TokenFileEnd", "$compile.properties", "CompileException", "CompilerInput"
-}
+package stupidcoder.compile;
+
+import stupidcoder.util.input.CompilerInput;
+import stupidcoder.compile.common.syntax.IProperty;
+import stupidcoder.compile.common.token.IToken;
+import stupidcoder.compile.common.symbol.Symbol;
+import stupidcoder.compile.common.syntax.PropertyTerminal;
+import stupidcoder.compile.common.Production;
+import stupidcoder.compile.properties.*;
+import stupidcoder.util.input.CompileException;
+import stupidcoder.compile.common.token.TokenFileEnd;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -22,36 +29,19 @@ public class SyntaxAnalyzer {
             this.productions = new Production[$f[prodSize]{"%d"}];
             this.terminalRemap = new int[$f[remapSize]{"%d"}];
             this.propertySuppliers = new Supplier[$f[nonTerminalCount]{"%d"}];
-            this.actions = new int[$f[statesCount]{"%d"}][$f[terminalCount]{"%d"}];
-            this.goTo = new int[$f[statesCount]{"%d"}][$f[nonTerminalCount]{"%d"}];
+            $s[compressUsed]{
+                $c{%
+                    this.goTo = new int[][]{new int[$f[goToSize]{"%d"}], new int[$f[goToStartSize]{"%d"}], new int[$f[goToOffsetsSize]{"%d"}]};
+                    this.actions = new int[][]{new int[$f[actionsSize]{"%d"}], new int[$f[actionsStartSize]{"%d"}], new int[$f[actionsOffsetsSize]{"%d"}]};
+                %, LI2},
+                $c{%
+                    this.goTo = new int[$f[statesCount]{"%d"}][$f[nonTerminalCount]{"%d"}];
+                    this.actions = new int[$f[statesCount]{"%d"}][$f[terminalCount]{"%d"}];
+                %, LI2}
+            , L0I0}
         %, I2L}
         initTable();
         initGrammars();
-    }
-
-    private void initTable() {
-        $arr[goTo]{"goTo", "int", $f{"%s"}, I2}
-        $arr[actions]{"actions", "int", $f{"%s"}, I2}
-        $f[remap]{"terminalRemap[%d] = %d;", I2LR}
-        $f[property]{"propertySuppliers[%d] = Property%s::new;", I2LR}
-    }
-
-    private void initGrammars() {
-        $s[syntax]{
-            $f{"Symbol e%d = new Symbol(\"%s\", %s, %d);"},
-            $c{
-                $f{"productions[%d] = new Production(%d, e%d, List.of"} +
-                $r{
-                    $f{"e%d"},
-                    %first-prefix:"(",
-                    %single-prefix:"(",
-                    %postfix:", ",
-                    %last-postfix:")",
-                    %single-postfix:")"
-                } +
-                $f{"); //%s"}
-            }
-        , I2LR}
     }
 
     public void run(Lexer lexer) throws CompileException {
@@ -67,7 +57,14 @@ public class SyntaxAnalyzer {
         LOOP:
         while (true) {
             int s = states.peek();
-            int order = actions[s][terminalRemap[token.type()]];
+            $s[compressUsed]{
+                $c{%
+                    int order = ArrayCompressor.next(s, terminalRemap[token.type()], actions);
+                %},
+                $c{%
+                    int order = actions[s][terminalRemap[token.type()]];
+                %},
+            , LI3}
             int type = order >> 16;
             int target = order & 0xFFFF;
             switch (type) {
@@ -101,9 +98,41 @@ public class SyntaxAnalyzer {
                     IProperty pHead = propertySuppliers[p.head().id].get();
                     pHead.onReduced(p, body);
                     properties.push(pHead);
-                    states.push(goTo[states.peek()][p.head().id]);
+                    $s[compressUsed]{
+                        $c{%
+                            states.push(ArrayCompressor.next(states.peek(), p.head().id, goTo));
+                        %},
+                        $c{%
+                            states.push(goTo[states.peek()][p.head().id]);
+                        %},
+                    , LI5}
                     break;
             }
         }
+    }
+
+    private void initTable() {
+        $arr[goTo]{"goTo", "int", $f{"%s"}, I2}
+        $arr[actions]{"actions", "int", $f{"%s"}, I2}
+        $f[remap]{"terminalRemap[%d] = %d;", I2LR}
+        $f[property]{"propertySuppliers[%d] = Property%s::new;", I2LR}
+    }
+
+    private void initGrammars() {
+        $s[syntax]{
+            $f{"Symbol e%d = new Symbol(\"%s\", %s, %d);"},
+            $c{
+                $f{"productions[%d] = new Production(%d, e%d, List.of"} +
+                $r{
+                    $f{"e%d"},
+                    %first-prefix:"(",
+                    %single-prefix:"(",
+                    %postfix:", ",
+                    %last-postfix:")",
+                    %single-postfix:")"
+                } +
+                $f{"); //%s"}
+            }
+        , I2LR}
     }
 }

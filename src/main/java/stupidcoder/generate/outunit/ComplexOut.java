@@ -73,7 +73,17 @@ public class ComplexOut extends OutUnit {
     }
 
     @Override
+    protected boolean shouldRepeat(int count, BufferedInput input) {
+        return count < repeat;
+    }
+
+    @Override
     public void writeContentOnce(FileWriter writer, BufferedInput srcIn) {
 
+    }
+
+    @Override
+    public String toString() {
+        return "Complex";
     }
 }

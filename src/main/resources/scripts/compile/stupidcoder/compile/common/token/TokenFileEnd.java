@@ -1,4 +1,6 @@
-$head{"CompilerInput"};
+package stupidcoder.common.token;
+
+import stupidcoder.util.input.CompilerInput;
 
 public class TokenFileEnd implements IToken{
     public static final TokenFileEnd INSTANCE = new TokenFileEnd();

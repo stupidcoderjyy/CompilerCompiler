@@ -1,0 +1,14 @@
+$token$
+    id: "@a@u*|\*|$";
+$$
+
+$syntax$
+    contents -> import
+             |  contents import
+             ;
+    import -> @id @id '.' seq ';'
+           ;
+    seq -> @id
+        |  seq '.' @id
+        ;
+$$

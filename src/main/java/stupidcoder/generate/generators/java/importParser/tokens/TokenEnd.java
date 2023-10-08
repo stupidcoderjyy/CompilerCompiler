@@ -1,15 +1,15 @@
-package stupidcoder.compile.tokens;
+package stupidcoder.generate.generators.java.importParser.tokens;
 
-import stupidcoder.compile.common.token.IToken;
-import stupidcoder.util.input.CompilerInput;
+import stupidcoder.common.token.IToken;
 import stupidcoder.util.input.CompileException;
+import stupidcoder.util.input.CompilerInput;
 
-$f[name]{"public class %s implements IToken {", L}
+public class TokenEnd implements IToken {
     public String lexeme;
 
     @Override
     public int type() {
-        $f[id]{"return %d;", LI2}
+        return 128;
     }
 
     @Override

@@ -1,3 +1,5 @@
+package stupidcoder.util;
+
 public class ASCII {
     public static final int UPPER   = 0x00000100;
     public static final int LOWER   = 0x00000200;

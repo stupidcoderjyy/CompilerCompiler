@@ -1,4 +1,7 @@
-$head{"Symbol"}
+package stupidcoder.common;
+
+import stupidcoder.common.symbol.Symbol;
+
 import java.util.List;
 
 public record Production(int id, Symbol head, List<Symbol> body) {

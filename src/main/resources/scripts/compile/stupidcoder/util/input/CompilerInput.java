@@ -1,3 +1,4 @@
+package stupidcoder.util.input;
 
 import stupidcoder.util.input.readers.FileByteReader;
 
@@ -22,7 +23,7 @@ public class CompilerInput extends BufferedInput {
     private Deque<int[]> markData;
     private int[] tempData;
 
-    private CompilerInput(IByteReader reader, String filePath) {
+    public CompilerInput(IByteReader reader, String filePath) {
         super(reader);
         this.filePath = filePath;
     }

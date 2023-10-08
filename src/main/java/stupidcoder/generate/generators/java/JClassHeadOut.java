@@ -9,6 +9,7 @@ import java.util.Set;
 
 public class JClassHeadOut extends OutUnit {
     final Set<String> imports = new HashSet<>();
+    final Set<String> externalImports = new HashSet<>();
     private final JProjectBuilder builder;
     private final JClassGen parent;
     private boolean written = false;
@@ -34,7 +35,21 @@ public class JClassHeadOut extends OutUnit {
             }
             writer.write(";\r\n");
         }
+        for (String s : externalImports) {
+            writer.write("import ");
+            writer.write(s);
+            writer.write(";\r\n");
+        }
+        if (!imports.isEmpty() || !externalImports.isEmpty()) {
+            writer.write("\r\n");
+        }
         imports.clear();
+        externalImports.clear();
         written = true;
+    }
+
+    @Override
+    public String toString() {
+        return "JClassHead: " + parent.parent.pkgName + "." + parent.clazzName;
     }
 }

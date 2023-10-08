@@ -58,6 +58,9 @@ public class Source2DArrSetter extends SourceArrSetter {
 
     @Override
     public void finish() {
+        if (setters == null) {
+            return;
+        }
         if (isOpen(EXTRACT_COMMON_DATA)) {
             //定义变量
             for (int varId = 0; varId < repeatCount.size(); varId++) {

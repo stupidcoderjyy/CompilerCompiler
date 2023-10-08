@@ -1,3 +1,5 @@
+package stupidcoder.common.symbol;
+
 public class Symbol  {
     public final boolean isTerminal;
     public int id;

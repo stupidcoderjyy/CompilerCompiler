@@ -39,5 +39,5 @@ public interface ISyntaxAnalyzerSetter {
     void setStatesCount(int count);
 
 
-    void setOthers(ISyntaxAccess access);
+    void setOthers(SyntaxLoader access);
 }

@@ -20,19 +20,23 @@ public class JClassGen extends Generator {
         this.outPath = outPath;
         this.scriptPath = scriptPath;
         this.headOut = new JClassHeadOut(root, this);
-        registerParser("head", new ParserJClassHead(this));
     }
 
-    void addProjectImport(String clazzName) {
+    public void addClazzImport(String clazzName) {
         headOut.imports.add(clazzName);
     }
 
-    void addPkgImport(String name) {
+    public void addPkgImport(String name) {
         headOut.imports.add('$' + name);
+    }
+
+    public void addExternalImport(String name) {
+        headOut.externalImports.add(name);
     }
 
     @Override
     public void loadScript(CompilerInput input, FileWriter writer) throws Exception {
+        root.parser.run(input, this);
         headOut.writeContentOnce(writer, null);
         super.loadScript(input, writer);
     }
@@ -42,5 +46,10 @@ public class JClassGen extends Generator {
             return;
         }
         loadScript(scriptPath, outPath);
+    }
+
+    @Override
+    public String toString() {
+        return parent.pkgName + "." + clazzName;
     }
 }

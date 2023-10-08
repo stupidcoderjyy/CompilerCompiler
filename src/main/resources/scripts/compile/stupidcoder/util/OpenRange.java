@@ -1,11 +1,10 @@
+package stupidcoder.util;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 
-/**
- * 表达区间 (l1, r1) U (l2, r2) U ... U (ln, rn)，子区间之间相互无交集，且l1 < r1 <= l2 < r2 <= ... <= ln < rn
- */
 public class OpenRange {
     private List<Integer> pairsLeft = new ArrayList<>(4);
     private List<Integer> pairsRight = new ArrayList<>(4);

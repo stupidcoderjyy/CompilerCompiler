@@ -1,8 +1,15 @@
-$head{"$compile.tokens", "IToken", "CompilerInput", "TokenFileEnd", "BitClass", "CompileException"}
+package stupidcoder.compile;
+
+import stupidcoder.util.input.CompilerInput;
+import stupidcoder.compile.common.token.IToken;
+import stupidcoder.util.input.CompileException;
+import stupidcoder.util.input.BitClass;
+import stupidcoder.compile.common.token.TokenFileEnd;
+import stupidcoder.compile.tokens.*;
 
 public class Lexer {
     private final boolean[] accepted;
-    private final int[] goTo, start, offsets;
+    private final int[][] goTo;
     private final TokenSupplier[] suppliers;
     public final CompilerInput input;
 
@@ -10,20 +17,23 @@ public class Lexer {
         this.input = input;
         $c{%
             accepted = new boolean[$f[fStatesCount]{"%d"}];
-            goTo = new int[$f[dataSize]{"%d"}];
-            start = new int[$f[startSize]{"%d"}];
-            offsets = new int[$f[offsetsSize]{"%d"}];
             suppliers = new TokenSupplier[$f[fStatesCount]{"%d"}];
         %, LI2}
+        $s[compressUsed]{
+            $c{%
+                goTo = new int[][]{new int[$f[dataSize]{"%d"}], new int[$f[startSize]{"%d"}], new int[$f[offsetsSize]{"%d"}]};
+            %},
+            $c{%
+                goTo = new int[$f[fStatesCount]{"%d"}][128];
+            %}
+        , LI2}
         init();
     }
 
     private void init() {
         $arr[goTo]{"goTo", "int", $f{"%s"}, I2}
-        $arr[start]{"start", "int", $f{"%s"}, I2}
-        $arr[offsets]{"offsets", "int", $f{"%s"}, I2}
 
-        $f[accepted]{"accepted[%d] = true;", RLI2}
+        $arr[accepted]{"accepted", "", $f{"%s"}, I2}
 
         $arr[op]{"suppliers", "TokenSupplier", $f{"(l, i) -> new Token%s().onMatched(l, i)"}, I2}
     }
@@ -39,7 +49,10 @@ public class Lexer {
         int extraLoadedBytes = 0;
         while (input.available()){
             int b = input.read();
-            state = getNext(state, b);
+            $s[compressUsed]{
+                "state = ArrayCompressor.next(state, b, goTo);",
+                "state = goTo[state][b];"
+            , LI3}
             if (state == 0) {
                 extraLoadedBytes++;
                 break;
@@ -58,19 +71,6 @@ public class Lexer {
         input.retract(extraLoadedBytes);
         input.mark();
         return suppliers[lastAccepted].get(input.capture(), input);
-    }
-
-    private int getNext(int arg1, int arg2) {
-        if (arg1 < 0 || arg1 >= start.length || start[arg1] < 0) {
-            return 0;
-        }
-        int limit = arg1 == start.length - 1 ? goTo.length : start[arg1 + 1];
-        int o = arg2 - offsets[arg1];
-        if (o < 0) {
-            return 0;
-        }
-        int pos = start[arg1] + o;
-        return pos < limit ? goTo[pos] : 0;
     }
 
     @FunctionalInterface
