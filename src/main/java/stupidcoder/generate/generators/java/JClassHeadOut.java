@@ -27,8 +27,7 @@ public class JClassHeadOut extends OutUnit {
         for (String s : imports) {
             writer.write("import ");
             if (s.startsWith("$")) {
-                JPkgGen pkg = builder.findPkg(s.substring(1));
-                writer.write(pkg.pkgName + ".*");
+                writer.write(builder.getRootPackage() + "." + s.substring(1) + ".*");
             } else {
                 JClassGen clazz = builder.findClass(s);
                 writer.write(clazz.parent.pkgName + "." + clazz.clazzName);

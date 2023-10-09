@@ -15,6 +15,7 @@ public class NFARegexParser {
     private NFA nfa;
     private String regex;
     private final List<String> nodeIdToToken = new ArrayList<>();
+    private final Set<Character> singles = new HashSet<>();
 
     public void register(String regex, String token) {
         if (regex.isEmpty()) {
@@ -38,6 +39,10 @@ public class NFARegexParser {
             if (ch > 128) {
                 throw new IllegalArgumentException("ASCII only");
             }
+            if (singles.contains(ch)) {
+                continue;
+            }
+            singles.add(ch);
             register("\\" + ch, "single");
         }
     }

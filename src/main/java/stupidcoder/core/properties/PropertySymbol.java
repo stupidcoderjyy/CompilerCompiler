@@ -62,6 +62,14 @@ public class PropertySymbol implements IProperty {
                 parser.registerSingle(t0.ch);
                 loader.addTerminal(t0.ch);
             }
+            case TokenTerminal.KEY_WORD -> env.keyWords.compute(t0.lexeme, (k, v) -> {
+                if (v == null) {
+                    int id = terminalId++;
+                    loader.addTerminal('$' + k, id);
+                    return id;
+                }
+                return v;
+            });
         }
         if (p1.value != 0) {
             loader.setPriority(p1.value);

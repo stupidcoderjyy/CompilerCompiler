@@ -171,7 +171,7 @@ public class SrcGenSyntaxAnalyzer implements ISyntaxAnalyzerSetter {
     private void setPropertyFile(SyntaxLoader access, Symbol s, String name) {
         String clazzName = "Property" + name;
         String clazzPath = "stupidcoder.compile.properties." + clazzName;
-        root.registerClazz(clazzPath, "stupidcoder/template/Property.java");
+        root.registerClazz(clazzPath, "stupidcoder/template/$Property.java");
         SourceCached srcName = new SourceCached("name");
         srcName.writeString(clazzName);
         SourceCached srcReduceCall = new SourceCached("reduceCall");

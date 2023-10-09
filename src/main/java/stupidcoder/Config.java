@@ -13,8 +13,10 @@ public class Config {
     public static final int OUTPUT_DIR = AUTO_CREATE_PATH | 1;
     public static final int TEMP_OUT = AUTO_CREATE_PATH | 2;
     public static final int SRC_DIR = STRING_VALUE | 1;
-    public static final int SHOW_SHIFT_REDUCE_CONFLICT = BOOL_VALUE | 1;
+    public static final int SHOW_ACTION_CONFLICT = BOOL_VALUE | 1;
     public static final int COMPRESSED_ARR = BOOL_VALUE | 2;
+    public static final int KEY_WORD = BOOL_VALUE | 3;
+    public static final int SYNTAX_DEBUG_INFO = BOOL_VALUE | 4;
 
     private static final Config INSTANCE = new Config();
     private final Map<Integer, Object> configs = new HashMap<>();
@@ -23,8 +25,10 @@ public class Config {
         configs.put(OUTPUT_DIR, "build/out");
         configs.put(SRC_DIR, "");
         configs.put(TEMP_OUT, "build/out");
-        configs.put(SHOW_SHIFT_REDUCE_CONFLICT, false);
+        configs.put(SHOW_ACTION_CONFLICT, false);
         configs.put(COMPRESSED_ARR, false);
+        configs.put(KEY_WORD, false);
+        configs.put(SYNTAX_DEBUG_INFO, false);
         new File("build/out").mkdirs();
     }
 
@@ -48,7 +52,7 @@ public class Config {
 
     private void check(int type, int requiredType) {
         if ((type & requiredType) == 0) {
-            throw new IllegalArgumentException("not string type");
+            throw new IllegalArgumentException("mismatched type");
         }
         if (!configs.containsKey(type)) {
             throw new IllegalArgumentException("type not found: 0x" + Integer.toHexString(type));

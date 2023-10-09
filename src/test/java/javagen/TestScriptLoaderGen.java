@@ -1,13 +1,12 @@
 package javagen;
 
 import org.junit.jupiter.api.Test;
+import stupidcoder.Config;
 import stupidcoder.common.symbol.DefaultSymbols;
 import stupidcoder.compile.lex.DFABuilder;
 import stupidcoder.compile.lex.NFARegexParser;
-import stupidcoder.compile.syntax.LRGroupBuilder;
 import stupidcoder.compile.syntax.SyntaxLoader;
 import stupidcoder.core.SrcGenLexer;
-import stupidcoder.core.SrcGenSyntaxAnalyzer;
 import stupidcoder.generate.generators.java.JProjectBuilder;
 
 public class TestScriptLoaderGen {
@@ -18,13 +17,14 @@ public class TestScriptLoaderGen {
     public void test() {
 //        Config.set(Config.OUTPUT_DIR, PathUtil.desktopPath("cs\\IdeaProjects\\TestCodeGen\\src"));
         JProjectBuilder builder = new JProjectBuilder("scripts/compile", "testJavaGen/varParser");
+        Config.set(Config.COMPRESSED_ARR, true);
         builder.excludePkg("template");
         loader = new SyntaxLoader();
         parser = new NFARegexParser();
         registerTokens();
-        registerSyntax();
+//        registerSyntax();
         DFABuilder.build(new SrcGenLexer(builder), parser);
-        LRGroupBuilder.build(loader, new SrcGenSyntaxAnalyzer(builder));
+//        LRGroupBuilder.build(loader, new SrcGenSyntaxAnalyzer(builder));
         builder.gen();
     }
 
@@ -34,7 +34,7 @@ public class TestScriptLoaderGen {
         parser.register("$$", "blockEnd");
         parser.register("$syntax$", "syntaxBegin");
         parser.register("$token$", "tokenBegin");
-        parser.register("\\@(@a+|~)|'@.'", "terminal");
+        parser.register("\\@($@a+|@a+|~)|'@.'", "terminal");
         parser.register("%@d+", "priorityMarkProd");
         parser.register("$@d+", "priorityMarkTerminal");
         parser.register("->", "point");

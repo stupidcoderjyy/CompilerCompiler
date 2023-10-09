@@ -1,6 +1,7 @@
 package stupidcoder.compile.syntax;
 
 import stupidcoder.Config;
+import stupidcoder.ConsoleUtil;
 import stupidcoder.common.Production;
 import stupidcoder.common.symbol.DefaultSymbols;
 import stupidcoder.common.symbol.Symbol;
@@ -14,6 +15,8 @@ public class LRGroupBuilder {
     private final Map<LRGroup, Integer> coreToId = new HashMap<>();
     private final Map<LRItem, List<LRItem>> spreadMap = new HashMap<>();
     private final List<Map<Symbol, LRGroup>> groupToTargets = new ArrayList<>();
+    private static final boolean printDebug = Config.getBool(Config.SYNTAX_DEBUG_INFO);
+    private static final boolean showConflict = Config.getBool(Config.SHOW_ACTION_CONFLICT);
 
     public static void build(SyntaxLoader l, ISyntaxAnalyzerSetter receiver) {
         new LRGroupBuilder(l, receiver).build();
@@ -33,7 +36,7 @@ public class LRGroupBuilder {
     }
 
     private final Stack<LRGroup> unchecked = new Stack<>();
-    private Map<Symbol, List<LRItem>> tempGoto;
+    private Map<Symbol, Set<LRItem>> tempGoto;
     private List<Integer> spreadSrc;
     private List<LRItem> tempCoreItems;
     private LRGroup tempGroup;
@@ -80,7 +83,8 @@ public class LRGroupBuilder {
             }
             for (Production p : loader.productionsWithHead(next)) {
                 LRItem other = tempGroup.getItem(p, 0);
-                if (other == null) {
+                boolean create = other == null;
+                if (create) {
                     other = new LRItem(p, 0, tempGroup.items.size());
                     tempGroup.insertItem(other);
                     unexpanded.push(other);
@@ -92,7 +96,11 @@ public class LRGroupBuilder {
                         spreadSrc.set(other.id, preSrc);
                     }
                 }
+                int pre = other.forwardSymbols.size();
                 other.forwardSymbols.addAll(tempForward);
+                if (!create && other.forwardSymbols.size() > pre) {
+                    unexpanded.add(other); //
+                }
             }
             tempForward.clear();
         }
@@ -102,13 +110,13 @@ public class LRGroupBuilder {
         if (tempGoto.containsKey(input)) {
             tempGoto.get(input).add(item);
         } else {
-            List<LRItem> items = new ArrayList<>();
+            Set<LRItem> items = new HashSet<>();
             items.add(item);
             tempGoto.put(input, items);
         }
     }
 
-    private void buildTargetCores(Symbol input, List<LRItem> items) {
+    private void buildTargetCores(Symbol input, Set<LRItem> items) {
         LRGroup target = getOrCreateCore(items);
         groupToTargets.get(curCore.id).put(input, target);
         for (LRItem temp : items) {
@@ -140,7 +148,7 @@ public class LRGroupBuilder {
         }
     }
     
-    private LRGroup getOrCreateCore(List<LRItem> items) {
+    private LRGroup getOrCreateCore(Set<LRItem> items) {
         LRGroup target = new LRGroup(idToCore.size());
         for (LRItem item : items) {
             LRItem next = new LRItem(item.production, item.point + 1);
@@ -182,13 +190,18 @@ public class LRGroupBuilder {
             }
         }
     }
+    private Map<Symbol, Production> tempReduceMap;
 
     private void emitActions() {
         if (receiver == null) {
             return;
         }
         for (LRGroup group : idToCore) {
+            tempReduceMap = new HashMap<>();
             expand(group);
+            if (printDebug) {
+                printGroupInfo(group);
+            }
             emitActions(group);
             group.items.clear();
             group.hashToItem.clear();
@@ -242,12 +255,18 @@ public class LRGroupBuilder {
         int targetCore = goToMap.get(next).id;
         if (next.isTerminal) {
             receiver.setActionShift(core.id, targetCore, next.id);
+            if (printDebug) {
+                printShift(next, targetCore);
+            }
         } else {
             if (addedTarget.contains(targetCore)) {
                 return;
             }
             addedTarget.add(targetCore);
             receiver.setGoto(core.id, targetCore, next.id);
+            if (printDebug) {
+                printGoto(next, targetCore);
+            }
         }
     }
 
@@ -255,29 +274,97 @@ public class LRGroupBuilder {
         //接受
         if (item.production == loader.root()) {
             receiver.setActionAccept(core.id, DefaultSymbols.FILE_END.id);
+            if (printDebug) {
+                printAccept();
+            }
             return;
         }
         //规约
         for (Symbol f : item.forwardSymbols) {
-            boolean conflict = goToMap.containsKey(f);
-            if (!conflict || loader.shouldReduce(item.production, f)) {
+            boolean conflictSR = goToMap.containsKey(f);
+            if (showConflict) {
+                boolean conflictRR =
+                        tempReduceMap.containsKey(f);
+                if (conflictRR) {
+                    if (tempReduceMap.get(f).id() != item.production.id()) {
+                        warnConflictRR(tempReduceMap.get(f), item.production, f);
+                    }
+                } else {
+                    tempReduceMap.put(f, item.production);
+                }
+            }
+            if (!conflictSR || loader.shouldReduce(item.production, f)) {
                 receiver.setActionReduce(core.id, f.id, item.production.id());
-                if (conflict) {
-                    warnConflict(item, f, false);
+                if (printDebug) {
+                    printReduce(f, item.production);
+                }
+                if (conflictSR && showConflict) {
+                    warnConflictSR(item, f, false);
                 }
                 continue;
             }
-            warnConflict(item, f, true);
+            if (showConflict) {
+                warnConflictSR(item, f, true);
+            }
         }
     }
 
-    private void warnConflict(LRItem item, Symbol f, boolean shift) {
-        if (!Config.getBool(Config.SHOW_SHIFT_REDUCE_CONFLICT)) {
-            return;
-        }
+    private void warnConflictSR(LRItem item, Symbol f, boolean shift) {
         System.out.print("shift-reduce conflict:");
         System.out.print("    prod:" + item.production);
         System.out.print("    forward:'" + f + "'");
         System.out.println("    action:" + (shift ? "SHIFT" : "REDUCE"));
+    }
+
+    private void warnConflictRR(Production pre, Production cur, Symbol f) {
+        System.err.print("reduce-reduce conflict:");
+        System.err.print("    prod1:" + pre);
+        System.err.print("    prod2:" + cur);
+        System.err.println("    forward: " + f);
+    }
+
+    private void printGroupInfo(LRGroup group) {
+        System.out.println("\r\ngroup " + group.id + ":");
+        for (LRItem item : group.items) {
+            ConsoleUtil.printPurple(item.toString());
+            System.out.println();
+        }
+    }
+
+    private void printReduce(Symbol forward, Production p) {
+        ConsoleUtil.printHighlightBlue("REDUCE");
+        System.out.print("        forward:");
+        String fs = forward.toString();
+        ConsoleUtil.printGreen(fs);
+        System.out.print(" ".repeat(22 - fs.length()) + "prod:");
+        ConsoleUtil.printPurple(p.toString());
+        System.out.println();
+    }
+
+    private void printGoto(Symbol in, int next) {
+        ConsoleUtil.printHighlightWhite("GOTO");
+        System.out.print("          input:");
+        String is = in.toString();
+        ConsoleUtil.printGreen(is);
+        System.out.print(" ".repeat(24 - is.length()) + "to:");
+        ConsoleUtil.printPurple(String.valueOf(next));
+        System.out.println();
+    }
+
+    private void printShift(Symbol input, int next) {
+        ConsoleUtil.printHighlightYellow("SHIFT");
+        System.out.print("         input:");
+        String is = input.toString();
+        ConsoleUtil.printGreen(is);
+        System.out.print(" ".repeat(24 - is.length()) + "next:");
+        ConsoleUtil.printPurple(String.valueOf(next));
+        System.out.println();
+    }
+
+    private void printAccept() {
+        ConsoleUtil.printHighlightPurple("ACCEPT");
+        System.out.print("    forward:");
+        ConsoleUtil.printGreen(DefaultSymbols.FILE_END.toString());
+        System.out.println();
     }
 }

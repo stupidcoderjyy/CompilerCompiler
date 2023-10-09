@@ -31,6 +31,7 @@ public class SrcGenLexer implements IDfaSetter {
         this.goTo = new Source2DArrSetter("goTo", SourceArrSetter.FOLD_OPTIMIZE);
         this.op = new Source1DArrSetter("op",
                 SourceArrSetter.FOLD_OPTIMIZE | SourceArrSetter.EXTRACT_COMMON_DATA);
+        this.accepted = new Source1DArrSetter("accepted", SourceArrSetter.FOLD_OPTIMIZE);
         if (compressUsed) {
             this.compressor = new ArrayCompressor(new CompressedArrSetter(goTo) {
                 @Override
@@ -42,7 +43,6 @@ public class SrcGenLexer implements IDfaSetter {
             });
             root.addClazzImport("Lexer", "ArrayCompressor");
         }
-        this.accepted = new Source1DArrSetter("accepted");
         root.registerClazzSrc("Lexer",
                 new SourceFieldInt("fStatesCount", () -> statesCount),
                 new SourceFieldInt("fStartState", () -> startState),
@@ -101,13 +101,28 @@ public class SrcGenLexer implements IDfaSetter {
     }
 
     private void setTokenFile(String token) {
+        if (token.equals("id") && Config.getBool(Config.KEY_WORD)) {
+            root.registerClazz("stupidcoder.compile.tokens.TokenId", "stupidcoder/template/$TokenId.java");
+            SourceCached srcKeyWords = new SourceCached("keyWords");
+            loader.keyWords.forEach((name, id) -> {
+                srcKeyWords.writeString(name);
+                srcKeyWords.writeInt(id);
+            });
+            root.registerClazzSrc("TokenId",
+                    srcKeyWords,
+                    new SourceFieldInt("id", () -> loader.nameToTerminalId.get("id")));
+            return;
+        }
         String name = "Token" + StringUtils.capitalize(token);
-        root.registerClazz("stupidcoder.compile.tokens." + name, "stupidcoder/template/Token.java");
-        root.addClazzImport(name, "IToken");
+        root.registerClazz("stupidcoder.compile.tokens." + name, "stupidcoder/template/$Token.java");
         SourceCached srcName = new SourceCached("name");
         SourceCached srcId = new SourceCached("id");
         srcName.writeString(name);
-        srcId.writeInt(loader == null ? 0 : loader.nameToTerminalId.get(token));
+        if (loader == null) {
+            srcId.writeInt(0);
+        } else if (loader.nameToTerminalId.containsKey(token)) {
+            srcId.writeInt(loader.nameToTerminalId.get(token));
+        }
         root.registerClazzSrc(name, srcName, srcId);
     }
 }

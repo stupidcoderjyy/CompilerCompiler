@@ -1,0 +1,105 @@
+$token$
+    rShift: ">>";
+    lShift: "<<";
+    sAnd: "&&";
+    sOr: "\\|\\|";
+    equals: "==";
+    greaterEquals: ">=";
+    lessEquals: "<=";
+    id: "@a@u*";
+    int: "0[xX]@h+|@d+";
+    double: "@d*.@d+";
+    string: "\"([^\"\\]|\\\\\")*\"";
+    doublePlus: "++";
+    doubleMinus: "--";
+$$
+
+$syntax$
+    script -> items | @~ ;
+    items -> item
+           | items item
+           ;
+    item -> field | func ;
+
+    func -> type funcName '(' funcArgDef ')' '{' stmts '}' ;
+    funcArgDef -> @~ | funcArgList ;
+    funcArgList -> argDef
+                 | funcArgList ',' argDef
+                 ;
+    argDef -> type @id ;
+
+    stmts -> stmtList
+           | @~
+           ;
+    stmtList -> stmt
+              | stmtList stmt
+              ;
+    stmt -> field
+          | @$if '(' expr ')' stmt
+          | @$if '(' expr ')' stmt @$else $1 stmt
+          | @$while '(' expr ')' stmt
+          | '{' stmts '}'
+          | @$return expr ';'
+          | funcName '(' exprs ')' ';'
+          | var @doublePlus ';'
+          | var @doubleMinus ';'
+          ;
+    field -> type fieldName ';'
+           | type fieldName '=' $1 expr ';'
+           | fieldName '=' expr ';'
+           ;
+    expr -> expr '+' $5 expr
+          | expr '-' $5 expr
+          | expr '*' $10 expr
+          | expr '/' $10 expr
+          | expr @rShift $2 expr
+          | expr @lShift $2 expr
+          | expr '^' expr
+          | expr '&' expr
+          | expr '|' expr
+          | expr @sAnd expr
+          | expr @sOr expr
+          | expr @equals $2 expr
+          | expr '>' expr
+          | expr '<' expr
+          | expr @greaterEquals expr
+          | expr @lessEquals expr
+          | '(' expr ')'
+          | '+' expr %20
+          | '-' expr %20
+          | funcName '(' exprs ')'
+          | @int
+          | @double
+          | @$true
+          | @$false
+          | @string
+          | '{' exprs '}'
+          | var %20
+          | var @doublePlus $1 %10
+          | var @doubleMinus $1 %10
+          | @$new arrDef
+          ;
+    var -> fieldName
+         | var '[' $2 expr ']' %20
+         ;
+    arrDef -> baseType
+            | arrDef '[' expr ']' %20
+            ;
+    exprs -> exprList
+           | @~
+           ;
+    exprList -> exprList ',' expr
+              | expr
+              ;
+    type -> baseType
+          | type '[' ']' %20
+          ;
+    baseType -> @$int
+          | @$double
+          | @$bool
+          | @$string
+          | @$void
+          ;
+    funcName -> @id ;
+    fieldName -> @id ;
+$$

@@ -31,6 +31,7 @@ public class ScriptLoader {
     private final SyntaxLoader syntaxLoader;
     private final NFARegexParser regexParser;
     public final Map<String, Integer> nameToTerminalId = new HashMap<>();
+    public final Map<String, Integer> keyWords = new HashMap<>();
 
     public ScriptLoader(SyntaxLoader syntaxLoader, NFARegexParser regexParser) {
         this.syntaxLoader = syntaxLoader;

@@ -172,8 +172,11 @@ public class SyntaxLoader {
         } else {
             first(result, symbolsBeta);
         }
+        tempChecked.clear();
         return result.remove(DefaultSymbols.EPSILON);
     }
+
+    private static final Set<Integer> tempChecked = new HashSet<>();
 
     private void first(Set<Symbol> result, List<Symbol> symbols) {
         for (Symbol s : symbols) {
@@ -190,6 +193,11 @@ public class SyntaxLoader {
             return;
         }
         for (Production g : productionsWithHead(s)) {
+            if (tempChecked.contains(g.id())) {
+                continue;
+            } else {
+                tempChecked.add(g.id());
+            }
             for (Symbol symbol : g.body()) {
                 first(result, symbol);
                 if (!result.contains(DefaultSymbols.EPSILON)) {
