@@ -17,6 +17,7 @@ public class Config {
     public static final int COMPRESSED_ARR = BOOL_VALUE | 2;
     public static final int KEY_WORD = BOOL_VALUE | 3;
     public static final int SYNTAX_DEBUG_INFO = BOOL_VALUE | 4;
+    public static final int LEXER_DEBUG_INFO = BOOL_VALUE | 5;
 
     private static final Config INSTANCE = new Config();
     private final Map<Integer, Object> configs = new HashMap<>();
@@ -29,6 +30,7 @@ public class Config {
         configs.put(COMPRESSED_ARR, false);
         configs.put(KEY_WORD, false);
         configs.put(SYNTAX_DEBUG_INFO, false);
+        configs.put(LEXER_DEBUG_INFO, false);
         new File("build/out").mkdirs();
     }
 

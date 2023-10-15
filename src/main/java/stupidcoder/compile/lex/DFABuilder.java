@@ -1,19 +1,21 @@
 package stupidcoder.compile.lex;
 
+import stupidcoder.Config;
+import stupidcoder.ConsoleUtil;
+import stupidcoder.util.ASCII;
 import stupidcoder.util.ArrayUtil;
 
 import java.util.*;
 
 public class DFABuilder {
+    private static final boolean printDebug = Config.getBool(Config.LEXER_DEBUG_INFO);
     private final Map<NFANodeSet, Integer> nodeSetToState = new HashMap<>();
     private final List<NFANodeSet> stateToNodeSet = new ArrayList<>();
     private List<String> nodeToToken;
     private int statesCount = 1;
-
     private final List<Boolean> accepted = new ArrayList<>();
     private final List<int[]> goTo = new ArrayList<>();
     private final List<String> tokens = new ArrayList<>();
-
     private final IDfaSetter setter;
 
     private DFABuilder(IDfaSetter setter) {
@@ -236,19 +238,51 @@ public class DFABuilder {
             delegates[i] = groups.get(i).iterator().next();
         }
         for (int group = 1 ; group < groupCount ; group++) {
+            if (printDebug) {
+                printState(group, accepted.get(delegates[group]));
+            }
             int delegate = delegates[group];
             for (byte b = 0 ; b >= 0 ; b ++) {
                 int dest = goTo.get(delegate)[b];
                 if (dest > 0) {
                     setter.setGoTo(group, b, stateToGroup[dest]);
+                    if (printDebug) {
+                        int targetGroup = stateToGroup[dest];
+                        printGoto(b, targetGroup, accepted.get(delegates[targetGroup]));
+                    }
                 }
             }
             if (accepted.get(delegates[group])) {
                 setter.setAccepted(group, tokens.get(delegates[group]));
             }
+            if (printDebug) {
+                System.out.println();
+            }
         }
         setter.setStartState(stateToGroup[1]);
         setter.setDfaStatesCount(groupCount);
         setter.setOthers(tokens);
+    }
+
+    private void printState(int state, boolean accept) {
+        if (accept) {
+            ConsoleUtil.printHighlightBlue("  ");
+        } else {
+            ConsoleUtil.printHighlightYellow("  ");
+        }
+        System.out.println(" state " + state);
+    }
+
+    private void printGoto(int input, int target, boolean accept) {
+        System.out.print(" ");
+        String info = ASCII.isCtrl(input) ? Integer.toString(input) : (input + "('" + (char) input + "')");
+        System.out.print(info + " ".repeat(10 - info.length()));
+        System.out.print("→    ");
+        if (accept) {
+            ConsoleUtil.printHighlightWhite(" " + target + " ");
+        } else {
+            System.out.print(" " + target + " ");
+        }
+        System.out.println();
     }
 }

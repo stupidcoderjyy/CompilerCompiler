@@ -64,10 +64,9 @@ public class PropertySymbol implements IProperty {
             }
             case TokenTerminal.KEY_WORD -> env.keyWords.compute(t0.lexeme, (k, v) -> {
                 if (v == null) {
-                    int id = terminalId++;
-                    loader.addTerminal('$' + k, id);
-                    return id;
+                    v = terminalId++;
                 }
+                loader.addTerminal('$' + k, v);
                 return v;
             });
         }

@@ -40,7 +40,9 @@ public class SyntaxAnalyzer {
                 %, LI2}
             , L0I0}
         %, I2L}
-        initTable();
+        initActions();
+        initGoTo();
+        initOthers();
         initGrammars();
     }
 
@@ -111,9 +113,15 @@ public class SyntaxAnalyzer {
         }
     }
 
-    private void initTable() {
+    private void initGoTo() {
         $arr[goTo]{"goTo", "int", $f{"%s"}, I2}
+    }
+
+    private void initActions() {
         $arr[actions]{"actions", "int", $f{"%s"}, I2}
+    }
+
+    private void initOthers() {
         $f[remap]{"terminalRemap[%d] = %d;", I2LR}
         $f[property]{"propertySuppliers[%d] = Property%s::new;", I2LR}
     }

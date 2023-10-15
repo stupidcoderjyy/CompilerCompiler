@@ -110,7 +110,7 @@ public class SrcGenLexer implements IDfaSetter {
             });
             root.registerClazzSrc("TokenId",
                     srcKeyWords,
-                    new SourceFieldInt("id", () -> loader.nameToTerminalId.get("id")));
+                    new SourceFieldInt("id", () -> loader.nameToTerminalId.computeIfAbsent("id", n -> 0)));
             return;
         }
         String name = "Token" + StringUtils.capitalize(token);

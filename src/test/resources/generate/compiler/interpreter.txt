@@ -1,17 +1,15 @@
 $token$
-    rShift: ">>";
-    lShift: "<<";
     sAnd: "&&";
     sOr: "\\|\\|";
-    equals: "==";
-    greaterEquals: ">=";
-    lessEquals: "<=";
+    eq: "==";
+    ge: ">=";
+    le: "<=";
     id: "@a@u*";
     int: "0[xX]@h+|@d+";
-    double: "@d*.@d+";
-    string: "\"([^\"\\]|\\\\\")*\"";
-    doublePlus: "++";
-    doubleMinus: "--";
+    inc: "+\\+";
+    dec: "--";
+    assignInc: "+=";
+    assignDec: "-=";
 $$
 
 $syntax$
@@ -19,15 +17,16 @@ $syntax$
     items -> item
            | items item
            ;
-    item -> field | func ;
+    item -> field
+          | func
+          ;
 
-    func -> type funcName '(' funcArgDef ')' '{' stmts '}' ;
+    func -> funcDef '(' funcArgDef ')' '{' stmts '}' ;
+    funcDef -> type @id ;
     funcArgDef -> @~ | funcArgList ;
-    funcArgList -> argDef
-                 | funcArgList ',' argDef
+    funcArgList -> fieldDef
+                 | funcArgList ',' fieldDef
                  ;
-    argDef -> type @id ;
-
     stmts -> stmtList
            | @~
            ;
@@ -35,56 +34,68 @@ $syntax$
               | stmtList stmt
               ;
     stmt -> field
-          | @$if '(' expr ')' stmt
-          | @$if '(' expr ')' stmt @$else $1 stmt
-          | @$while '(' expr ')' stmt
+          | @$if '(' expr ')' ifCondEnd stmt ifEnd
+          | @$if '(' expr ')' ifCondEnd stmt @$else $10 elseBegin stmt elseEnd
+          | @$while '(' whileCondBegin expr ')' whileCondEnd stmt whileEnd
           | '{' stmts '}'
           | @$return expr ';'
-          | funcName '(' exprs ')' ';'
-          | var @doublePlus ';'
-          | var @doubleMinus ';'
+          | @$return ';'
+          | @id '(' exprs ')' ';'
+          | var @inc ';'
+          | var @dec ';'
+          | var @assignInc expr ';'
+          | var @assignDec expr ';'
+          | @$continue ';'
+          | @$break ';'
           ;
-    field -> type fieldName ';'
-           | type fieldName '=' $1 expr ';'
-           | fieldName '=' expr ';'
+    ifCondEnd -> @~ ;
+    ifEnd -> @~ ;
+    elseEnd -> @~ ;
+    whileCondBegin -> @~ ;
+    whileCondEnd -> @~ ;
+    whileEnd -> @~ ;
+    field -> fieldDef ';'
+           | fieldDef '=' $1 expr ';'
+           | var '=' expr ';'
            ;
+    fieldDef -> type fieldName ;
     expr -> expr '+' $5 expr
           | expr '-' $5 expr
           | expr '*' $10 expr
           | expr '/' $10 expr
-          | expr @rShift $2 expr
-          | expr @lShift $2 expr
-          | expr '^' expr
-          | expr '&' expr
-          | expr '|' expr
           | expr @sAnd expr
           | expr @sOr expr
-          | expr @equals $2 expr
+          | expr @eq $2 expr
           | expr '>' expr
           | expr '<' expr
-          | expr @greaterEquals expr
-          | expr @lessEquals expr
+          | expr @le expr
+          | expr @ge expr
           | '(' expr ')'
           | '+' expr %20
           | '-' expr %20
-          | funcName '(' exprs ')'
+          | @id '(' $2 exprs ')'
           | @int
-          | @double
           | @$true
           | @$false
-          | @string
-          | '{' exprs '}'
+          | arrConst
           | var %20
-          | var @doublePlus $1 %10
-          | var @doubleMinus $1 %10
+          | var @inc $1 %10
+          | var @dec $1 %10
+          | @inc var
+          | @dec var
           | @$new arrDef
           ;
     var -> fieldName
-         | var '[' $2 expr ']' %20
+         | varArrBegin expr ']' %20
          ;
     arrDef -> baseType
             | arrDef '[' expr ']' %20
             ;
+    arrConst -> '{' arrContents '}' ;
+    arrContents -> arrContents ',' expr
+                 | expr
+                 | @~
+                 ;
     exprs -> exprList
            | @~
            ;
@@ -95,11 +106,9 @@ $syntax$
           | type '[' ']' %20
           ;
     baseType -> @$int
-          | @$double
-          | @$bool
-          | @$string
           | @$void
           ;
-    funcName -> @id ;
     fieldName -> @id ;
+    elseBegin -> @~ ;
+    varArrBegin -> var '[' $2 ;
 $$
