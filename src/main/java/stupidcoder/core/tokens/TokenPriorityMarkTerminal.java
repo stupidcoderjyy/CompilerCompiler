@@ -9,7 +9,7 @@ public class TokenPriorityMarkTerminal implements IToken {
 
     @Override
     public int type() {
-        return 135;
+        return 136;
     }
 
     @Override
@@ -17,7 +17,6 @@ public class TokenPriorityMarkTerminal implements IToken {
         this.value = Integer.parseInt(lexeme.substring(1));
         return this;
     }
-
 
     @Override
     public String toString() {

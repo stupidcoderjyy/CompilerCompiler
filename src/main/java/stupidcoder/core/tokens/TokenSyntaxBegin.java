@@ -5,6 +5,7 @@ import stupidcoder.util.input.CompileException;
 import stupidcoder.util.input.CompilerInput;
 
 public class TokenSyntaxBegin implements IToken {
+    public String lexeme;
 
     @Override
     public int type() {
@@ -13,12 +14,12 @@ public class TokenSyntaxBegin implements IToken {
 
     @Override
     public IToken onMatched(String lexeme, CompilerInput input) throws CompileException {
+        this.lexeme = lexeme;
         return this;
     }
 
-
     @Override
     public String toString() {
-        return "$syntax$";
+        return lexeme;
     }
 }

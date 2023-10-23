@@ -1,0 +1,48 @@
+$token$
+    id: "@a@u*";
+    string: "\"([^\"]|\\\")*\"";
+    blockEnd: "$$";
+    syntaxBegin: "$syntax$";
+    tokenBegin: "$token$";
+    terminal: "\@($@a+|@a+|~|$$)|'@.'";
+    priorityMarkProd: "%@d+";
+    priorityMarkTerminal: "$@d+";
+    point: "->";
+    endHead: "$end$";
+$$
+$syntax$
+    script -> block
+            | script block
+            ;
+    block -> content @blockEnd ;
+    content -> @syntaxBegin syntax
+             | @tokenBegin tokens
+             ;
+    syntax -> syntax production
+            | production
+            ;
+    production -> head @point body ';' ;
+    head -> @id
+          | @endHead
+          ;
+    body -> slice
+          | body '|' slice
+          ;
+    slice -> seq priorityP ;
+    priorityP -> @~
+               | @priorityMarkProd
+               ;
+    seq -> symbol
+         | seq symbol
+         ;
+    symbol -> @id
+            | @terminal priorityT
+            ;
+    priorityT -> @~
+               | @priorityMarkTerminal
+               ;
+    tokens -> token
+            | tokens token
+            ;
+    token -> @id ':' @string ';' ;
+$$

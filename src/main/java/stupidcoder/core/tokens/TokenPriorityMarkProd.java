@@ -9,7 +9,7 @@ public class TokenPriorityMarkProd implements IToken {
 
     @Override
     public int type() {
-        return 133;
+        return 134;
     }
 
     @Override
@@ -18,9 +18,8 @@ public class TokenPriorityMarkProd implements IToken {
         return this;
     }
 
-
     @Override
     public String toString() {
-        return "$" + value;
+        return "%" + value;
     }
 }

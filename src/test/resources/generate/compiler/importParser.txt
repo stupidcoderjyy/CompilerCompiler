@@ -1,14 +1,32 @@
 $token$
-    id: "@a@u*|\*|$";
+    id: "@a@u*|\*";
 $$
 
 $syntax$
-    contents -> import
-             |  contents import
+    head -> pkg imports
+          ;
+    pkg -> @$package paths ';'
+         | @~
+         ;
+    imports -> importList
+             | @~
              ;
-    import -> @id @id '.' seq ';'
+    importList -> import
+                | importList import
+                ;
+    import -> @$import @id '.' paths ';'
+            ;
+    paths -> @id
+           | paths '.' @id
            ;
-    seq -> @id
-        |  seq '.' @id
-        ;
+    $end$ -> '$'
+         | @$public
+         | @$private
+         | @$protected
+         | @$class
+         | @$interface
+         | @$record
+         | @$final
+         | @$$
+         ;
 $$

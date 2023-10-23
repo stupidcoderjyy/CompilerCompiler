@@ -175,7 +175,7 @@ public class LRGroupBuilder {
     private final Stack<LRItem> itemsToSpread = new Stack<>();
 
     private void spreadSymbols(LRItem root) {
-        root.forwardSymbols.add(DefaultSymbols.FILE_END);
+        root.forwardSymbols.addAll(loader.endTerminals);
         itemsToSpread.push(root);
         while (!itemsToSpread.empty()) {
             LRItem src = itemsToSpread.pop();
@@ -273,9 +273,11 @@ public class LRGroupBuilder {
     private void emitReduceAndAccept(LRItem item, Map<Symbol, LRGroup> goToMap, LRGroup core) {
         //接受
         if (item.production == loader.root()) {
-            receiver.setActionAccept(core.id, DefaultSymbols.FILE_END.id);
-            if (printDebug) {
-                printAccept();
+            for (Symbol end : loader.endTerminals) {
+                receiver.setActionAccept(core.id, end.id);
+                if (printDebug) {
+                    printAccept(end);
+                }
             }
             return;
         }
@@ -283,8 +285,7 @@ public class LRGroupBuilder {
         for (Symbol f : item.forwardSymbols) {
             boolean conflictSR = goToMap.containsKey(f);
             if (showConflict) {
-                boolean conflictRR =
-                        tempReduceMap.containsKey(f);
+                boolean conflictRR = tempReduceMap.containsKey(f);
                 if (conflictRR) {
                     if (tempReduceMap.get(f).id() != item.production.id()) {
                         warnConflictRR(tempReduceMap.get(f), item.production, f);
@@ -361,10 +362,10 @@ public class LRGroupBuilder {
         System.out.println();
     }
 
-    private void printAccept() {
+    private void printAccept(Symbol s) {
         ConsoleUtil.printHighlightPurple("ACCEPT");
-        System.out.print("    forward:");
-        ConsoleUtil.printGreen(DefaultSymbols.FILE_END.toString());
+        System.out.print("        forward:");
+        ConsoleUtil.printGreen(s);
         System.out.println();
     }
 }

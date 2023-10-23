@@ -3,7 +3,6 @@ package stupidcoder.core;
 import stupidcoder.common.token.IToken;
 import stupidcoder.common.token.TokenFileEnd;
 import stupidcoder.core.tokens.*;
-import stupidcoder.util.ArrayCompressor;
 import stupidcoder.util.input.BitClass;
 import stupidcoder.util.input.CompileException;
 import stupidcoder.util.input.CompilerInput;
@@ -16,159 +15,112 @@ public class Lexer {
 
     public Lexer(CompilerInput input) {
         this.input = input;
-        accepted = new boolean[31];
-        suppliers = new TokenSupplier[31];
-        goTo = new int[][]{new int[608], new int[31], new int[31]};
+        accepted = new boolean[38];
+        suppliers = new TokenSupplier[38];
+        goTo = new int[38][128];
         init();
     }
 
     private void init() {
-        goTo[2][16] = 0;
-        goTo[2][4] = 48;
-        goTo[2][10] = 48;
-        goTo[2][15] = 48;
-        goTo[1][5] = 10;
-        goTo[2][5] = 65;
-        goTo[2][26] = 65;
-        goTo[2][29] = 65;
-        goTo[1][11] = 78;
-        goTo[0][78] = 13;
-        goTo[2][11] = 120;
-        goTo[1][12] = 79;
-        goTo[0][79] = 3;
-        goTo[0][81] = 14;
-        goTo[2][12] = 34;
-        goTo[0][82] = 15;
-        goTo[0][84] = 16;
-        goTo[0][90] = 17;
-        goTo[0][103] = 1;
-        goTo[0][104] = 1;
-        goTo[0][169] = 1;
-        goTo[0][109] = 22;
-        goTo[1][13] = 170;
-        goTo[0][170] = 2;
-        goTo[2][13] = 36;
-        goTo[2][14] = 36;
-        goTo[2][22] = 36;
-        goTo[2][25] = 36;
-        goTo[0][171] = 7;
-        goTo[1][14] = 171;
-        goTo[0][250] = 19;
-        goTo[0][251] = 20;
-        goTo[1][15] = 252;
-        goTo[1][16] = 262;
-        goTo[1][17] = 390;
-        goTo[0][390] = 9;
-        goTo[2][17] = 62;
-        goTo[1][18] = 391;
-        goTo[0][391] = 6;
-        goTo[0][485] = 6;
-        goTo[2][18] = 39;
-        goTo[1][19] = 392;
-        goTo[0][392] = 30;
-        goTo[2][19] = 121;
-        goTo[1][20] = 393;
-        goTo[0][393] = 21;
-        goTo[2][20] = 111;
-        goTo[1][21] = 394;
-        goTo[0][394] = 23;
-        goTo[2][21] = 107;
-        goTo[0][395] = 26;
-        goTo[1][22] = 395;
-        goTo[1][23] = 486;
-        goTo[0][486] = 24;
-        goTo[2][23] = 101;
-        goTo[1][24] = 487;
-        goTo[0][487] = 25;
-        goTo[2][24] = 110;
-        goTo[2][30] = 110;
-        goTo[0][488] = 8;
-        goTo[1][25] = 488;
-        goTo[1][26] = 489;
-        goTo[1][27] = 547;
-        goTo[0][547] = 28;
-        goTo[2][27] = 116;
-        goTo[1][28] = 548;
-        goTo[0][548] = 11;
-        goTo[2][28] = 97;
-        goTo[1][29] = 549;
-        goTo[0][607] = 27;
-        goTo[1][30] = 607;
-        for(int i = 252 ; i <= 261 ; i ++) {
-            goTo[0][i] = 4;
+        goTo[32][36] = 9;
+        goTo[35][34] = 34;
+        goTo[36][110] = 24;
+        goTo[37][110] = 32;
+        goTo[12][34] = 15;
+        goTo[12][36] = 17;
+        goTo[12][37] = 20;
+        goTo[12][39] = 22;
+        goTo[12][45] = 23;
+        goTo[12][58] = 1;
+        goTo[12][59] = 1;
+        goTo[12][124] = 1;
+        goTo[12][64] = 26;
+        goTo[13][110] = 14;
+        goTo[14][116] = 16;
+        goTo[15][34] = 3;
+        goTo[15][92] = 35;
+        goTo[16][97] = 18;
+        goTo[17][36] = 8;
+        goTo[17][101] = 36;
+        goTo[17][115] = 27;
+        goTo[17][116] = 28;
+        goTo[18][120] = 19;
+        goTo[19][36] = 2;
+        goTo[21][39] = 7;
+        goTo[34][34] = 3;
+        goTo[23][62] = 10;
+        goTo[34][92] = 35;
+        goTo[26][126] = 7;
+        goTo[35][92] = 35;
+        goTo[24][100] = 25;
+        goTo[25][36] = 4;
+        goTo[31][36] = 7;
+        goTo[26][36] = 31;
+        goTo[27][121] = 13;
+        goTo[28][111] = 29;
+        goTo[29][107] = 30;
+        goTo[30][101] = 37;
+        for(int i = 0 ; i <= 33 ; i ++) {
+            goTo[15][i] = 15;
+            goTo[34][i] = 15;
+            goTo[35][i] = 15;
         }
-        for(int i = 581 ; i <= 606 ; i ++) {
-            goTo[0][i] = 29;
+        for(int i = 48 ; i <= 57 ; i ++) {
+            goTo[5][i] = 5;
+            goTo[6][i] = 6;
+            goTo[11][i] = 11;
+            goTo[17][i] = 11;
+            goTo[20][i] = 5;
         }
-        for(int i = 549 ; i <= 574 ; i ++) {
-            goTo[0][i] = 29;
+        for(int i = 97 ; i <= 122 ; i ++) {
+            goTo[6][i] = 6;
+            goTo[12][i] = 6;
+            goTo[26][i] = 33;
+            goTo[31][i] = 33;
+            goTo[33][i] = 33;
         }
-        for(int i = 0 ; i <= 3 ; i ++) {
-            goTo[2][i] = -1;
+        for(int i = 65 ; i <= 90 ; i ++) {
+            goTo[6][i] = 6;
+            goTo[12][i] = 6;
+            goTo[26][i] = 33;
+            goTo[31][i] = 33;
+            goTo[33][i] = 33;
         }
-        for(int i = 0 ; i <= 4 ; i ++) {
-            goTo[1][i] = 0;
+        for(int i = 93 ; i <= 127 ; i ++) {
+            goTo[15][i] = 15;
+            goTo[34][i] = 15;
+            goTo[35][i] = 15;
         }
-        for(int i = 456 ; i <= 481 ; i ++) {
-            goTo[0][i] = 29;
+        for(int i = 35 ; i <= 91 ; i ++) {
+            goTo[15][i] = 15;
+            goTo[34][i] = 15;
+            goTo[35][i] = 15;
         }
-        for(int i = 424 ; i <= 449 ; i ++) {
-            goTo[0][i] = 29;
-        }
-        for(int i = 0 ; i <= 9 ; i ++) {
-            goTo[0][i] = 4;
-        }
-        for(int i = 521 ; i <= 546 ; i ++) {
-            goTo[0][i] = 29;
-        }
-        for(int i = 489 ; i <= 514 ; i ++) {
-            goTo[0][i] = 29;
-        }
-        for(int i = 262 ; i <= 389 ; i ++) {
-            goTo[0][i] = 18;
-        }
-        for(int i = 42 ; i <= 67 ; i ++) {
-            goTo[0][i] = 5;
-        }
-        for(int i = 10 ; i <= 35 ; i ++) {
-            goTo[0][i] = 5;
-        }
-        for(int i = 6 ; i <= 9 ; i ++) {
-            goTo[2][i] = -1;
-        }
-        for(int i = 6 ; i <= 10 ; i ++) {
-            goTo[1][i] = 68;
-        }
-        for(int i = 68 ; i <= 77 ; i ++) {
-            goTo[0][i] = 10;
-        }
-        for(int i = 142 ; i <= 167 ; i ++) {
-            goTo[0][i] = 5;
-        }
-        for(int i = 110 ; i <= 135 ; i ++) {
-            goTo[0][i] = 5;
-        }
-        for(int i = 183 ; i <= 192 ; i ++) {
-            goTo[0][i] = 10;
+        for(int i = 0 ; i <= 127 ; i ++) {
+            goTo[22][i] = 21;
         }
 
-        accepted[29] = true;
-        for(int i = 1 ; i <= 10 ; i ++) {
+        accepted[33] = true;
+        accepted[34] = true;
+        for(int i = 1 ; i <= 11 ; i ++) {
             accepted[i] = true;
         }
 
-        TokenSupplier e5 = (l, i) -> new TokenTerminal().onMatched(l, i);
+        TokenSupplier e2 = (l, i) -> new TokenString().onMatched(l, i);
+        TokenSupplier e6 = (l, i) -> new TokenTerminal().onMatched(l, i);
         suppliers[1] = (l, i) -> new TokenSingle().onMatched(l, i);
         suppliers[2] = (l, i) -> new TokenSyntaxBegin().onMatched(l, i);
-        suppliers[3] = (l, i) -> new TokenString().onMatched(l, i);
-        suppliers[4] = (l, i) -> new TokenPriorityMarkProd().onMatched(l, i);
-        suppliers[5] = (l, i) -> new TokenId().onMatched(l, i);
-        suppliers[6] = e5;
-        suppliers[29] = e5;
-        suppliers[7] = (l, i) -> new TokenBlockEnd().onMatched(l, i);
-        suppliers[8] = (l, i) -> new TokenTokenBegin().onMatched(l, i);
-        suppliers[9] = (l, i) -> new TokenPoint().onMatched(l, i);
-        suppliers[10] = (l, i) -> new TokenPriorityMarkTerminal().onMatched(l, i);
+        suppliers[3] = e2;
+        suppliers[34] = e2;
+        suppliers[4] = (l, i) -> new TokenEndHead().onMatched(l, i);
+        suppliers[5] = (l, i) -> new TokenPriorityMarkProd().onMatched(l, i);
+        suppliers[6] = (l, i) -> new TokenId().onMatched(l, i);
+        suppliers[7] = e6;
+        suppliers[33] = e6;
+        suppliers[8] = (l, i) -> new TokenBlockEnd().onMatched(l, i);
+        suppliers[9] = (l, i) -> new TokenTokenBegin().onMatched(l, i);
+        suppliers[10] = (l, i) -> new TokenPoint().onMatched(l, i);
+        suppliers[11] = (l, i) -> new TokenPriorityMarkTerminal().onMatched(l, i);
     }
 
     public IToken run() throws CompileException{
@@ -182,7 +134,7 @@ public class Lexer {
         int extraLoadedBytes = 0;
         while (input.available()){
             int b = input.read();
-            state = ArrayCompressor.next(state, b, goTo);
+            state = goTo[state][b];
             if (state == 0) {
                 extraLoadedBytes++;
                 break;

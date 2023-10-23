@@ -189,7 +189,9 @@ public class DFABuilder {
             }
         }
         acceptedGroups.forEach((token, group) -> createGroup(group));
-        createGroup(nonAcceptedGroup);
+        if (!nonAcceptedGroup.isEmpty()) {
+            createGroup(nonAcceptedGroup);
+        }
     }
 
     private boolean split(Set<Integer> curGroup) {

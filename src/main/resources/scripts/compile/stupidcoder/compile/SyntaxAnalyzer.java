@@ -60,12 +60,8 @@ public class SyntaxAnalyzer {
         while (true) {
             int s = states.peek();
             $s[compressUsed]{
-                $c{%
-                    int order = ArrayCompressor.next(s, terminalRemap[token.type()], actions);
-                %},
-                $c{%
-                    int order = actions[s][terminalRemap[token.type()]];
-                %},
+                "int order = ArrayCompressor.next(s, terminalRemap[token.type()], actions);",
+                "int order = actions[s][terminalRemap[token.type()]];"
             , LI3}
             int type = order >> 16;
             int target = order & 0xFFFF;

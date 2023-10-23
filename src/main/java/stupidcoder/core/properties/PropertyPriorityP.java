@@ -13,18 +13,6 @@ public class PropertyPriorityP implements IProperty {
         this.loader = loader;
     }
 
-    @Override
-    public void onReduced(Production p, IProperty... properties) {
-        switch (p.id()) {
-            case 13 -> reduce0(
-                    (PropertyTerminal)properties[0]
-            );
-            case 14 -> reduce1(
-                    (PropertyTerminal)properties[0]
-            );
-        }
-    }
-
     //priorityP → ε
     private void reduce0(
             PropertyTerminal p0) {
@@ -36,5 +24,17 @@ public class PropertyPriorityP implements IProperty {
             PropertyTerminal p0) {
         TokenPriorityMarkProd t0 = p0.getToken();
         loader.finish(t0.value);
+    }
+
+    @Override
+    public void onReduced(Production p, IProperty... properties) {
+        switch (p.id()) {
+            case 14 -> reduce0(
+                    (PropertyTerminal)properties[0]
+            );
+            case 15 -> reduce1(
+                    (PropertyTerminal)properties[0]
+            );
+        }
     }
 }

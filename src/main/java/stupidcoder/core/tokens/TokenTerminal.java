@@ -10,13 +10,14 @@ public class TokenTerminal implements IToken {
     public static final int EPSILON = 1;
     public static final int NORMAL = 2;
     public static final int KEY_WORD = 3;
+    public static final int EOF = 4;
     public String lexeme;
     public int terminalType;
     public char ch;
 
     @Override
     public int type() {
-        return 134;
+        return 135;
     }
 
     @Override
@@ -28,11 +29,15 @@ public class TokenTerminal implements IToken {
                     this.lexeme = "ε";
                 }
                 case '$' -> {
-                    if (!Config.getBool(Config.KEY_WORD)) {
+                    if (lexeme.charAt(2) == '$') {
+                        this.terminalType = EOF;
+                        this.lexeme = lexeme;
+                    } else if (Config.getBool(Config.KEY_WORD)) {
+                        this.terminalType = KEY_WORD;
+                        this.lexeme = lexeme.substring(2);
+                    } else {
                         throw input.errorMarkToForward("KEY_WORD disabled");
                     }
-                    this.terminalType = KEY_WORD;
-                    this.lexeme = lexeme.substring(2);
                 }
                 default -> {
                     this.terminalType = NORMAL;

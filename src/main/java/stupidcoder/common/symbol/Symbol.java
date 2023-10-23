@@ -3,17 +3,17 @@ package stupidcoder.common.symbol;
 public class Symbol  {
     public final boolean isTerminal;
     public int id;
-    private final String debugLexeme;
+    private final String name;
 
-    public Symbol(String debugLexeme, boolean isTerminal, int id) {
-        this.debugLexeme = debugLexeme;
+    public Symbol(String name, boolean isTerminal, int id) {
+        this.name = name;
         this.isTerminal = isTerminal;
         this.id = id;
     }
 
     @Override
     public String toString() {
-        return debugLexeme;
+        return name;
     }
 
     @Override

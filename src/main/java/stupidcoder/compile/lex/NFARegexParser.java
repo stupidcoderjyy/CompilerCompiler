@@ -68,13 +68,13 @@ public class NFARegexParser {
             switch (b) {
                 case ')' -> {
                     if (!group) {
-                        throw new RuntimeException("failed to parse regex(unclosed group):" + regex);
+                        err("unclosed group");
                     }
                     return result;
                 }
                 case '|' -> {
                     if (!input.available()) {
-                        throw new RuntimeException("failed to parse regex(missing expr):" + regex);
+                        err("missing expr");
                     }
                     input.read();
                     result.or(seq());
@@ -108,15 +108,21 @@ public class NFARegexParser {
     private NFA atom() {
         input.retract();
         int b = input.read();
-        ICharPredicate predicate;
+        ICharPredicate predicate = null;
         switch (b) {
             case '[' -> predicate = clazz();
-            case '\\' -> predicate = input.available() ? ICharPredicate.single(input.read()) : null;
+            case '\\' -> {
+                if (!input.available()) {
+                    err("incomplete skipping");
+                }
+                predicate = ICharPredicate.single(input.read());
+            }
             case '@' -> predicate = escape();
+            case '*', '?', '+' -> err("invalid closure symbol");
             default -> predicate = ICharPredicate.single(b);
         }
         if (predicate == null) {
-            throw new RuntimeException("failed to parse regex(invalid predicate):" + regex);
+            err("invalid predicate");
         }
         return checkClosure(new NFA().andAtom(predicate));
     }
@@ -207,5 +213,9 @@ public class NFARegexParser {
             case '.' -> ch -> true;
             default -> null;
         };
+    }
+
+    private void err(String cause) {
+        throw new RuntimeException("failed to parse regex(" + cause + "):" + regex);
     }
 }

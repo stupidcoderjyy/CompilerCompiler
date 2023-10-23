@@ -9,7 +9,7 @@ public class TokenId implements IToken {
 
     @Override
     public int type() {
-        return 131;
+        return 132;
     }
 
     @Override
@@ -17,7 +17,6 @@ public class TokenId implements IToken {
         this.lexeme = lexeme;
         return this;
     }
-
 
     @Override
     public String toString() {

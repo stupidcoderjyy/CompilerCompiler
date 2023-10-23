@@ -8,63 +8,94 @@ import stupidcoder.util.ArrayUtil;
 import java.util.*;
 
 public class SyntaxLoader {
+    public final List<Production> productions = new ArrayList<>();
+    public final Map<Integer, Integer> terminalIdRemap = new HashMap<>();
+    public final Map<String, Symbol> lexemeToSymbol = new HashMap<>();
+    public final Set<Symbol> endTerminals = new HashSet<>();
+    public int productionCount = 0;
+    public int terminalCount = 1;
+    public int nonTerminalCount = 1;
     private final List<List<Production>> symbolToProductions = new ArrayList<>();
     private final List<Integer> terminalPriority = new ArrayList<>();
     private final List<Integer> productionPriority = new ArrayList<>();
     private Production extendedRoot;
     private Symbol tempStart;
     private List<Symbol> tempProduction = new ArrayList<>();
-    final List<Production> productions = new ArrayList<>();
-    final Map<Integer, Integer> terminalIdRemap = new HashMap<>();
-    final Map<String, Symbol> lexemeToSymbol = new HashMap<>();
-    int productionCount = 0;
-    int terminalCount = 1;
-    int nonTerminalCount = 1;
+    private boolean setEndSymbols = false;
 
     public SyntaxLoader() {
         symbolToProductions.add(new ArrayList<>());
     }
 
-    public SyntaxLoader begin(String lexeme) {
-        tempStart = registerNonTerminal(lexeme);
+    public void beginProd(String head) {
+        setEndSymbols = false;
+        tempStart = registerNonTerminal(head);
         if (extendedRoot == null) {
             Symbol root = DefaultSymbols.ROOT;
             lexemeToSymbol.put(root.toString(), root);
             addProduction(root, List.of(tempStart), false);
             extendedRoot = productions.get(0);
         }
-        return this;
     }
 
-    public SyntaxLoader add(Symbol s) {
+    public void beginEndSymbolsCustomize() {
+        setEndSymbols = true;
+    }
+
+    public void add(Symbol s) {
+        if (setEndSymbols) {
+            if (!s.isTerminal) {
+                throw new RuntimeException("end symbol should be terminal");
+            }
+            if (s == DefaultSymbols.EPSILON) {
+                throw new RuntimeException("end symbol shouldn't be epsilon");
+            }
+            endTerminals.add(s);
+            return;
+        }
         if (s == DefaultSymbols.EPSILON) {
             tempProduction.add(s);
             lexemeToSymbol.put("ε", s);
-            return this;
+            return;
         }
-        return s.isTerminal ?
-                addTerminal(s.toString(), s.id) :
-                addNonTerminal(s.toString());
+        if (s.isTerminal) {
+            addTerminal(s.toString(), s.id);
+        } else {
+            addNonTerminal(s.toString());
+        }
     }
 
-    public SyntaxLoader addNonTerminal(String lexeme) {
+    public void addNonTerminal(String lexeme) {
+        if (setEndSymbols) {
+            throw new RuntimeException("end symbol should be terminal");
+        }
         tempProduction.add(registerNonTerminal(lexeme));
-        return this;
     }
 
-    public SyntaxLoader addTerminal(String lexeme, int id) {
+    public void addTerminal(String lexeme, int id) {
         if (lexemeToSymbol.containsKey(lexeme)) {
-            tempProduction.add(lexemeToSymbol.get(lexeme));
+            Symbol s = lexemeToSymbol.get(lexeme);
+            if (setEndSymbols) {
+                endTerminals.add(s);
+            } else {
+                tempProduction.add(s);
+            }
         } else {
             Symbol s = new Symbol(lexeme, true, terminalCount++);
-            tempProduction.add(s);
-            terminalIdRemap.put(id, s.id);
-            lexemeToSymbol.put(lexeme, s);
+            if (setEndSymbols) {
+                endTerminals.add(s);
+            } else {
+                tempProduction.add(s);
+                terminalIdRemap.put(id, s.id);
+                lexemeToSymbol.put(lexeme, s);
+            }
         }
-        return this;
     }
 
-    public SyntaxLoader setPriority(int value) {
+    public void setPriority(int value) {
+        if (setEndSymbols) {
+            throw new RuntimeException("cannot set priority to end symbols");
+        }
         if (tempProduction.isEmpty()) {
             throw new RuntimeException("empty production");
         }
@@ -74,11 +105,10 @@ public class SyntaxLoader {
         }
         ArrayUtil.resize(terminalPriority, pre.id + 1,  () -> 0);
         terminalPriority.set(pre.id, value);
-        return this;
     }
 
-    public SyntaxLoader addTerminal(char ch) {
-        return addTerminal(String.valueOf(ch), ch);
+    public void addTerminal(char ch) {
+        addTerminal(String.valueOf(ch), ch);
     }
 
     public void finish() {
@@ -92,6 +122,12 @@ public class SyntaxLoader {
     }
 
     private void finish0(boolean customPriority) {
+        if (setEndSymbols) {
+            if (customPriority) {
+                throw new RuntimeException("cannot set priority to end symbols production");
+            }
+            return;
+        }
         addProduction(tempStart, tempProduction, customPriority);
         tempProduction = new ArrayList<>();
     }
@@ -140,29 +176,11 @@ public class SyntaxLoader {
         return extendedRoot;
     }
 
-    public List<Production> syntax() {
-        return productions;
-    }
-
-    public Map<String, Symbol> lexemeToSymbol() {
-        return lexemeToSymbol;
-    }
-
-    public Map<Integer, Integer> terminalIdRemap() {
-        return terminalIdRemap;
-    }
-
-    public int terminalSymbolsCount() {
-        return terminalCount;
-    }
-
-    public int nonTerminalSymbolsCount() {
-        return nonTerminalCount;
-    }
-
     public boolean shouldReduce(Production target, Symbol forward) {
         return productionPriority.get(target.id()) >= terminalPriority.get(forward.id);
     }
+
+    private static final Set<Integer> tempChecked = new HashSet<>();
 
     boolean calcForward(Set<Symbol> result, Production g, int point) {
         List<Symbol> symbolsBeta = new ArrayList<>(
@@ -175,8 +193,6 @@ public class SyntaxLoader {
         tempChecked.clear();
         return result.remove(DefaultSymbols.EPSILON);
     }
-
-    private static final Set<Integer> tempChecked = new HashSet<>();
 
     private void first(Set<Symbol> result, List<Symbol> symbols) {
         for (Symbol s : symbols) {

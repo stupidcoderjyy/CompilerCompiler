@@ -1,17 +1,10 @@
 $token$
-    num: "@d+";
+    end: "$$";
 $$
 
 $syntax$
-
-    expr -> expr '+' expr
-        |   expr '-' expr
-        |   '+' expr            %10
-        |   '-' expr            %10
-        |   expr '*' $1 expr
-        |   expr '/' $1 expr
-        |   '(' expr ')'
-        |   @num
-        ;
-
+    expr -> 'a' ;
+    $end$ -> @end
+           | @$$
+           ;
 $$

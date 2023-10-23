@@ -7,10 +7,10 @@ public class PropertySeq implements IProperty {
     @Override
     public void onReduced(Production p, IProperty... properties) {
         switch (p.id()) {
-            case 15 -> reduce0(
+            case 16 -> reduce0(
                     (PropertySymbol)properties[0]
             );
-            case 16 -> reduce1(
+            case 17 -> reduce1(
                     (PropertySeq)properties[0],
                     (PropertySymbol)properties[1]
             );

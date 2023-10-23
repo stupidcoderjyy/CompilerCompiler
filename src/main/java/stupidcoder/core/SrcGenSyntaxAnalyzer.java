@@ -115,7 +115,7 @@ public class SrcGenSyntaxAnalyzer implements ISyntaxAnalyzerSetter {
 
     @Override
     public void setOthers(SyntaxLoader loader) {
-        loader.lexemeToSymbol().forEach((lexeme, symbol) -> {
+        loader.lexemeToSymbol.forEach((lexeme, symbol) -> {
             if (!symbol.isTerminal) {
                 srcProperty.writeInt(symbol.id);
                 String name = StringUtils.capitalize(lexeme);
@@ -123,11 +123,11 @@ public class SrcGenSyntaxAnalyzer implements ISyntaxAnalyzerSetter {
                 setPropertyFile(loader, symbol, name);
             }
         });
-        this.terminalCount = loader.terminalSymbolsCount();
-        this.nonTerminalCount = loader.nonTerminalSymbolsCount();
-        this.prodSize = loader.syntax().size();
+        this.terminalCount = loader.terminalCount;
+        this.nonTerminalCount = loader.nonTerminalCount;
+        this.prodSize = loader.productions.size();
         int maxId = 0;
-        for (var entry : loader.terminalIdRemap().entrySet()) {
+        for (var entry : loader.terminalIdRemap.entrySet()) {
             maxId = Math.max(entry.getKey(), maxId);
             srcRemap.writeInt(entry.getKey(), entry.getValue());
         }
@@ -143,7 +143,7 @@ public class SrcGenSyntaxAnalyzer implements ISyntaxAnalyzerSetter {
         Map<String, Integer> lexemeToVarId = new HashMap<>();
         int varCount = 0;
         // symbols
-        for (var entry : loader.lexemeToSymbol().entrySet()) {
+        for (var entry : loader.lexemeToSymbol.entrySet()) {
             Symbol s = entry.getValue();
             String l = entry.getKey();
             lexemeToVarId.put(l, varCount);
@@ -155,7 +155,7 @@ public class SrcGenSyntaxAnalyzer implements ISyntaxAnalyzerSetter {
             varCount++;
         }
         // productions
-        List<Production> syntax = loader.syntax();
+        List<Production> syntax = loader.productions;
         for (int i = 0; i < syntax.size(); i++) {
             Production p = syntax.get(i);
             srcSyntax.writeInt(1); //switch

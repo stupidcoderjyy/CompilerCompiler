@@ -6,7 +6,6 @@ import stupidcoder.compile.lex.NFARegexParser;
 import stupidcoder.compile.syntax.LRGroupBuilder;
 import stupidcoder.compile.syntax.SyntaxLoader;
 import stupidcoder.generate.generators.java.JProjectBuilder;
-import stupidcoder.util.input.CompileException;
 import stupidcoder.util.input.CompilerInput;
 
 public class CompilerGenerator {
@@ -20,7 +19,7 @@ public class CompilerGenerator {
         CompilerGenerator g = new CompilerGenerator(scriptPath, outputPath);
         try {
             g.gen();
-        } catch (CompileException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         g.close();
@@ -34,7 +33,7 @@ public class CompilerGenerator {
         this.loader = new ScriptLoader(syntaxLoader, parser);
     }
 
-    private void gen() throws CompileException {
+    private void gen() throws Exception {
         loader.run(new Lexer(input));
         DFABuilder.build(new SrcGenLexer(loader, builder), parser);
         LRGroupBuilder.build(syntaxLoader, new SrcGenSyntaxAnalyzer(builder));

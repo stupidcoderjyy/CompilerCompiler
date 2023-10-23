@@ -4,12 +4,12 @@ import stupidcoder.common.token.IToken;
 import stupidcoder.util.input.CompileException;
 import stupidcoder.util.input.CompilerInput;
 
-public class TokenPoint implements IToken {
+public class TokenEndHead implements IToken {
     public String lexeme;
 
     @Override
     public int type() {
-        return 131;
+        return 133;
     }
 
     @Override

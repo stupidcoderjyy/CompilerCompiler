@@ -20,6 +20,6 @@ public class TokenFileEnd implements IToken{
 
     @Override
     public String toString() {
-        return "$END$";
+        return "$EOF$";
     }
 }

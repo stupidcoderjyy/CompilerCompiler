@@ -22,19 +22,6 @@ public class PropertySymbol implements IProperty {
         this.parser = parser;
     }
 
-    @Override
-    public void onReduced(Production p, IProperty... properties) {
-        switch (p.id()) {
-            case 17 -> reduce0(
-                    (PropertyTerminal)properties[0]
-            );
-            case 18 -> reduce1(
-                    (PropertyTerminal)properties[0],
-                    (PropertyPriorityT)properties[1]
-            );
-        }
-    }
-
     //symbol → id
     private void reduce0(
             PropertyTerminal p0) {
@@ -69,9 +56,23 @@ public class PropertySymbol implements IProperty {
                 loader.addTerminal('$' + k, v);
                 return v;
             });
+            case TokenTerminal.EOF -> loader.add(DefaultSymbols.EOF);
         }
         if (p1.value != 0) {
             loader.setPriority(p1.value);
+        }
+    }
+
+    @Override
+    public void onReduced(Production p, IProperty... properties) {
+        switch (p.id()) {
+            case 18 -> reduce0(
+                    (PropertyTerminal)properties[0]
+            );
+            case 19 -> reduce1(
+                    (PropertyTerminal)properties[0],
+                    (PropertyPriorityT)properties[1]
+            );
         }
     }
 }
