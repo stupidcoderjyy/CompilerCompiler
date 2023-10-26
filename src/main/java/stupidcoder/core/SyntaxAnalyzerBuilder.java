@@ -1,33 +1,33 @@
 package stupidcoder.core;
 
 import org.apache.commons.lang3.StringUtils;
-import stupidcoder.Config;
-import stupidcoder.common.Production;
-import stupidcoder.common.symbol.Symbol;
 import stupidcoder.compile.syntax.ISyntaxAnalyzerSetter;
 import stupidcoder.compile.syntax.LRGroupBuilder;
 import stupidcoder.compile.syntax.SyntaxLoader;
-import stupidcoder.generate.project.java.IJavaProjectBuilder;
-import stupidcoder.generate.project.java.JProjectBuilder;
-import stupidcoder.generate.sources.SourceCached;
-import stupidcoder.generate.sources.SourceFieldInt;
-import stupidcoder.generate.sources.arr.CompressedArrSourceSetter;
-import stupidcoder.generate.sources.arr.Source2DArrSetter;
-import stupidcoder.generate.sources.arr.SourceArrSetter;
-import stupidcoder.util.ArrayCompressor;
+import stupidcoder.util.Config;
+import stupidcoder.util.arrcompressor.ArrayCompressor;
+import stupidcoder.util.compile.Production;
+import stupidcoder.util.compile.symbol.Symbol;
+import stupidcoder.util.generate.project.java.IJavaProjectAdapter;
+import stupidcoder.util.generate.project.java.JProjectBuilder;
+import stupidcoder.util.generate.sources.SourceCached;
+import stupidcoder.util.generate.sources.SourceFieldInt;
+import stupidcoder.util.generate.sources.arr.CompressedArrSourceSetter;
+import stupidcoder.util.generate.sources.arr.Source2DArrSetter;
+import stupidcoder.util.generate.sources.arr.SourceArrSetter;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class SyntaxAnalyzerBuilder implements ISyntaxAnalyzerSetter, IJavaProjectBuilder {
+public class SyntaxAnalyzerBuilder implements ISyntaxAnalyzerSetter, IJavaProjectAdapter {
     private int prodSize, statesCount, terminalCount, nonTerminalCount, remapSize;
     private int goToSize, goToStartSize, goToOffsetsSize, actionsSize, actionsStartSize, actionsOffsetsSize;
     private final SourceCached srcRemap, srcProperty, srcSyntax;
     private final Source2DArrSetter goTo, actions;
     private JProjectBuilder root;
     private ArrayCompressor goToCompressor, actionsCompressor;
-    private final boolean compressUsed = Config.getBool(Config.GEN_USE_COMPRESSED_ARR);
+    private final boolean compressUsed = Config.getBool(CompilerGenerator.USE_COMPRESSED_ARR);
     private final SyntaxLoader loader;
 
     public SyntaxAnalyzerBuilder(SyntaxLoader loader) {
@@ -58,7 +58,7 @@ public class SyntaxAnalyzerBuilder implements ISyntaxAnalyzerSetter, IJavaProjec
     }
 
     @Override
-    public void loadSource(JProjectBuilder builder) {
+    public void build(JProjectBuilder builder) {
         this.root = builder;
         LRGroupBuilder.build(loader, this);
         if (compressUsed) {
@@ -184,11 +184,10 @@ public class SyntaxAnalyzerBuilder implements ISyntaxAnalyzerSetter, IJavaProjec
     private void setPropertyFile(SyntaxLoader access, Symbol s, String name) {
         String clazzName = "Property" + name;
         String clazzPath = "compile.properties." + clazzName;
-        root.registerClazz(clazzPath, "template/$Property.java");
         SourceCached srcName = new SourceCached("name");
-        srcName.writeString(clazzName);
         SourceCached srcReduceCall = new SourceCached("reduceCall");
         SourceCached srcReduceFunc = new SourceCached("reduceFunc");
+        srcName.writeString(clazzName);
         List<Production> ps = access.productionsWithHead(s);
         int size = ps.size();
         srcReduceFunc.writeInt(size); //repeat $r[reduceFunc]{
@@ -211,6 +210,7 @@ public class SyntaxAnalyzerBuilder implements ISyntaxAnalyzerSetter, IJavaProjec
             writeProduction(srcReduceCall, p);
             writeProduction(srcReduceFunc, p);
         }
+        root.registerClazz(clazzPath, "template/$Property.java");
         root.registerClazzSrc(clazzName,
                 srcName,
                 srcReduceCall,

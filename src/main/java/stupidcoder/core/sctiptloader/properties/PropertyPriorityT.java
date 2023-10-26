@@ -1,9 +1,9 @@
 package stupidcoder.core.sctiptloader.properties;
 
-import stupidcoder.common.Production;
-import stupidcoder.common.syntax.IProperty;
-import stupidcoder.common.syntax.PropertyTerminal;
 import stupidcoder.core.sctiptloader.tokens.TokenPriorityMarkTerminal;
+import stupidcoder.util.compile.Production;
+import stupidcoder.util.compile.property.IProperty;
+import stupidcoder.util.compile.property.PropertyTerminal;
 
 public class PropertyPriorityT implements IProperty {
     int value;

@@ -1,11 +1,13 @@
 package stupidcoder.core.sctiptloader.tokens;
 
-import stupidcoder.Config;
-import stupidcoder.common.token.IToken;
+import stupidcoder.core.CompilerGenerator;
+import stupidcoder.util.Config;
+import stupidcoder.util.compile.token.IToken;
 import stupidcoder.util.input.CompileException;
 import stupidcoder.util.input.CompilerInput;
 
 public class TokenTerminal implements IToken {
+    private static final boolean keyWordEnabled = Config.getBool(CompilerGenerator.KEY_WORD_TOKEN);
     public static final int SINGLE = 0;
     public static final int EPSILON = 1;
     public static final int NORMAL = 2;
@@ -32,7 +34,7 @@ public class TokenTerminal implements IToken {
                     if (lexeme.charAt(2) == '$') {
                         this.terminalType = EOF;
                         this.lexeme = lexeme;
-                    } else if (Config.getBool(Config.GEN_KEY_WORD)) {
+                    } else if (keyWordEnabled) {
                         this.terminalType = KEY_WORD;
                         this.lexeme = lexeme.substring(2);
                     } else {

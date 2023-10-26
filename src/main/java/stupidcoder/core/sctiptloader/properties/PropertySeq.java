@@ -1,7 +1,7 @@
 package stupidcoder.core.sctiptloader.properties;
 
-import stupidcoder.common.Production;
-import stupidcoder.common.syntax.IProperty;
+import stupidcoder.util.compile.Production;
+import stupidcoder.util.compile.property.IProperty;
 
 public class PropertySeq implements IProperty {
     @Override

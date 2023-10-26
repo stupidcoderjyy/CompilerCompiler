@@ -1,9 +1,10 @@
 package stupidcoder.common.syntax;
 
-import stupidcoder.common.Production;
-import stupidcoder.common.token.IToken;
+import stupidcoder.util.common.Production;
+import stupidcoder.util.common.syntax.IProperty;
+import stupidcoder.util.common.token.IToken;
 
-public final class PropertyTerminal implements IProperty{
+public final class PropertyTerminal implements IProperty {
     private final IToken token;
 
     public PropertyTerminal(IToken token) {

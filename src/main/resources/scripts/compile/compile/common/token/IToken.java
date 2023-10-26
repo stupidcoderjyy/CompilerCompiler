@@ -5,5 +5,5 @@ import stupidcoder.util.input.CompilerInput;
 
 public interface IToken {
     int type();
-    IToken onMatched(String lexeme, CompilerInput input) throws CompileException;
+    stupidcoder.util.common.token.IToken onMatched(String lexeme, CompilerInput input) throws CompileException;
 }

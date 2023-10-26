@@ -1,11 +1,11 @@
 package stupidcoder.core.sctiptloader.properties;
 
-import stupidcoder.common.Production;
-import stupidcoder.common.syntax.IProperty;
-import stupidcoder.common.syntax.PropertyTerminal;
 import stupidcoder.compile.lex.NFARegexParser;
 import stupidcoder.core.sctiptloader.tokens.TokenId;
 import stupidcoder.core.sctiptloader.tokens.TokenString;
+import stupidcoder.util.compile.Production;
+import stupidcoder.util.compile.property.IProperty;
+import stupidcoder.util.compile.property.PropertyTerminal;
 
 public class PropertyToken implements IProperty {
     private final NFARegexParser parser;

@@ -1,14 +1,15 @@
 package stupidcoder.compile.lex;
 
-import stupidcoder.Config;
-import stupidcoder.ConsoleUtil;
+import stupidcoder.core.CompilerGenerator;
 import stupidcoder.util.ASCII;
 import stupidcoder.util.ArrayUtil;
+import stupidcoder.util.Config;
+import stupidcoder.util.ConsoleUtil;
 
 import java.util.*;
 
 public class DFABuilder {
-    private static final boolean printDebug = Config.getBool(Config.LEXER_DEBUG_INFO);
+    private static final boolean printDebug = Config.getBool(CompilerGenerator.LEXER_DEBUG_INFO);
     private final Map<NFANodeSet, Integer> nodeSetToState = new HashMap<>();
     private final List<NFANodeSet> stateToNodeSet = new ArrayList<>();
     private List<String> nodeToToken;

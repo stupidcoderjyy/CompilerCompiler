@@ -1,8 +1,8 @@
 package stupidcoder.core.sctiptloader.properties;
 
-import stupidcoder.common.Production;
-import stupidcoder.common.syntax.IProperty;
-import stupidcoder.common.syntax.PropertyTerminal;
+import stupidcoder.util.compile.Production;
+import stupidcoder.util.compile.property.IProperty;
+import stupidcoder.util.compile.property.PropertyTerminal;
 
 public class PropertyBlock implements IProperty {
     //block → content blockEnd

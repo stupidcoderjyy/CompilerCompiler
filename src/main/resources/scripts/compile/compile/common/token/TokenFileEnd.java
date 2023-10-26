@@ -1,9 +1,10 @@
 package stupidcoder.common.token;
 
+import stupidcoder.util.common.token.IToken;
 import stupidcoder.util.input.CompilerInput;
 
-public class TokenFileEnd implements IToken{
-    public static final TokenFileEnd INSTANCE = new TokenFileEnd();
+public class TokenFileEnd implements IToken {
+    public static final stupidcoder.util.common.token.TokenFileEnd INSTANCE = new stupidcoder.util.common.token.TokenFileEnd();
 
     private TokenFileEnd() {
     }

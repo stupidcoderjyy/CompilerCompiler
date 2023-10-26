@@ -1,10 +1,11 @@
 package stupidcoder.compile.syntax;
 
-import stupidcoder.Config;
-import stupidcoder.ConsoleUtil;
-import stupidcoder.common.Production;
-import stupidcoder.common.symbol.DefaultSymbols;
-import stupidcoder.common.symbol.Symbol;
+import stupidcoder.core.CompilerGenerator;
+import stupidcoder.util.Config;
+import stupidcoder.util.ConsoleUtil;
+import stupidcoder.util.compile.Production;
+import stupidcoder.util.compile.symbol.DefaultSymbols;
+import stupidcoder.util.compile.symbol.Symbol;
 
 import java.util.*;
 
@@ -15,8 +16,8 @@ public class LRGroupBuilder {
     private final Map<LRGroup, Integer> coreToId = new HashMap<>();
     private final Map<LRItem, List<LRItem>> spreadMap = new HashMap<>();
     private final List<Map<Symbol, LRGroup>> groupToTargets = new ArrayList<>();
-    private static final boolean printDebug = Config.getBool(Config.SYNTAX_DEBUG_INFO);
-    private static final boolean showConflict = Config.getBool(Config.SYNTAX_SHOW_ACTION_CONFLICT);
+    private static final boolean printDebug = Config.getBool(CompilerGenerator.SYNTAX_DEBUG_INFO);
+    private static final boolean showConflict = Config.getBool(CompilerGenerator.SYNTAX_CONFLICT_INFO);
 
     public static void build(SyntaxLoader l, ISyntaxAnalyzerSetter receiver) {
         new LRGroupBuilder(l, receiver).build();
@@ -314,17 +315,23 @@ public class LRGroupBuilder {
     }
 
     private void warnConflictSR(LRItem item, Symbol f, boolean shift) {
+        ConsoleUtil.begin(0, ConsoleUtil.RED);
         System.out.print("shift-reduce conflict:");
         System.out.print("    prod:" + item.production);
         System.out.print("    forward:'" + f + "'");
-        System.out.println("    action:" + (shift ? "SHIFT" : "REDUCE"));
+        System.out.print("    action:" + (shift ? "SHIFT" : "REDUCE"));
+        ConsoleUtil.end();
+        System.out.println();
     }
 
     private void warnConflictRR(Production pre, Production cur, Symbol f) {
+        ConsoleUtil.begin(0, ConsoleUtil.BLACK, ConsoleUtil.BG_RED);
         System.err.print("reduce-reduce conflict:");
         System.err.print("    prod1:" + pre);
         System.err.print("    prod2:" + cur);
-        System.err.println("    forward: " + f);
+        System.err.print("    forward: " + f);
+        ConsoleUtil.end();
+        System.out.println();
     }
 
     private void printGroupInfo(LRGroup group) {

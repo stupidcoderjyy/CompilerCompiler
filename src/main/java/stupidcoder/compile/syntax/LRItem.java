@@ -1,7 +1,7 @@
 package stupidcoder.compile.syntax;
 
-import stupidcoder.common.Production;
-import stupidcoder.common.symbol.Symbol;
+import stupidcoder.util.compile.Production;
+import stupidcoder.util.compile.symbol.Symbol;
 
 import java.util.HashSet;
 import java.util.Set;

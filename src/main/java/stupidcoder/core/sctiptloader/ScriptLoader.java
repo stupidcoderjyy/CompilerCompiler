@@ -1,14 +1,14 @@
 package stupidcoder.core.sctiptloader;
 
-import stupidcoder.common.Production;
-import stupidcoder.common.symbol.Symbol;
-import stupidcoder.common.syntax.IProperty;
-import stupidcoder.common.syntax.PropertyTerminal;
-import stupidcoder.common.token.IToken;
-import stupidcoder.common.token.TokenFileEnd;
 import stupidcoder.compile.lex.NFARegexParser;
 import stupidcoder.compile.syntax.SyntaxLoader;
 import stupidcoder.core.sctiptloader.properties.*;
+import stupidcoder.util.compile.Production;
+import stupidcoder.util.compile.property.IProperty;
+import stupidcoder.util.compile.property.PropertyTerminal;
+import stupidcoder.util.compile.symbol.Symbol;
+import stupidcoder.util.compile.token.IToken;
+import stupidcoder.util.compile.token.TokenFileEnd;
 import stupidcoder.util.input.CompileException;
 import stupidcoder.util.input.CompilerInput;
 

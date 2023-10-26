@@ -1,10 +1,10 @@
 package stupidcoder.core.sctiptloader.properties;
 
-import stupidcoder.common.Production;
-import stupidcoder.common.syntax.IProperty;
-import stupidcoder.common.syntax.PropertyTerminal;
 import stupidcoder.compile.syntax.SyntaxLoader;
 import stupidcoder.core.sctiptloader.tokens.TokenId;
+import stupidcoder.util.compile.Production;
+import stupidcoder.util.compile.property.IProperty;
+import stupidcoder.util.compile.property.PropertyTerminal;
 
 public class PropertyHead implements IProperty {
     private final SyntaxLoader loader;

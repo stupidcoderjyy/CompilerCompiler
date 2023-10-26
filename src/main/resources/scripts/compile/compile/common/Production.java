@@ -1,6 +1,6 @@
 package stupidcoder.common;
 
-import stupidcoder.common.symbol.Symbol;
+import stupidcoder.util.common.symbol.Symbol;
 
 import java.util.List;
 

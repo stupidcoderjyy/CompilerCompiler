@@ -1,9 +1,9 @@
 package stupidcoder.compile.syntax;
 
-import stupidcoder.common.Production;
-import stupidcoder.common.symbol.DefaultSymbols;
-import stupidcoder.common.symbol.Symbol;
 import stupidcoder.util.ArrayUtil;
+import stupidcoder.util.compile.Production;
+import stupidcoder.util.compile.symbol.DefaultSymbols;
+import stupidcoder.util.compile.symbol.Symbol;
 
 import java.util.*;
 

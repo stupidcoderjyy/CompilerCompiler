@@ -1,6 +1,6 @@
 package stupidcoder.compile.syntax;
 
-import stupidcoder.common.Production;
+import stupidcoder.util.compile.Production;
 
 import java.util.*;
 

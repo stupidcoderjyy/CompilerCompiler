@@ -23,7 +23,7 @@ public class Symbol  {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Symbol s) {
+        if (obj instanceof stupidcoder.util.common.symbol.Symbol s) {
             return s.isTerminal == isTerminal && s.id == id;
         }
         return false;

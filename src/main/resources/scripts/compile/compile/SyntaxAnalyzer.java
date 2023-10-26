@@ -96,12 +96,8 @@ public class SyntaxAnalyzer {
                     pHead.onReduced(p, body);
                     properties.push(pHead);
                     $s[compressUsed]{
-                        $c{%
-                            states.push(ArrayCompressor.next(states.peek(), p.head().id, goTo));
-                        %},
-                        $c{%
-                            states.push(goTo[states.peek()][p.head().id]);
-                        %},
+                        "states.push(ArrayCompressor.next(states.peek(), p.head().id, goTo));",
+                        "states.push(goTo[states.peek()][p.head().id]);",
                     , LI5}
                     break;
             }

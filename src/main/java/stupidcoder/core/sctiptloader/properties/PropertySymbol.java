@@ -1,14 +1,14 @@
 package stupidcoder.core.sctiptloader.properties;
 
-import stupidcoder.common.Production;
-import stupidcoder.common.symbol.DefaultSymbols;
-import stupidcoder.common.syntax.IProperty;
-import stupidcoder.common.syntax.PropertyTerminal;
 import stupidcoder.compile.lex.NFARegexParser;
 import stupidcoder.compile.syntax.SyntaxLoader;
 import stupidcoder.core.sctiptloader.ScriptLoader;
 import stupidcoder.core.sctiptloader.tokens.TokenId;
 import stupidcoder.core.sctiptloader.tokens.TokenTerminal;
+import stupidcoder.util.compile.Production;
+import stupidcoder.util.compile.property.IProperty;
+import stupidcoder.util.compile.property.PropertyTerminal;
+import stupidcoder.util.compile.symbol.DefaultSymbols;
 
 public class PropertySymbol implements IProperty {
     private final SyntaxLoader loader;
