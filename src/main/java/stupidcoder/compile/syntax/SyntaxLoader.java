@@ -50,7 +50,7 @@ public class SyntaxLoader {
             if (s == DefaultSymbols.EPSILON) {
                 throw new RuntimeException("end symbol shouldn't be epsilon");
             }
-            endTerminals.add(s);
+            endTerminals.add(s); //添加的都是特殊符号，不需要调用addTerminal
             return;
         }
         if (s == DefaultSymbols.EPSILON) {
@@ -86,9 +86,9 @@ public class SyntaxLoader {
                 endTerminals.add(s);
             } else {
                 tempProduction.add(s);
-                terminalIdRemap.put(id, s.id);
                 lexemeToSymbol.put(lexeme, s);
             }
+            terminalIdRemap.put(id, s.id);
         }
     }
 

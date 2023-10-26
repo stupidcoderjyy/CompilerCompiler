@@ -10,7 +10,7 @@ import java.util.Map;
 public abstract class SourceArrSetter extends SourceCached {
     public static final int EXTRACT_COMMON_DATA = 0x1;
     public static final int FOLD_OPTIMIZE = 0x2;
-    protected int maxVarId = 0;
+    int maxVarId = 0;
     protected List<String> varIdToData = new ArrayList<>();
     protected List<IArrDataSourceSetter> varIdToSetter = new ArrayList<>();
     protected Map<String, Integer> dataToVarId = new HashMap<>();
@@ -18,11 +18,11 @@ public abstract class SourceArrSetter extends SourceCached {
     protected int flag = 0;
     protected IArrDataSourceSetter globalSetter = SourceCached::writeString;
 
-    public SourceArrSetter(String srcId) {
+    protected SourceArrSetter(String srcId) {
         super(srcId);
     }
 
-    public SourceArrSetter(String srcId, int flag) {
+    protected SourceArrSetter(String srcId, int flag) {
         super(srcId);
         this.flag = flag;
     }

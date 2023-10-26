@@ -16,7 +16,7 @@ public class LRGroupBuilder {
     private final Map<LRItem, List<LRItem>> spreadMap = new HashMap<>();
     private final List<Map<Symbol, LRGroup>> groupToTargets = new ArrayList<>();
     private static final boolean printDebug = Config.getBool(Config.SYNTAX_DEBUG_INFO);
-    private static final boolean showConflict = Config.getBool(Config.SHOW_ACTION_CONFLICT);
+    private static final boolean showConflict = Config.getBool(Config.SYNTAX_SHOW_ACTION_CONFLICT);
 
     public static void build(SyntaxLoader l, ISyntaxAnalyzerSetter receiver) {
         new LRGroupBuilder(l, receiver).build();
@@ -175,6 +175,9 @@ public class LRGroupBuilder {
     private final Stack<LRItem> itemsToSpread = new Stack<>();
 
     private void spreadSymbols(LRItem root) {
+        if (loader.endTerminals.isEmpty()) {
+            loader.endTerminals.add(DefaultSymbols.EOF); //默认结束符号
+        }
         root.forwardSymbols.addAll(loader.endTerminals);
         itemsToSpread.push(root);
         while (!itemsToSpread.empty()) {

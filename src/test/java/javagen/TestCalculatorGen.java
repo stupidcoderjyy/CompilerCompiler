@@ -8,7 +8,7 @@ public class TestCalculatorGen {
 
     @Test
     public void test() {
-        Config.set(Config.OUTPUT_DIR, "C:\\Users\\stupid_coder_jyy\\Desktop\\cs\\IdeaProjects\\GenCalculator\\src");
+        Config.set(Config.GLOBAL_OUTPUT_DIR, "C:\\Users\\stupid_coder_jyy\\Desktop\\cs\\IdeaProjects\\GenCalculator\\src");
         CompilerGenerator.gen(
                 "generate/compiler/calculator.txt",
                 "");

@@ -1,14 +1,14 @@
 $token$
     sAnd: "&&";
-    sOr: "\\|\\|";
+    sOr: "\|\|";
     eq: "==";
     ge: ">=";
     le: "<=";
     id: "@a@u*";
     int: "0[xX]@h+|@d+";
-    inc: "+\\+";
+    inc: "\+\+";
     dec: "--";
-    assignInc: "+=";
+    assignInc: "\+=";
     assignDec: "-=";
 $$
 

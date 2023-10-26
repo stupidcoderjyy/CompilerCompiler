@@ -10,12 +10,13 @@ public class Config {
     private static final int INT_VALUE = 0x3000;
     private static final int AUTO_CREATE_PATH = STRING_VALUE | 0x100;
 
-    public static final int OUTPUT_DIR = AUTO_CREATE_PATH | 1;
-    public static final int TEMP_OUT = AUTO_CREATE_PATH | 2;
-    public static final int SRC_DIR = STRING_VALUE | 1;
-    public static final int SHOW_ACTION_CONFLICT = BOOL_VALUE | 1;
-    public static final int COMPRESSED_ARR = BOOL_VALUE | 2;
-    public static final int KEY_WORD = BOOL_VALUE | 3;
+    public static final int GLOBAL_OUTPUT_DIR = AUTO_CREATE_PATH | 1;
+    public static final int GLOBAL_TEMP_OUT = AUTO_CREATE_PATH | 2;
+    public static final int GLOBAL_SRC_DIR = STRING_VALUE | 1;
+    public static final int GEN_PKG_PREFIX = STRING_VALUE | 2;
+    public static final int SYNTAX_SHOW_ACTION_CONFLICT = BOOL_VALUE | 1;
+    public static final int GEN_USE_COMPRESSED_ARR = BOOL_VALUE | 2;
+    public static final int GEN_KEY_WORD = BOOL_VALUE | 3;
     public static final int SYNTAX_DEBUG_INFO = BOOL_VALUE | 4;
     public static final int LEXER_DEBUG_INFO = BOOL_VALUE | 5;
 
@@ -23,12 +24,13 @@ public class Config {
     private final Map<Integer, Object> configs = new HashMap<>();
 
     private Config() {
-        configs.put(OUTPUT_DIR, "build/out");
-        configs.put(SRC_DIR, "");
-        configs.put(TEMP_OUT, "build/out");
-        configs.put(SHOW_ACTION_CONFLICT, false);
-        configs.put(COMPRESSED_ARR, false);
-        configs.put(KEY_WORD, false);
+        configs.put(GLOBAL_OUTPUT_DIR, "build/out");
+        configs.put(GLOBAL_SRC_DIR, "");
+        configs.put(GLOBAL_TEMP_OUT, "build/out");
+        configs.put(SYNTAX_SHOW_ACTION_CONFLICT, false);
+        configs.put(GEN_USE_COMPRESSED_ARR, false);
+        configs.put(GEN_KEY_WORD, true);
+        configs.put(GEN_PKG_PREFIX, "stupidcoder");
         configs.put(SYNTAX_DEBUG_INFO, false);
         configs.put(LEXER_DEBUG_INFO, false);
         new File("build/out").mkdirs();
@@ -65,7 +67,7 @@ public class Config {
         if (!configs.containsKey(type)) {
             throw new IllegalArgumentException("invalid type: 0x" + Integer.toHexString(type));
         }
-        if ((type & AUTO_CREATE_PATH) != 0) {
+        if ((type & AUTO_CREATE_PATH) == AUTO_CREATE_PATH) {
             new File((String) data).mkdirs();
         }
         configs.put(type, data);
@@ -73,7 +75,7 @@ public class Config {
 
     private void register0(int type, Object data) {
         if (checkType(type, data)) {
-            if ((type & AUTO_CREATE_PATH) != 0) {
+            if ((type & AUTO_CREATE_PATH) == AUTO_CREATE_PATH) {
                 new File((String) data).mkdirs();
             }
             configs.put(type, data);
@@ -91,14 +93,14 @@ public class Config {
     }
 
     public static String outputPath(String child) {
-        return INSTANCE.configs.get(OUTPUT_DIR) + "/" + child;
+        return INSTANCE.configs.get(GLOBAL_OUTPUT_DIR) + "/" + child;
     }
 
     public static String tempOutPath(String child) {
-        return INSTANCE.configs.get(TEMP_OUT) + "/" + child;
+        return INSTANCE.configs.get(GLOBAL_TEMP_OUT) + "/" + child;
     }
 
     public static String resourcePath(String child) {
-        return INSTANCE.configs.get(SRC_DIR) + "/" + child;
+        return INSTANCE.configs.get(GLOBAL_SRC_DIR) + "/" + child;
     }
 }

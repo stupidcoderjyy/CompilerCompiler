@@ -10,10 +10,10 @@ public class TestCompilerGen {
     @Test
     public void test() {
         Config.set(
-                Config.OUTPUT_DIR,
+                Config.GLOBAL_OUTPUT_DIR,
                 PathUtil.desktopPath("cs\\IdeaProjects\\GenCalculator\\src\\main\\java"));
-        Config.set(Config.SHOW_ACTION_CONFLICT, false);
-        Config.set(Config.COMPRESSED_ARR, true);
+        Config.set(Config.SYNTAX_SHOW_ACTION_CONFLICT, false);
+        Config.set(Config.GEN_USE_COMPRESSED_ARR, true);
         CompilerGenerator.gen("generate/compiler/test.txt", "");
     }
 }
