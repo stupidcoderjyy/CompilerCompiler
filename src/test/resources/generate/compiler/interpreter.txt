@@ -1,6 +1,4 @@
 $token$
-    sAnd: "&&";
-    sOr: "\|\|";
     eq: "==";
     ge: ">=";
     le: "<=";
@@ -63,8 +61,6 @@ $syntax$
           | expr '-' $5 expr
           | expr '*' $10 expr
           | expr '/' $10 expr
-          | expr @sAnd expr
-          | expr @sOr expr
           | expr @eq $2 expr
           | expr '>' expr
           | expr '<' expr
@@ -77,7 +73,6 @@ $syntax$
           | @int
           | @$true
           | @$false
-          | arrConst
           | var %20
           | var @inc $1 %10
           | var @dec $1 %10
@@ -91,11 +86,6 @@ $syntax$
     arrDef -> baseType
             | arrDef '[' expr ']' %20
             ;
-    arrConst -> '{' arrContents '}' ;
-    arrContents -> arrContents ',' expr
-                 | expr
-                 | @~
-                 ;
     exprs -> exprList
            | @~
            ;

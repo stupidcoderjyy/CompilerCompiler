@@ -1,9 +1,9 @@
 package stupidcoder.core;
 
 import org.apache.commons.lang3.StringUtils;
-import stupidcoder.compile.lex.DFABuilder;
-import stupidcoder.compile.lex.IDfaSetter;
-import stupidcoder.core.sctiptloader.ScriptLoader;
+import stupidcoder.core.scriptloader.ScriptLoader;
+import stupidcoder.lex.DFABuilder;
+import stupidcoder.lex.IDfaSetter;
 import stupidcoder.util.Config;
 import stupidcoder.util.arrcompressor.ArrayCompressor;
 import stupidcoder.util.generate.project.java.IJavaProjectAdapter;
@@ -20,13 +20,14 @@ import java.util.List;
 import java.util.Set;
 
 public class LexerBuilder implements IDfaSetter, IJavaProjectAdapter {
+    public static final int USE_COMPRESSED_ARR = Config.register(Config.BOOL_T, false);
+    public static final int KEY_WORD_TOKEN = Config.register(Config.BOOL_T, false);
     private int statesCount, startState, goToSize, goToStartSize, goToOffsetsSize;
     private final Source1DArrSetter op;
     private final Source2DArrSetter goTo;
     private final Source1DArrSetter accepted;
     private final ScriptLoader loader;
-    private final boolean compressUsed = Config.getBool(CompilerGenerator.USE_COMPRESSED_ARR);
-    private final boolean keyWordEnabled = Config.getBool(CompilerGenerator.KEY_WORD_TOKEN);
+    private final boolean compressUsed, keyWordEnabled;
     private ArrayCompressor compressor = null;
     private JProjectBuilder root;
 
@@ -36,6 +37,8 @@ public class LexerBuilder implements IDfaSetter, IJavaProjectAdapter {
         this.op = new Source1DArrSetter("op",
                 SourceArrSetter.FOLD_OPTIMIZE | SourceArrSetter.EXTRACT_COMMON_DATA);
         this.accepted = new Source1DArrSetter("accepted", SourceArrSetter.FOLD_OPTIMIZE);
+        this.compressUsed = Config.getBool(USE_COMPRESSED_ARR);
+        this.keyWordEnabled = Config.getBool(KEY_WORD_TOKEN);
         if (compressUsed) {
             this.compressor = new ArrayCompressor(new CompressedArrSourceSetter(goTo) {
                 @Override
@@ -111,19 +114,18 @@ public class LexerBuilder implements IDfaSetter, IJavaProjectAdapter {
 
     private void setTokenFile(String token) {
         if (token.equals("id") && keyWordEnabled) {
-            root.registerClazz("compile.tokens.TokenId", "template/$TokenId.java");
             SourceCached srcKeyWords = new SourceCached("keyWords");
             loader.keyWords.forEach((name, id) -> {
                 srcKeyWords.writeString(name);
                 srcKeyWords.writeInt(id);
             });
+            root.registerClazz("compile.tokens.TokenId", "template/$TokenId.java");
             root.registerClazzSrc("TokenId",
                     srcKeyWords,
                     new SourceFieldInt("id", () -> loader.nameToTerminalId.computeIfAbsent("id", n -> 0)));
             return;
         }
         String name = "Token" + StringUtils.capitalize(token);
-        root.registerClazz("compile.tokens." + name, "template/$Token.java");
         SourceCached srcName = new SourceCached("name");
         SourceCached srcId = new SourceCached("id");
         srcName.writeString(name);
@@ -132,6 +134,7 @@ public class LexerBuilder implements IDfaSetter, IJavaProjectAdapter {
         } else if (loader.nameToTerminalId.containsKey(token)) {
             srcId.writeInt(loader.nameToTerminalId.get(token));
         }
+        root.registerClazz("compile.tokens." + name, "template/$Token.java");
         root.registerClazzSrc(name, srcName, srcId);
     }
 }

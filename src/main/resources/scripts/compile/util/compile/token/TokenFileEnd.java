@@ -1,24 +1,25 @@
-package stupidcoder.core.scriptloader.tokens;
+package stupidcoder.util.compile.token;
 
-import stupidcoder.util.common.token.IToken;
 import stupidcoder.util.input.CompilerInput;
 
-public class TokenSingle implements IToken {
-    private char ch;
+public class TokenFileEnd implements IToken{
+    public static final TokenFileEnd INSTANCE = new TokenFileEnd();
+
+    private TokenFileEnd() {
+    }
 
     @Override
     public int type() {
-        return ch;
+        return 0;
     }
 
     @Override
     public IToken onMatched(String lexeme, CompilerInput input) {
-        this.ch = lexeme.charAt(0);
         return this;
     }
 
     @Override
     public String toString() {
-        return String.valueOf(ch);
+        return "$EOF$";
     }
 }

@@ -1,9 +1,9 @@
 package stupidcoder.core;
 
 import org.apache.commons.lang3.StringUtils;
-import stupidcoder.compile.syntax.ISyntaxAnalyzerSetter;
-import stupidcoder.compile.syntax.LRGroupBuilder;
-import stupidcoder.compile.syntax.SyntaxLoader;
+import stupidcoder.syntax.ISyntaxAnalyzerSetter;
+import stupidcoder.syntax.LRGroupBuilder;
+import stupidcoder.syntax.SyntaxLoader;
 import stupidcoder.util.Config;
 import stupidcoder.util.arrcompressor.ArrayCompressor;
 import stupidcoder.util.compile.Production;
@@ -27,7 +27,7 @@ public class SyntaxAnalyzerBuilder implements ISyntaxAnalyzerSetter, IJavaProjec
     private final Source2DArrSetter goTo, actions;
     private JProjectBuilder root;
     private ArrayCompressor goToCompressor, actionsCompressor;
-    private final boolean compressUsed = Config.getBool(CompilerGenerator.USE_COMPRESSED_ARR);
+    private final boolean compressUsed;
     private final SyntaxLoader loader;
 
     public SyntaxAnalyzerBuilder(SyntaxLoader loader) {
@@ -37,6 +37,7 @@ public class SyntaxAnalyzerBuilder implements ISyntaxAnalyzerSetter, IJavaProjec
         this.srcSyntax = new SourceCached("syntax");
         this.goTo = new Source2DArrSetter("goTo", SourceArrSetter.FOLD_OPTIMIZE);
         this.actions = new Source2DArrSetter("actions", SourceArrSetter.FOLD_OPTIMIZE);
+        this.compressUsed = Config.getBool(LexerBuilder.USE_COMPRESSED_ARR);
         if (compressUsed) {
             this.goToCompressor = new ArrayCompressor(new CompressedArrSourceSetter(goTo) {
                 @Override
@@ -145,14 +146,14 @@ public class SyntaxAnalyzerBuilder implements ISyntaxAnalyzerSetter, IJavaProjec
             srcRemap.writeInt(entry.getKey(), entry.getValue());
         }
         this.remapSize = maxId + 1;
-        setGrammar(loader);
+        writeGrammar(loader);
         if (compressUsed) {
             goToCompressor.finish();
             actionsCompressor.finish();
         }
     }
 
-    private void setGrammar(SyntaxLoader loader) {
+    private void writeGrammar(SyntaxLoader loader) {
         Map<String, Integer> lexemeToVarId = new HashMap<>();
         int varCount = 0;
         // symbols

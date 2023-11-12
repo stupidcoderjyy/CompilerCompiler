@@ -1,7 +1,7 @@
 package lex;
 
 import org.junit.jupiter.api.Test;
-import stupidcoder.compile.lex.NFARegexParser;
+import stupidcoder.lex.NFARegexParser;
 
 public class TestRegexParserError {
 

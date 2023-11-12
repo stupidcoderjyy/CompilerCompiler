@@ -1,6 +1,6 @@
 package stupidcoder.core.scriptloader.tokens;
 
-import stupidcoder.util.common.token.IToken;
+import stupidcoder.util.compile.token.IToken;
 import stupidcoder.util.input.CompilerInput;
 
 public class TokenSingle implements IToken {
