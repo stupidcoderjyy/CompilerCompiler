@@ -1,4 +1,4 @@
-package stupidcoder.core;
+package stupidcoder.core.java;
 
 import org.apache.commons.lang3.StringUtils;
 import stupidcoder.syntax.ISyntaxAnalyzerSetter;
@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class SyntaxAnalyzerBuilder implements ISyntaxAnalyzerSetter, IJavaProjectAdapter {
+public class JSyntaxAnalyzerBuilder implements ISyntaxAnalyzerSetter, IJavaProjectAdapter {
     private int prodSize, statesCount, terminalCount, nonTerminalCount, remapSize;
     private int goToSize, goToStartSize, goToOffsetsSize, actionsSize, actionsStartSize, actionsOffsetsSize;
     private final SourceCached srcRemap, srcProperty, srcSyntax;
@@ -30,14 +30,14 @@ public class SyntaxAnalyzerBuilder implements ISyntaxAnalyzerSetter, IJavaProjec
     private final boolean compressUsed;
     private final SyntaxLoader loader;
 
-    public SyntaxAnalyzerBuilder(SyntaxLoader loader) {
+    public JSyntaxAnalyzerBuilder(SyntaxLoader loader) {
         this.loader = loader;
         this.srcRemap = new SourceCached("remap");
         this.srcProperty = new SourceCached("property");
         this.srcSyntax = new SourceCached("syntax");
         this.goTo = new Source2DArrSetter("goTo", SourceArrSetter.FOLD_OPTIMIZE);
         this.actions = new Source2DArrSetter("actions", SourceArrSetter.FOLD_OPTIMIZE);
-        this.compressUsed = Config.getBool(LexerBuilder.USE_COMPRESSED_ARR);
+        this.compressUsed = Config.getBool(JLexerBuilder.USE_COMPRESSED_ARR);
         if (compressUsed) {
             this.goToCompressor = new ArrayCompressor(new CompressedArrSourceSetter(goTo) {
                 @Override

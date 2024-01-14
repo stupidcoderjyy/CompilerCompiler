@@ -4,7 +4,7 @@ $token$
     blockEnd: "$$";
     syntaxBegin: "$syntax$";
     tokenBegin: "$token$";
-    terminal: "\@($@a+|@a+|~|$$)|'@.'";
+    terminal: "\@($@a+|@a+|~|$$)|'(@.|\\@.)'";
     priorityMarkProd: "%@d+";
     priorityMarkTerminal: "$@d+";
     point: "->";

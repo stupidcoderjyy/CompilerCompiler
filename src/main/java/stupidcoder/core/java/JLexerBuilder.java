@@ -1,6 +1,7 @@
-package stupidcoder.core;
+package stupidcoder.core.java;
 
 import org.apache.commons.lang3.StringUtils;
+import stupidcoder.core.CompilerGenerator;
 import stupidcoder.core.scriptloader.ScriptLoader;
 import stupidcoder.lex.DFABuilder;
 import stupidcoder.lex.IDfaSetter;
@@ -19,9 +20,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class LexerBuilder implements IDfaSetter, IJavaProjectAdapter {
+public class JLexerBuilder implements IDfaSetter, IJavaProjectAdapter {
     public static final int USE_COMPRESSED_ARR = Config.register(Config.BOOL_T, false);
-    public static final int KEY_WORD_TOKEN = Config.register(Config.BOOL_T, false);
     private int statesCount, startState, goToSize, goToStartSize, goToOffsetsSize;
     private final Source1DArrSetter op;
     private final Source2DArrSetter goTo;
@@ -31,14 +31,14 @@ public class LexerBuilder implements IDfaSetter, IJavaProjectAdapter {
     private ArrayCompressor compressor = null;
     private JProjectBuilder root;
 
-    public LexerBuilder(ScriptLoader loader) {
+    public JLexerBuilder(ScriptLoader loader) {
         this.loader = loader;
         this.goTo = new Source2DArrSetter("goTo", SourceArrSetter.FOLD_OPTIMIZE);
         this.op = new Source1DArrSetter("op",
                 SourceArrSetter.FOLD_OPTIMIZE | SourceArrSetter.EXTRACT_COMMON_DATA);
         this.accepted = new Source1DArrSetter("accepted", SourceArrSetter.FOLD_OPTIMIZE);
         this.compressUsed = Config.getBool(USE_COMPRESSED_ARR);
-        this.keyWordEnabled = Config.getBool(KEY_WORD_TOKEN);
+        this.keyWordEnabled = Config.getBool(CompilerGenerator.KEY_WORD_TOKEN);
         if (compressUsed) {
             this.compressor = new ArrayCompressor(new CompressedArrSourceSetter(goTo) {
                 @Override

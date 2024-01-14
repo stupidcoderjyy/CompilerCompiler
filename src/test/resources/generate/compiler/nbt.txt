@@ -1,0 +1,35 @@
+$token$
+    string: "\"([^\"]|\\\")*\"";
+    int: "@d+[Ll]?";
+    float: "@d+[Ff]|@d*.@d+[Ff]?";
+    id: "@a@w*";
+$$
+
+$syntax$
+    nbt -> '{' compound '}'
+        ;
+    element -> @string
+        | @int
+        | @float
+        | @$true
+        | @$false
+        | '[' arr ']'
+        | '{' compound '}'
+        ;
+
+    item -> @id ':' element
+        ;
+    compound -> itemList
+        | @~
+        ;
+    itemList -> itemList item
+        | item
+        ;
+
+    arr -> elementList
+        | @~
+        ;
+    elementList -> elementList ',' element
+        | element
+        ;
+$$

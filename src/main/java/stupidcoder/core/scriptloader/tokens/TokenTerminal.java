@@ -1,13 +1,13 @@
 package stupidcoder.core.scriptloader.tokens;
 
-import stupidcoder.core.LexerBuilder;
+import stupidcoder.core.CompilerGenerator;
 import stupidcoder.util.Config;
 import stupidcoder.util.compile.token.IToken;
 import stupidcoder.util.input.CompileException;
 import stupidcoder.util.input.CompilerInput;
 
 public class TokenTerminal implements IToken {
-    private static final boolean keyWordEnabled = Config.getBool(LexerBuilder.KEY_WORD_TOKEN);
+    private static final boolean keyWordEnabled = Config.getBool(CompilerGenerator.KEY_WORD_TOKEN);
     public static final int SINGLE = 0;
     public static final int EPSILON = 1;
     public static final int NORMAL = 2;
